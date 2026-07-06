@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import BottomNav from "./BottomNav";
 import DesktopNav from "./DesktopNav";
 import Footer from "./Footer";
+import ScrollManager from "./ScrollManager";
 
 // Tab routes get the mobile bottom nav; detail/reader/creator screens don't.
 const TAB_ROUTES = ["/home", "/explore", "/profile"];
@@ -16,6 +17,7 @@ export default function Layout() {
 
   return (
     <div className="app-shell">
+      <ScrollManager />
       {!immersive && <DesktopNav />}
       <AnimatePresence mode="wait">
         <motion.div
