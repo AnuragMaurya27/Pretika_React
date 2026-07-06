@@ -1,0 +1,4 @@
+# SPA fallback (Netlify / Cloudflare Pages / Render honor this file).
+# Without it, direct hits to deep links like /story/foo return 404 and
+# Google can't index any story page.
+/*    /index.html   200

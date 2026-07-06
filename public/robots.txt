@@ -1,0 +1,8 @@
+# Pretika — https://pretika.in
+# Private/auth pages carry <meta name="robots" content="noindex"> instead of a
+# Disallow here: crawlers must be able to fetch a page to see its noindex tag.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://pretika.in/sitemap.xml

@@ -1,0 +1,340 @@
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { get, post, put, del } from "./api";
+
+/* ----------------------------- Categories ------------------------------- */
+export function useCategories() {
+  return useQuery({
+    queryKey: ["categories"],
+    queryFn: () => get("/stories/categories"),
+    staleTime: 1000 * 60 * 30,
+  });
+}
+
+/* ------------------------------- Stories -------------------------------- */
+export function useStories(params = {}) {
+  const merged = { page: 1, page_size: 20, ...params };
+  // Content-language filtering was removed — every story shows regardless of its
+  // language (hindi/english/hinglish). Callers may still pass an explicit
+  // `language`, but by default none is sent.
+  if (merged.language == null) delete merged.language;
+  return useQuery({
+    queryKey: ["stories", merged],
+    queryFn: () => get("/stories", { params: merged }),
+    keepPreviousData: true,
+  });
+}
+
+export function useUserProfile(username, enabled = true) {
+  return useQuery({
+    queryKey: ["user", username],
+    queryFn: () => get(`/users/${username}`),
+    enabled: !!username && enabled,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+/* ------------------------- Followers / Following ------------------------ */
+// Both endpoints are public (no auth required) and return a paged
+// FollowUserResponse list. We pull up to 100 so the in-sheet search can filter
+// client-side without extra round-trips.
+export function useFollowers(userId, enabled = true) {
+  return useQuery({
+    queryKey: ["followers", userId],
+    queryFn: () => get(`/users/${userId}/followers`, { params: { page_size: 100 } }),
+    enabled: !!userId && enabled,
+    staleTime: 1000 * 60,
+  });
+}
+export function useFollowing(userId, enabled = true) {
+  return useQuery({
+    queryKey: ["following", userId],
+    queryFn: () => get(`/users/${userId}/following`, { params: { page_size: 100 } }),
+    enabled: !!userId && enabled,
+    staleTime: 1000 * 60,
+  });
+}
+
+// Public list of a creator's published stories (by their user id).
+export function useCreatorStories(creatorId, enabled = true) {
+  return useQuery({
+    queryKey: ["creator-stories", creatorId],
+    queryFn: () => get(`/stories/creator/${creatorId}`, { params: { page_size: 30 } }),
+    enabled: !!creatorId && enabled,
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+export function useStoryDetail(slug) {
+  return useQuery({
+    queryKey: ["story", slug],
+    queryFn: () => get(`/stories/${slug}`),
+    enabled: !!slug,
+  });
+}
+
+export function useEpisode(storyId, episodeId) {
+  return useQuery({
+    queryKey: ["episode", storyId, episodeId],
+    queryFn: () => get(`/stories/${storyId}/episodes/${episodeId}`),
+    enabled: !!storyId && !!episodeId,
+  });
+}
+
+export function useComments(storyId) {
+  return useQuery({
+    queryKey: ["comments", storyId],
+    queryFn: () => get(`/stories/${storyId}/comments`, { params: { page_size: 50 } }),
+    enabled: !!storyId,
+  });
+}
+
+export function useBookmarked(enabled = true) {
+  return useQuery({
+    queryKey: ["bookmarked"],
+    queryFn: () => get("/stories/bookmarked", { params: { page_size: 30 } }),
+    enabled,
+  });
+}
+
+/* ------------------------------- Search --------------------------------- */
+export function useSearch(q, type = "all") {
+  return useQuery({
+    queryKey: ["search", q, type],
+    queryFn: () =>
+      get("/search", { params: { q, search_type: type, page_size: 20 } }),
+    enabled: !!q && q.trim().length > 1,
+  });
+}
+
+/* ------------------------------ Announcements --------------------------- */
+export function useAnnouncements() {
+  return useQuery({
+    queryKey: ["announcements"],
+    queryFn: () => get("/announcements"),
+    staleTime: 1000 * 60 * 10,
+  });
+}
+
+/* --------------------------- Leaderboard creators ----------------------- */
+export function useTopCreators() {
+  return useQuery({
+    queryKey: ["leaderboard", "all_time"],
+    queryFn: () => get("/leaderboard/all_time").catch(() => []),
+    staleTime: 1000 * 60 * 30,
+  });
+}
+
+/* ------------------------------ Mutations ------------------------------- */
+export function useLikeStory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, liked }) =>
+      liked ? del(`/stories/${id}/like`) : post(`/stories/${id}/like`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["story"] });
+      qc.invalidateQueries({ queryKey: ["stories"] });
+    },
+  });
+}
+
+export function useBookmarkStory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, saved }) =>
+      saved ? del(`/stories/${id}/bookmark`) : post(`/stories/${id}/bookmark`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["story"] });
+      qc.invalidateQueries({ queryKey: ["bookmarked"] });
+    },
+  });
+}
+
+export function useAddComment(storyId) {
+  const qc = useQueryClient();
+  return useMutation({
+    // accepts a plain string (top-level comment) or { content, parentCommentId, episodeId }
+    mutationFn: (arg) => {
+      const { content, parentCommentId, episodeId } =
+        typeof arg === "string" ? { content: arg } : arg;
+      return post(`/stories/${storyId}/comments`, {
+        story_id: storyId,
+        content,
+        ...(parentCommentId ? { parent_comment_id: parentCommentId } : {}),
+        ...(episodeId ? { episode_id: episodeId } : {}),
+      });
+    },
+    onSuccess: (_d, arg) => {
+      qc.invalidateQueries({ queryKey: ["comments", storyId] });
+      const parentId = typeof arg === "object" ? arg.parentCommentId : null;
+      if (parentId) qc.invalidateQueries({ queryKey: ["replies", parentId] });
+    },
+  });
+}
+
+/* ---------------------- Comment interactions --------------------------- */
+export function useLikeComment(storyId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, liked }) =>
+      liked ? del(`/comments/${id}/like`) : post(`/comments/${id}/like`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["comments", storyId] }),
+  });
+}
+
+export function useDeleteComment(storyId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => del(`/comments/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["comments", storyId] }),
+  });
+}
+
+export function useReportComment() {
+  return useMutation({
+    mutationFn: ({ id, reason, customReason }) =>
+      post(`/comments/${id}/report`, { reason, custom_reason: customReason }),
+  });
+}
+
+export function useReplies(commentId, enabled = false) {
+  return useQuery({
+    queryKey: ["replies", commentId],
+    queryFn: () => get(`/comments/${commentId}/replies`, { params: { page_size: 20 } }),
+    enabled: !!commentId && enabled,
+  });
+}
+
+/* ------------------------- Ratings & completion ------------------------- */
+export function useRateStory(slug) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, rating }) => post(`/stories/${id}/rate`, { rating }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["story", slug] });
+      qc.invalidateQueries({ queryKey: ["stories"] });
+    },
+  });
+}
+
+export function useRateEpisode(storyId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ episodeId, rating }) =>
+      post(`/stories/${storyId}/episodes/${episodeId}/rate`, { rating }),
+    onSuccess: (_d, { episodeId }) =>
+      qc.invalidateQueries({ queryKey: ["episode", storyId, episodeId] }),
+  });
+}
+
+export function useCompleteEpisode() {
+  return useMutation({
+    mutationFn: ({ storyId, episodeId }) =>
+      post(`/stories/${storyId}/episodes/${episodeId}/complete`),
+  });
+}
+
+export function useFollow() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, following }) =>
+      following ? del(`/users/${id}/follow`) : post(`/users/${id}/follow`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["leaderboard"] }),
+  });
+}
+
+/* ---------------------------- Darr Meter --------------------------------- */
+// Paragraph-level fear heatmap (reading stories only, not chat stories).
+export function useFearStats(episodeId) {
+  return useQuery({
+    queryKey: ["darr-meter", episodeId],
+    queryFn: () => get(`/darr-meter/${episodeId}`),
+    enabled: !!episodeId,
+    staleTime: 1000 * 60, // heatmap freshness — a minute is plenty
+    refetchOnWindowFocus: false,
+  });
+}
+
+/* --------------------------- Chat stories -------------------------------- */
+// Found-footage phone-chat horror (Pretika official only can publish).
+export function useChatStories(params = {}) {
+  const merged = { page: 1, page_size: 20, ...params };
+  return useQuery({
+    queryKey: ["chat-stories", merged],
+    queryFn: () => get("/chat-stories", { params: merged }),
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+export function useChatStory(slug) {
+  return useQuery({
+    queryKey: ["chat-story", slug],
+    queryFn: () => get(`/chat-stories/${slug}`),
+    enabled: !!slug,
+  });
+}
+
+// Editor-only fetch (drafts included) — server enforces the Pretika gate.
+export function useChatStoryById(id) {
+  return useQuery({
+    queryKey: ["chat-story-id", id],
+    queryFn: () => get(`/chat-stories/by-id/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useCanPublishChatStories(enabled = true) {
+  return useQuery({
+    queryKey: ["chat-stories-can-publish"],
+    queryFn: () => get("/chat-stories/can-publish").catch(() => false),
+    enabled,
+    staleTime: 1000 * 60 * 30,
+  });
+}
+
+export function useMyChatStories(enabled = true) {
+  return useQuery({
+    queryKey: ["my-chat-stories"],
+    queryFn: () => get("/chat-stories/mine", { params: { page_size: 50 } }),
+    enabled,
+  });
+}
+
+export function useSaveChatStory() {
+  const qc = useQueryClient();
+  return useMutation({
+    // payload is the snake_case create/update body; pass `id` to update
+    mutationFn: ({ id, ...payload }) =>
+      id ? put(`/chat-stories/${id}`, payload) : post("/chat-stories", payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["chat-stories"] });
+      qc.invalidateQueries({ queryKey: ["my-chat-stories"] });
+      qc.invalidateQueries({ queryKey: ["chat-story"] });
+    },
+  });
+}
+
+export function useDeleteChatStory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => del(`/chat-stories/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["chat-stories"] });
+      qc.invalidateQueries({ queryKey: ["my-chat-stories"] });
+    },
+  });
+}
+
+/* ----------------------------- Creator ---------------------------------- */
+export function useCreatorStats(enabled = true) {
+  return useQuery({ queryKey: ["creator-stats"], queryFn: () => get("/creator/stats"), enabled });
+}
+export function useCreatorEarnings(enabled = true) {
+  return useQuery({ queryKey: ["creator-earnings"], queryFn: () => get("/creator/earnings"), enabled });
+}
+export function useMyStories(enabled = true) {
+  return useQuery({ queryKey: ["my-stories"], queryFn: () => get("/stories/my", { params: { page_size: 30 } }), enabled });
+}

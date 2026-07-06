@@ -1,0 +1,16 @@
+{
+  "name": "Pretika · हिंदी हॉरर कहानियाँ",
+  "short_name": "Pretika",
+  "description": "रूह कांपा देने वाली हिंदी हॉरर कहानियाँ — read, write & feel the fear.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#140303",
+  "theme_color": "#534ab7",
+  "lang": "hi",
+  "categories": ["entertainment", "books", "lifestyle"],
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

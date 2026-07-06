@@ -1,0 +1,616 @@
+import { useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  ArrowLeft, Heart, Bookmark, Share2, Eye, Star,
+  Play, BadgeCheck, Send, MessageCircle, MoreVertical, Trash2, Flag, CornerDownRight,
+  Layers, BookOpen, Pin, Clock,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
+import {
+  useStoryDetail, useComments, useLikeStory, useBookmarkStory,
+  useAddComment, useRateStory, useUserProfile, useFollow,
+  useLikeComment, useDeleteComment, useReportComment, useReplies,
+} from "../lib/hooks";
+import { ListItemSkeleton } from "../components/Skeleton";
+import { PageLoader } from "../components/Art";
+import EmptyState, { ErrorState } from "../components/EmptyState";
+import Img from "../components/Img";
+import Tilt from "../components/Tilt";
+import Seo from "../components/Seo";
+import StarRating from "../components/StarRating";
+import { useAuth } from "../store/auth";
+import { compact, timeAgo } from "../lib/format";
+import { getProgress } from "../lib/reading";
+import { thumbFor } from "../lib/constants";
+import { errMsg } from "../lib/api";
+
+export default function StoryDetail() {
+  const { slug } = useParams();
+  const nav = useNavigate();
+  const { t } = useTranslation();
+  const authed = useAuth((s) => s.isAuthed)();
+  const me = useAuth((s) => s.user);
+  const { data: story, isLoading, isError, refetch } = useStoryDetail(slug);
+
+  const like = useLikeStory();
+  const bookmark = useBookmarkStory();
+  const rate = useRateStory(slug);
+  const follow = useFollow();
+  const [tab, setTab] = useState("episodes");
+
+  // creator follow status (story payload doesn't include it)
+  const isOwn = !!me && me.id === story?.creator_id;
+  const creatorProfile = useUserProfile(story?.creator_username, authed && !!story && !isOwn);
+  const [followOverride, setFollowOverride] = useState(null);
+  const isFollowing = followOverride ?? creatorProfile.data?.is_following ?? false;
+
+  if (isLoading) return <div className="app-shell"><PageLoader minHeight="80dvh" /></div>;
+  if (isError || !story) return <div className="app-shell"><ErrorState onRetry={refetch} /></div>;
+
+  const requireAuth = () => {
+    if (!authed) { toast.error(t("toast.loginRequired")); nav("/login"); return false; }
+    return true;
+  };
+
+  const toggleLike = () => {
+    if (!requireAuth()) return;
+    like.mutate({ id: story.id, liked: story.is_liked }, {
+      onSuccess: () => toast.success(story.is_liked ? t("toast.unliked") : t("toast.liked")),
+      onError: (e) => toast.error(errMsg(e)),
+    });
+  };
+  const toggleSave = () => {
+    if (!requireAuth()) return;
+    bookmark.mutate({ id: story.id, saved: story.is_bookmarked }, {
+      onSuccess: () => toast.success(story.is_bookmarked ? t("toast.unsaved") : t("toast.saved")),
+      onError: (e) => toast.error(errMsg(e)),
+    });
+  };
+  const toggleFollow = () => {
+    if (!requireAuth()) return;
+    const next = !isFollowing;
+    setFollowOverride(next);
+    follow.mutate({ id: story.creator_id, following: isFollowing }, {
+      onError: (e) => { setFollowOverride(!next); toast.error(errMsg(e)); },
+    });
+  };
+  const rateStory = (n) => {
+    if (!requireAuth()) return;
+    rate.mutate({ id: story.id, rating: n }, {
+      onSuccess: () => toast.success(t("reader.rateThanks")),
+      onError: (e) => toast.error(errMsg(e)),
+    });
+  };
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) await navigator.share({ title: story.title, url });
+      else { await navigator.clipboard.writeText(url); toast.success("Link copied"); }
+    } catch { /* cancelled */ }
+  };
+
+  const openEpisode = (ep) => nav(`/read/${story.id}/${ep.id}`);
+
+  const episodes = story.episodes || [];
+  const firstEp = episodes[0];
+  // resume from local reading progress if present
+  const progress = getProgress(story.id);
+  const resumeEp = progress?.episode_id && episodes.find((e) => e.id === progress.episode_id);
+  const startEp = resumeEp || firstEp;
+  const resumePct = resumeEp ? Math.max(0, Math.min(100, Math.round(progress?.scroll_percentage || 0))) : 0;
+
+  const totalMins = Math.max(1, Math.round(episodes.reduce((s, e) => s + (e.estimated_read_time_seconds || 0), 0) / 60));
+
+  const seoImg = thumbFor(story.thumbnail_url, story.id);
+  const seoDesc = (story.summary || `${story.title} — read this spine-chilling Hindi horror story on Pretika.`).slice(0, 160);
+
+  return (
+    <div className="app-shell" style={{ background: "var(--bg)" }}>
+      <Seo
+        title={story.title}
+        description={seoDesc}
+        image={seoImg}
+        path={`/story/${slug}`}
+        type="article"
+        keywords={[story.title, story.category_name, ...(story.tags || []), "hindi horror story", "डरावनी कहानी"].filter(Boolean).join(", ")}
+        publishedTime={story.published_at || story.created_at}
+        modifiedTime={story.updated_at}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "@id": `https://pretika.in/story/${slug}`,
+            mainEntityOfPage: { "@type": "WebPage", "@id": `https://pretika.in/story/${slug}` },
+            name: story.title,
+            headline: story.title,
+            description: seoDesc,
+            image: seoImg,
+            url: `https://pretika.in/story/${slug}`,
+            inLanguage: "hi",
+            genre: story.category_name || "Horror",
+            keywords: (story.tags || []).join(", ") || undefined,
+            isAccessibleForFree: true,
+            datePublished: story.published_at || story.created_at,
+            dateModified: story.updated_at || story.published_at || story.created_at,
+            author: {
+              "@type": "Person",
+              name: story.creator_display_name || story.creator_username,
+              url: `https://pretika.in/u/${story.creator_username}`,
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "Pretika",
+              url: "https://pretika.in",
+              logo: { "@type": "ImageObject", "url": "https://pretika.in/favicon.svg" },
+            },
+            aggregateRating: story.average_rating > 0 ? {
+              "@type": "AggregateRating",
+              ratingValue: story.average_rating.toFixed(1),
+              ratingCount: story.rating_count || 1,
+              bestRating: 5,
+            } : undefined,
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://pretika.in/home" },
+              { "@type": "ListItem", position: 2, name: story.category_name || "Stories", item: "https://pretika.in/explore" },
+              { "@type": "ListItem", position: 3, name: story.title, item: `https://pretika.in/story/${slug}` },
+            ],
+          },
+        ]}
+      />
+
+      {/* ═══ CINEMATIC HERO — blurred cover world, poster + everything key ═══ */}
+      <div className="sd-hero">
+        <Img path={story.thumbnail_url} seed={story.id} alt="" loading="eager" className="sd-hero-bg ken-burns" />
+        <div className="sd-hero-wash" />
+        <div className="fog" style={{ opacity: 0.45 }} />
+
+        {/* floating chrome */}
+        <button onClick={() => nav(-1)} className="sd-glass-ic" style={floatBtn(14, 14)} aria-label="Back"><ArrowLeft size={20} /></button>
+        <button onClick={share} className="sd-glass-ic" style={floatBtn(14, null, 14)} aria-label={t("story.share")}><Share2 size={18} /></button>
+
+        <div className="container sd-hero-grid">
+          {/* poster */}
+          <motion.div
+            className="scene-3d"
+            initial={{ opacity: 0, y: 26, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Tilt max={9} scale={1.03} className="sd-poster">
+              <Img path={story.thumbnail_url} seed={story.id} alt={story.title} loading="eager"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </Tilt>
+          </motion.div>
+
+          {/* info */}
+          <div className="sd-info">
+            <motion.div
+              className="row gap-8"
+              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+              style={{ flexWrap: "wrap" }}
+            >
+              {story.category_name && <span className="sd-badge crimson">{story.category_name}</span>}
+              <span className="sd-badge">
+                {story.story_type === "series"
+                  ? <><Layers size={12} /> {episodes.length} Episodes</>
+                  : <><BookOpen size={12} /> Single</>}
+              </span>
+              {story.is_editor_pick && <span className="sd-badge gold"><Star size={12} fill="currentColor" /> Editor's pick</span>}
+            </motion.div>
+
+            <motion.h1
+              className="serif sd-title"
+              initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ delay: 0.18, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+              style={{ marginTop: 14 }}
+            >
+              {story.title}
+            </motion.h1>
+
+            {/* creator + follow */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28, duration: 0.55 }}
+              className="row gap-12"
+              style={{ marginTop: 16, flexWrap: "wrap" }}
+            >
+              <Link to={`/u/${story.creator_username}`} className="row gap-8">
+                <Img path={story.creator_avatar_url} seed={story.creator_username} kind="avatar" alt=""
+                  style={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,.3)" }} />
+                <div style={{ textAlign: "left" }}>
+                  <div className="row gap-4" style={{ fontWeight: 700, fontSize: 14, color: "#fff" }}>
+                    {story.creator_display_name || story.creator_username}
+                    {story.is_verified_creator && <BadgeCheck size={14} color="#7db6ff" />}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: "rgba(255,255,255,.6)" }}>@{story.creator_username}</div>
+                </div>
+              </Link>
+              {!isOwn && (
+                <button
+                  onClick={toggleFollow}
+                  className="btn btn-sm"
+                  style={isFollowing
+                    ? { background: "rgba(255,255,255,.14)", color: "#fff", border: "1px solid rgba(255,255,255,.25)" }
+                    : { background: "#fff", color: "var(--crimson-dark)" }}
+                >
+                  {isFollowing ? t("story.following") : t("story.follow")}
+                </button>
+              )}
+            </motion.div>
+
+            {/* stats */}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.38 }}
+              className="row gap-16"
+              style={{ marginTop: 18, flexWrap: "wrap" }}
+            >
+              <span className="sd-stat"><Eye size={15} /> {compact(story.total_views)} {t("common.views")}</span>
+              <span className="sd-stat"><Heart size={15} /> {compact(story.total_likes)}</span>
+              {story.average_rating > 0 && (
+                <span className="sd-stat"><Star size={15} fill="var(--gold)" color="var(--gold)" /> {story.average_rating.toFixed(1)} ({compact(story.rating_count || 0)})</span>
+              )}
+              <span className="sd-stat"><Clock size={15} /> {totalMins} {t("story.readTime")}</span>
+            </motion.div>
+
+            {/* actions */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.46, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+              className="row gap-10"
+              style={{ marginTop: 22, flexWrap: "wrap" }}
+            >
+              <button className="sd-start" onClick={() => startEp && openEpisode(startEp)} disabled={!startEp}>
+                <Play size={18} fill="#fff" />
+                {resumeEp
+                  ? `${t("story.continue")} · EP ${resumeEp.episode_number}`
+                  : t("story.start")}
+              </button>
+              <div className="row gap-8">
+                <button className={`sd-glass-ic ${story.is_liked ? "on" : ""}`} onClick={toggleLike} aria-label={t("story.like")}>
+                  <Heart size={19} fill={story.is_liked ? "#fff" : "none"} />
+                </button>
+                <button className={`sd-glass-ic ${story.is_bookmarked ? "on" : ""}`} onClick={toggleSave} aria-label={t("story.bookmark")}>
+                  <Bookmark size={19} fill={story.is_bookmarked ? "#fff" : "none"} />
+                </button>
+              </div>
+            </motion.div>
+
+            {/* resume progress */}
+            {resumeEp && resumePct > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+                style={{ marginTop: 14, maxWidth: 380, width: "100%" }}
+              >
+                <div className="sd-resume-bar">
+                  <motion.div
+                    initial={{ width: 0 }} animate={{ width: `${resumePct}%` }}
+                    transition={{ delay: 0.7, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                    style={{ height: "100%", borderRadius: 4, background: "linear-gradient(90deg, var(--crimson-mid), #ff6a55)" }}
+                  />
+                </div>
+                <div style={{ fontSize: 11.5, color: "rgba(255,255,255,.6)", marginTop: 6 }}>
+                  {resumePct}% · {progress?.episode_title || `${t("story.episode")} ${resumeEp.episode_number}`}
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ BODY — summary, tags, rating, tabs ═══ */}
+      <div className="container sd-body" style={{ paddingTop: 26, paddingBottom: 40 }}>
+        {/* Summary */}
+        {story.summary && (
+          <motion.div
+            className="sd-card"
+            initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="eyebrow" style={{ marginBottom: 8 }}>{t("story.about")}</div>
+            <p className="muted" style={{ fontSize: 14.5, lineHeight: 1.85 }}>{story.summary}</p>
+            {story.tags?.length > 0 && (
+              <div className="row" style={{ marginTop: 14, gap: 8, flexWrap: "wrap" }}>
+                {story.tags.map((tg) => <span key={tg} className="chip" style={{ height: 30, fontSize: 12 }}>#{tg}</span>)}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Rate this story */}
+        <motion.div
+          className="sd-card"
+          initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          style={{ marginTop: 14 }}
+        >
+          <div className="between" style={{ flexWrap: "wrap", gap: 10 }}>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 15 }}>{t("story.rate")}</div>
+              <div className="tertiary" style={{ fontSize: 12, marginTop: 3 }}>
+                {story.my_rating
+                  ? <span className="row gap-4" style={{ display: "inline-flex" }}>{t("story.yourRating")}: {story.my_rating} <Star size={11} fill="var(--gold)" color="var(--gold)" /></span>
+                  : t("story.ratingsCount", { n: compact(story.rating_count || 0) })}
+              </div>
+            </div>
+            <StarRating value={story.my_rating || 0} onRate={rateStory} size={28} disabled={rate.isPending} />
+          </div>
+        </motion.div>
+
+        {/* Tabs */}
+        <div className="row gap-8" style={{ marginTop: 26, borderBottom: "1px solid var(--border-solid)" }}>
+          <Tab active={tab === "episodes"} onClick={() => setTab("episodes")}>{t("story.episodes")} ({episodes.length})</Tab>
+          <Tab active={tab === "comments"} onClick={() => setTab("comments")}>{t("story.comments")}</Tab>
+        </div>
+
+        {tab === "episodes" ? (
+          <div style={{ paddingTop: 10 }}>
+            {episodes.length === 0 && <EmptyState icon={<BookOpen size={32} />} sub={t("common.nothingHere")} />}
+            {episodes.map((ep, i) => (
+              <EpisodeRow
+                key={ep.id} ep={ep} index={i}
+                isResume={resumeEp && ep.id === resumeEp.id}
+                resumePct={resumePct}
+                onOpen={() => openEpisode(ep)}
+              />
+            ))}
+          </div>
+        ) : (
+          <Comments storyId={story.id} requireAuth={requireAuth} me={me} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EpisodeRow({ ep, index, onOpen, isResume, resumePct }) {
+  const { t } = useTranslation();
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.4 }}
+      transition={{ delay: Math.min(index * 0.04, 0.35), duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      onClick={onOpen}
+      className="between ep-row"
+      style={{
+        width: "100%", textAlign: "left", padding: "13px 14px",
+        ...(isResume ? { background: "var(--indigo-50)", border: "1px solid var(--indigo-100)", borderRadius: 12 } : {}),
+      }}
+    >
+      <div className="row gap-12" style={{ minWidth: 0, flex: 1 }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: 10, display: "grid", placeItems: "center",
+          fontWeight: 800, fontSize: 13, flexShrink: 0,
+          background: isResume ? "var(--indigo-600)" : "var(--indigo-50)",
+          color: isResume ? "#fff" : "var(--indigo-800)",
+        }}>
+          {ep.episode_number}
+        </div>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="clamp-1" style={{ fontWeight: 650, fontSize: 14 }}>{ep.title}</div>
+          <div className="row gap-8 tertiary" style={{ fontSize: 11.5, marginTop: 2 }}>
+            <span>{Math.max(1, Math.round((ep.estimated_read_time_seconds || 0) / 60))} {t("story.readTime")}</span>
+            <span>· {compact(ep.total_views)} {t("common.views")}</span>
+            {isResume && resumePct > 0 && <span style={{ color: "var(--crimson)", fontWeight: 700 }}>· {resumePct}%</span>}
+          </div>
+          {isResume && resumePct > 0 && (
+            <div style={{ marginTop: 7, height: 4, maxWidth: 220, background: "var(--bg-tertiary)", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ width: `${resumePct}%`, height: "100%", background: "linear-gradient(90deg, var(--crimson-mid), var(--crimson))", borderRadius: 4 }} />
+            </div>
+          )}
+        </div>
+      </div>
+      <span className="ep-play" style={{
+        ...epPlay,
+        ...(isResume ? { background: "var(--crimson)", color: "#fff" } : {}),
+      }}><Play size={14} fill="currentColor" /></span>
+    </motion.button>
+  );
+}
+
+const epPlay = {
+  width: 32, height: 32, borderRadius: "50%", display: "grid", placeItems: "center",
+  background: "var(--bg-secondary)", color: "var(--text-tertiary)", flexShrink: 0,
+};
+
+function Comments({ storyId, requireAuth, me }) {
+  const { t } = useTranslation();
+  const { data, isLoading } = useComments(storyId);
+  const add = useAddComment(storyId);
+  const [text, setText] = useState("");
+
+  const post = () => {
+    if (!requireAuth()) return;
+    const v = text.trim();
+    if (!v) return;
+    add.mutate(v, {
+      onSuccess: () => { setText(""); toast.success(t("toast.commentAdded")); },
+      onError: (e) => toast.error(errMsg(e)),
+    });
+  };
+
+  const items = data?.items || [];
+  return (
+    <div style={{ paddingTop: 14, paddingBottom: 30 }}>
+      <div className="row gap-8" style={{ marginBottom: 14 }}>
+        <input className="input" placeholder={t("story.writeComment")} value={text}
+          onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && post()} />
+        <button className="btn btn-primary" style={{ width: 50, padding: 0 }} onClick={post} disabled={add.isPending}>
+          <Send size={18} />
+        </button>
+      </div>
+      {isLoading ? (
+        Array.from({ length: 3 }).map((_, i) => <ListItemSkeleton key={i} />)
+      ) : items.length === 0 ? (
+        <EmptyState icon={<MessageCircle size={32} />} sub={t("story.noComments")} />
+      ) : (
+        items.map((c) => (
+          <CommentItem key={c.id} c={c} storyId={storyId} requireAuth={requireAuth} me={me} />
+        ))
+      )}
+    </div>
+  );
+}
+
+function CommentItem({ c, storyId, requireAuth, me }) {
+  const { t } = useTranslation();
+  const likeComment = useLikeComment(storyId);
+  const delComment = useDeleteComment(storyId);
+  const reportComment = useReportComment();
+  const addReply = useAddComment(storyId);
+  const [showReplies, setShowReplies] = useState(false);
+  const [replying, setReplying] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const replies = useReplies(c.id, showReplies);
+
+  // optimistic local like state
+  const [liked, setLiked] = useState(!!c.is_liked_by_me);
+  const [likes, setLikes] = useState(c.likes_count || 0);
+  const mine = c.is_my_comment || (me && me.id === c.author_id);
+
+  const toggleLike = () => {
+    if (!requireAuth()) return;
+    const was = liked;
+    setLiked(!was); setLikes((n) => n + (was ? -1 : 1));
+    likeComment.mutate({ id: c.id, liked: was }, {
+      onError: (e) => { setLiked(was); setLikes((n) => n + (was ? 1 : -1)); toast.error(errMsg(e)); },
+    });
+  };
+  const sendReply = () => {
+    if (!requireAuth()) return;
+    const v = replyText.trim();
+    if (!v) return;
+    addReply.mutate({ content: v, parentCommentId: c.id }, {
+      onSuccess: () => { setReplyText(""); setReplying(false); setShowReplies(true); toast.success(t("toast.commentAdded")); },
+      onError: (e) => toast.error(errMsg(e)),
+    });
+  };
+  const remove = () => {
+    setMenuOpen(false);
+    delComment.mutate(c.id, {
+      onSuccess: () => toast.success(t("report.done")),
+      onError: (e) => toast.error(errMsg(e)),
+    });
+  };
+  const report = () => {
+    setMenuOpen(false);
+    if (!requireAuth()) return;
+    reportComment.mutate({ id: c.id, reason: "inappropriate" }, {
+      onSuccess: () => toast.success(t("report.done")),
+      onError: (e) => toast.error(errMsg(e)),
+    });
+  };
+
+  return (
+    <div style={{ padding: "10px 0", borderBottom: "1px solid var(--border-solid)" }}>
+      <div className="row gap-10" style={{ alignItems: "flex-start" }}>
+        <Img path={c.author_avatar_url} seed={c.author_username} kind="avatar" alt=""
+          style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="between">
+            <div className="row gap-6" style={{ minWidth: 0 }}>
+              <span className="clamp-1" style={{ fontWeight: 700, fontSize: 13 }}>{c.author_display_name || c.author_username}</span>
+              {c.author_is_creator && <span className="badge badge-red" style={{ padding: "1px 6px" }}>{t("story.creator")}</span>}
+              {c.is_pinned && <span className="badge badge-gold" style={{ padding: "1px 6px" }}><Pin size={11} /></span>}
+              <span className="tertiary" style={{ fontSize: 11 }}>{timeAgo(c.created_at)}</span>
+            </div>
+            <div style={{ position: "relative" }}>
+              <button onClick={() => setMenuOpen((v) => !v)} className="tertiary" style={{ padding: 4 }}><MoreVertical size={15} /></button>
+              {menuOpen && (
+                <div className="card" style={{ position: "absolute", right: 0, top: 24, zIndex: 10, minWidth: 130, padding: 4 }}>
+                  {mine ? (
+                    <button onClick={remove} className="row gap-8" style={menuRow}><Trash2 size={14} color="var(--error)" /> {t("story.deleteComment")}</button>
+                  ) : (
+                    <button onClick={report} className="row gap-8" style={menuRow}><Flag size={14} /> {t("story.reportComment")}</button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ fontSize: 13.5, marginTop: 3, lineHeight: 1.5 }}>{c.content}</div>
+
+          {/* actions */}
+          <div className="row gap-16" style={{ marginTop: 6 }}>
+            <button onClick={toggleLike} className="row gap-4 tertiary" style={{ fontSize: 12, color: liked ? "var(--indigo-600)" : undefined }}>
+              <Heart size={14} fill={liked ? "var(--indigo-600)" : "none"} /> {likes > 0 ? compact(likes) : t("story.like")}
+            </button>
+            <button onClick={() => setReplying((v) => !v)} className="row gap-4 tertiary" style={{ fontSize: 12 }}>
+              <CornerDownRight size={14} /> {t("story.reply")}
+            </button>
+            {c.replies_count > 0 && (
+              <button onClick={() => setShowReplies((v) => !v)} className="tertiary" style={{ fontSize: 12, fontWeight: 600 }}>
+                {showReplies ? t("story.hideReplies") : t("story.replies", { n: c.replies_count })}
+              </button>
+            )}
+          </div>
+
+          {/* reply composer */}
+          {replying && (
+            <div className="row gap-8" style={{ marginTop: 8 }}>
+              <input className="input" style={{ height: 38 }} placeholder={t("story.writeReply")} value={replyText} autoFocus
+                onChange={(e) => setReplyText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && sendReply()} />
+              <button className="btn btn-primary" style={{ width: 44, height: 38, padding: 0 }} onClick={sendReply} disabled={addReply.isPending}><Send size={16} /></button>
+            </div>
+          )}
+
+          {/* replies list */}
+          {showReplies && (
+            <div style={{ marginTop: 8, paddingLeft: 8, borderLeft: "2px solid var(--border-solid)" }}>
+              {replies.isLoading ? <div className="tertiary" style={{ fontSize: 12, padding: "4px 0" }}>{t("common.loading")}</div> : (
+                (replies.data?.items || []).map((r) => (
+                  <div key={r.id} className="row gap-8" style={{ alignItems: "flex-start", padding: "6px 0" }}>
+                    <Img path={r.author_avatar_url} seed={r.author_username} kind="avatar" alt=""
+                      style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                    <div style={{ minWidth: 0 }}>
+                      <div className="row gap-6">
+                        <span style={{ fontWeight: 700, fontSize: 12 }}>{r.author_display_name || r.author_username}</span>
+                        <span className="tertiary" style={{ fontSize: 10.5 }}>{timeAgo(r.created_at)}</span>
+                      </div>
+                      <div style={{ fontSize: 12.5, marginTop: 2, lineHeight: 1.45 }}>{r.content}</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const menuRow = { width: "100%", padding: "8px 10px", fontSize: 13, fontWeight: 600, textAlign: "left" };
+
+const Tab = ({ active, onClick, children }) => (
+  <button onClick={onClick} style={{
+    position: "relative", padding: "10px 4px", fontWeight: 700, fontSize: 14,
+    color: active ? "var(--indigo-600)" : "var(--text-tertiary)",
+    marginBottom: -1, transition: "color .2s ease",
+  }}>
+    {children}
+    {active && (
+      <motion.span
+        layoutId="detail-tab"
+        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+        style={{
+          position: "absolute", left: 0, right: 0, bottom: 0, height: 2.5, borderRadius: 2,
+          background: "var(--indigo-600)", boxShadow: "0 0 10px rgba(156,28,20,.4)",
+        }}
+      />
+    )}
+  </button>
+);
+
+const floatBtn = (top, left, right) => ({
+  position: "absolute", top, left: left ?? "auto", right: right ?? "auto", zIndex: 6,
+  width: 42, height: 42, borderRadius: "50%",
+});

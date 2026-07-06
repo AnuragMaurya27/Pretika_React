@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="36%" r="82%"><stop offset="0%" stop-color="#2e0e0c"/><stop offset="55%" stop-color="#170606"/><stop offset="100%" stop-color="#070202"/></radialGradient>
+    <radialGradient id="sc" cx="50%" cy="42%" r="62%"><stop offset="0%" stop-color="#fdf9ec"/><stop offset="45%" stop-color="#f2e7d0"/><stop offset="78%" stop-color="#d8c6a6"/><stop offset="100%" stop-color="#99805c"/></radialGradient>
+    <radialGradient id="ir" cx="44%" cy="38%" r="70%"><stop offset="0%" stop-color="#ff5238"/><stop offset="30%" stop-color="#e01c10"/><stop offset="62%" stop-color="#970808"/><stop offset="100%" stop-color="#3c0202"/></radialGradient>
+    <radialGradient id="gl" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,60,40,.55)"/><stop offset="100%" stop-color="rgba(255,60,40,0)"/></radialGradient>
+    <radialGradient id="dr" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#ff6a4f"/><stop offset="45%" stop-color="#c01008"/><stop offset="100%" stop-color="#5c0303"/></radialGradient>
+    <filter id="b4"><feGaussianBlur stdDeviation="4"/></filter>
+    <filter id="b9"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="b16"><feGaussianBlur stdDeviation="16"/></filter>
+    <clipPath id="op"><path d="M60 252 Q 250 106 452 246 Q 258 378 60 252 Z"/></clipPath>
+    <g id="fw">
+      <path d="M256 182 L 256 214" stroke="#ff8a5e" stroke-width="2.6" opacity=".45" fill="none" stroke-linecap="round"/>
+      <path d="M268 184 L 263 215" stroke="#5e0303" stroke-width="2.8" opacity=".6" fill="none" stroke-linecap="round"/>
+      <path d="M244 184 L 249 215" stroke="#ffc09a" stroke-width="1.7" opacity=".3" fill="none" stroke-linecap="round"/>
+      <path d="M262 183 Q 258 200 259 214" stroke="#8f1206" stroke-width="1.9" opacity=".5" fill="none" stroke-linecap="round"/>
+    </g>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+  <ellipse cx="256" cy="468" rx="210" ry="64" fill="url(#gl)" opacity=".6"/>
+  <ellipse cx="256" cy="398" rx="175" ry="34" fill="#000" opacity=".5" filter="url(#b16)"/>
+  <g clip-path="url(#op)">
+    <path d="M60 252 Q 250 106 452 246 Q 258 378 60 252 Z" fill="url(#sc)"/>
+    <ellipse cx="92" cy="256" rx="42" ry="62" fill="#5a2418" opacity=".45" filter="url(#b9)"/>
+    <ellipse cx="426" cy="252" rx="44" ry="58" fill="#5a2418" opacity=".4" filter="url(#b9)"/>
+    <ellipse cx="256" cy="146" rx="220" ry="74" fill="#240a06" opacity=".55" filter="url(#b9)"/>
+    <g fill="none" stroke="#b23327" stroke-linecap="round" opacity=".75">
+      <path d="M74 250 C 112 234 138 238 168 250" stroke-width="3"/>
+      <path d="M96 268 C 128 262 150 266 172 262" stroke-width="2"/>
+      <path d="M438 244 C 404 230 372 236 346 248" stroke-width="3"/>
+      <path d="M420 268 C 392 262 372 264 352 258" stroke-width="2"/>
+      <path d="M170 320 C 200 310 216 312 232 306" stroke-width="1.8"/>
+      <path d="M340 314 C 316 306 300 308 286 304" stroke-width="1.8"/>
+    </g>
+    <circle cx="256" cy="246" r="92" fill="url(#gl)"/>
+    <circle cx="256" cy="246" r="76" fill="url(#ir)"/>
+    <use href="#fw"/><use href="#fw" transform="rotate(30 256 246)"/><use href="#fw" transform="rotate(60 256 246)"/><use href="#fw" transform="rotate(90 256 246)"/><use href="#fw" transform="rotate(120 256 246)"/><use href="#fw" transform="rotate(150 256 246)"/><use href="#fw" transform="rotate(180 256 246)"/><use href="#fw" transform="rotate(210 256 246)"/><use href="#fw" transform="rotate(240 256 246)"/><use href="#fw" transform="rotate(270 256 246)"/><use href="#fw" transform="rotate(300 256 246)"/><use href="#fw" transform="rotate(330 256 246)"/>
+    <circle cx="256" cy="246" r="52" fill="none" stroke="#ff5238" stroke-width="10" opacity=".18" filter="url(#b4)"/>
+    <circle cx="256" cy="246" r="76" fill="none" stroke="#160101" stroke-width="9" opacity=".9" filter="url(#b4)"/>
+    <circle cx="256" cy="246" r="30" fill="none" stroke="#1c0101" stroke-width="8" opacity=".7" filter="url(#b4)"/>
+    <path d="M256 180 C 236 214 236 278 256 314 C 276 278 276 214 256 180 Z" fill="#080101" filter="url(#b4)"/>
+    <path d="M256 186 C 240 216 240 276 256 308 C 272 276 272 216 256 186 Z" fill="#040000"/>
+    <ellipse cx="222" cy="200" rx="30" ry="17" transform="rotate(-26 222 200)" fill="#fff" opacity=".8" filter="url(#b4)"/>
+    <circle cx="214" cy="196" r="8" fill="#fff" opacity=".95"/>
+    <circle cx="298" cy="292" r="9" fill="#fff" opacity=".3" filter="url(#b4)"/>
+    <path d="M120 300 Q 256 366 396 296" stroke="#fff" stroke-width="7" fill="none" opacity=".3" filter="url(#b9)"/>
+  </g>
+  <path d="M60 252 q 16 -12 30 -1 q -13 15 -30 1 Z" fill="#8e2016"/>
+  <circle cx="76" cy="250" r="3.4" fill="#ffb9a6" opacity=".8"/>
+  <path d="M60 252 Q 250 106 452 246" fill="none" stroke="#1c0705" stroke-width="16" stroke-linecap="round"/>
+  <path d="M60 252 Q 250 106 452 246" fill="none" stroke="#a91607" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+  <path d="M60 252 Q 258 378 452 246" fill="none" stroke="#2a0c08" stroke-width="11" stroke-linecap="round"/>
+  <path d="M84 266 Q 258 362 430 258" fill="none" stroke="#e98a74" stroke-width="3.4" opacity=".5"/>
+  <g fill="#150304">
+    <path d="M110 212 Q 92 186 80 170 Q 100 184 122 206 Z"/>
+    <path d="M168 186 Q 158 158 146 142 Q 168 160 180 184 Z"/>
+    <path d="M226 174 Q 220 146 214 128 Q 234 148 240 172 Z"/>
+    <path d="M266 174 Q 272 144 278 126 Q 284 150 280 174 Z"/>
+    <path d="M324 184 Q 338 156 350 140 Q 340 166 338 186 Z"/>
+    <path d="M384 206 Q 402 180 416 166 Q 402 190 396 210 Z"/>
+    <path d="M424 228 Q 444 208 458 198 Q 442 218 434 236 Z"/>
+  </g>
+  <path d="M268 330 C 260 358 266 384 261 406 C 259 417 259 424 261 430 L 268 429 C 272 408 274 386 275 362 C 275 346 272 337 268 330 Z" fill="#9c0f07"/>
+  <path d="M258 428 C 242 456 240 474 257 485 C 274 474 272 455 258 428 Z" fill="url(#dr)"/>
+  <ellipse cx="250" cy="460" rx="4.5" ry="7" transform="rotate(-15 250 460)" fill="#fff" opacity=".55"/>
+</svg>
