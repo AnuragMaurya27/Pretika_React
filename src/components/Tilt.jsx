@@ -1,14 +1,11 @@
 import { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
+import { IS_TOUCH } from "../lib/device";
 
-// Touch / no-hover devices (phones, tablets) have no real cursor. There the 3D
-// cursor-tilt has nothing sane to follow: dragging a card feeds synthetic mouse
-// coords into rotateX/rotateY and the card wobbles under your finger. Detect
-// once and fall back to a plain wrapper there — the tilt is a desktop-only treat.
-const IS_TOUCH =
-  typeof window !== "undefined" &&
-  typeof window.matchMedia === "function" &&
-  window.matchMedia("(hover: none), (pointer: coarse)").matches;
+// On touch / no-hover devices the 3D cursor-tilt has nothing sane to follow:
+// dragging a card feeds synthetic mouse coords into rotateX/rotateY and the card
+// wobbles under your finger. There we fall back to a plain wrapper (below) — the
+// tilt is a desktop-only treat. IS_TOUCH is shared with the cards' tap-scale.
 
 /**
  * Tilt — buttery 3D tilt that follows the cursor (desktop) with a moving glare.
@@ -35,10 +32,15 @@ export default function Tilt({
   const rotateX = useSpring(useTransform(py, [0, 1], [max, -max]), spring);
   const rotateY = useSpring(useTransform(px, [0, 1], [-max, max]), spring);
 
-  // glare follows the cursor
+  // glare follows the cursor. Every hook stays above the early return below so
+  // the hook order never changes between renders (rules-of-hooks).
   const glareX = useTransform(px, [0, 1], ["0%", "100%"]);
   const glareY = useTransform(py, [0, 1], ["0%", "100%"]);
   const glareOpacity = useSpring(0, { stiffness: 200, damping: 30 });
+  const glareBg = useTransform(
+    [glareX, glareY],
+    ([x, y]) => `radial-gradient(circle at ${x} ${y}, rgba(255,255,255,.85), rgba(255,255,255,0) 55%)`
+  );
 
   // Plain wrapper on phones (touch) and for reduced-motion users.
   if (reduce || IS_TOUCH) {
@@ -92,11 +94,7 @@ export default function Tilt({
             pointerEvents: "none",
             mixBlendMode: "overlay",
             opacity: glareOpacity,
-            background: useTransform(
-              [glareX, glareY],
-              ([x, y]) =>
-                `radial-gradient(circle at ${x} ${y}, rgba(255,255,255,.85), rgba(255,255,255,0) 55%)`
-            ),
+            background: glareBg,
           }}
         />
       )}

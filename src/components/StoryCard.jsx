@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import Img from "./Img";
 import Tilt from "./Tilt";
 import { compact } from "../lib/format";
+import { IS_TOUCH } from "../lib/device";
 
 /* Poster card — mirrors the Flutter app's StoryCard (0.68 ratio, badges, parts bar) */
 export function StoryCard({ story, index = 0, rank }) {
@@ -20,7 +21,9 @@ export function StoryCard({ story, index = 0, rank }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ delay: Math.min(index * 0.04, 0.3), ease: [0.16, 1, 0.3, 1], duration: 0.5 }}
-      whileTap={{ scale: 0.98 }}
+      // Tap-scale only where there's a real cursor. On touch it fires on the
+      // press that begins a scroll → card shakes under the finger and scroll janks.
+      whileTap={IS_TOUCH ? undefined : { scale: 0.98 }}
       style={{ minWidth: 150, width: "100%", maxWidth: 190 }}
     >
       <Link to={`/story/${story.slug}`} style={{ display: "block" }}>

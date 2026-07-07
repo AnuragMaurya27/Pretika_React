@@ -5,6 +5,7 @@ import { useChatStories } from "../lib/hooks";
 import Img from "./Img";
 import Tilt from "./Tilt";
 import { compact } from "../lib/format";
+import { IS_TOUCH } from "../lib/device";
 
 /**
  * Home rail for Pretika Chats — identical Section shape AND card footprint as
@@ -55,7 +56,9 @@ function ChatStoryCard({ story: s, index = 0, onOpen }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ delay: Math.min(index * 0.04, 0.3), ease: [0.16, 1, 0.3, 1], duration: 0.5 }}
-      whileTap={{ scale: 0.98 }}
+      // Tap-scale only on desktop — on touch it shakes the card under the finger
+      // mid-scroll and fights the native scroll (same fix as StoryCard).
+      whileTap={IS_TOUCH ? undefined : { scale: 0.98 }}
       // Fixed 150px so a short chat rail matches the dense category rails
       // (StoryCard would balloon to its 190px maxWidth with only a few items).
       style={{ width: 150, flexShrink: 0 }}
