@@ -1396,11 +1396,105 @@ html { scroll-behavior: smooth; }
 /* ---- Bottom nav (mobile) — frosted, springy --------------------------------- */
 .bnav {
   position: fixed; bottom: 0; left: 0; right: 0; width: 100%; z-index: 50;
-  background: rgba(255,253,247,.82);
+  /* near-opaque so content doesn't bleed through the bar while scrolling
+     (was .82 → visible show-through); keeps a faint frost via the blur */
+  background: rgba(255,253,247,.97);
   backdrop-filter: saturate(180%) blur(18px); -webkit-backdrop-filter: saturate(180%) blur(18px);
   border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
   box-shadow: 0 -8px 30px rgba(40,20,12,.06);
+}
+
+/* ---- Pretika Chats — modern, "live" chat-story cards ------------------------ */
+.pchat-card { width: 162px; flex-shrink: 0; }
+/* the phone-screen surface */
+.pchat-phone {
+  position: relative; aspect-ratio: .64; border-radius: 20px; overflow: hidden;
+  display: flex; flex-direction: column; isolation: isolate;
+  background: #fbf7ef; border: 1px solid var(--border);
+  box-shadow: 0 8px 20px rgba(40,20,12,.14), 0 22px 46px rgba(40,20,12,.12);
+  transition: box-shadow .28s ease;
+}
+.pchat-card a:hover .pchat-phone,
+.pchat-card button:hover .pchat-phone { box-shadow: 0 12px 26px rgba(156,28,20,.20), 0 26px 56px rgba(40,20,12,.16); }
+/* thin crimson "signal" thread along the very top edge */
+.pchat-phone::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 4;
+  background: linear-gradient(90deg, transparent, var(--crimson-mid) 28%, var(--crimson) 50%, var(--crimson-mid) 72%, transparent);
+}
+/* chat app header */
+.pchat-head {
+  display: flex; align-items: center; gap: 8px; padding: 9px 9px 8px;
+  background: #f6f1e4; border-bottom: 1px solid rgba(120,100,80,.18); position: relative; z-index: 2;
+}
+.pchat-av { position: relative; width: 27px; height: 27px; flex-shrink: 0; }
+.pchat-av img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+/* live online dot with an outward pulse ring */
+.pchat-dot {
+  position: absolute; right: -1px; bottom: -1px; width: 8px; height: 8px; border-radius: 50%;
+  background: #22b24c; box-shadow: 0 0 0 1.6px #fff;
+}
+.pchat-dot::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  box-shadow: 0 0 0 1.6px #22b24c; animation: pchatPulse 1.9s ease-out infinite;
+}
+@keyframes pchatPulse { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.4); opacity: 0; } }
+.pchat-meta { min-width: 0; flex: 1; }
+.pchat-name { font-size: 11px; font-weight: 800; color: #1c1610; line-height: 1.15; }
+.pchat-status { font-size: 8.5px; font-weight: 700; color: #1f9a43; letter-spacing: .2px; }
+.pchat-status.is-typing { color: var(--crimson-mid); }
+.pchat-kebab { color: #b7ab97; flex-shrink: 0; }
+/* conversation body */
+.pchat-body {
+  /* justify-end: newest messages hug the input bar, like a real chat — the
+     warm empty space above reads as scrolled-away history */
+  flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; padding: 10px 9px;
+  /* SAME wallpaper as the real chat-story reader (.cht-scroll): aged parchment,
+     dried-blood corner stains, faint ink doodles — so the card previews the
+     actual chat, not the website surface */
+  background-color: #ebe1cd;
+  background-image:
+    radial-gradient(60% 42% at 100% 0%, rgba(156,28,20,.10), transparent 70%),
+    radial-gradient(55% 38% at 0% 100%, rgba(110,15,10,.12), transparent 70%),
+    radial-gradient(120% 80% at 50% 50%, transparent 55%, rgba(90,60,30,.10) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%233a2c1c' stroke-opacity='.07' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M40 44c0-9 7-16 16-16s16 7 16 16v18l-6-5-5 5-5-5-5 5-6-5zM49 40h.5M62 40h.5'/%3E%3Ccircle cx='196' cy='60' r='13'/%3E%3Ccircle cx='196' cy='60' r='4.5'/%3E%3Cpath d='M120 150c14 0 22 9 22 9s-8 9-22 9-22-9-22-9 8-9 22-9z'/%3E%3Ccircle cx='120' cy='159' r='3.4'/%3E%3Cpath d='M212 196l9 18M221 196l-9 18'/%3E%3Cpath d='M30 208c8-6 9-16 4-24 12 2 18 12 16 24-3 12-20 15-28 8 4-2 7-5 8-8z'/%3E%3Cpath d='M150 40v22M139 51h22'/%3E%3Ccircle cx='60' cy='130' r='2'/%3E%3Ccircle cx='240' cy='130' r='2'/%3E%3Ccircle cx='170' cy='236' r='2'/%3E%3C/g%3E%3C/svg%3E");
+}
+.pchat-bubble {
+  align-self: flex-start; max-width: 92%; padding: 7px 9px;
+  border-radius: 12px; border-top-left-radius: 4px; background: #fffdf7;
+  color: #241a12; font-size: 10.5px; line-height: 1.42; box-shadow: 0 1px 2px rgba(60,40,20,.14);
+}
+.pchat-time { align-self: flex-start; margin: -2px 0 0 4px; font-size: 8px; font-weight: 600; color: #a89b85; }
+/* animated typing indicator — the "they're still watching you type" beat */
+.pchat-typing {
+  align-self: flex-start; display: inline-flex; gap: 3.5px; padding: 8px 10px;
+  border-radius: 12px; border-top-left-radius: 4px; background: #fffdf7; box-shadow: 0 1px 2px rgba(60,40,20,.14);
+}
+.pchat-typing i { width: 5px; height: 5px; border-radius: 50%; background: #b3a795; animation: pchatBounce 1.25s infinite ease-in-out; }
+.pchat-typing i:nth-child(2) { animation-delay: .16s; }
+.pchat-typing i:nth-child(3) { animation-delay: .32s; }
+@keyframes pchatBounce { 0%, 65%, 100% { transform: translateY(0); opacity: .45; } 32% { transform: translateY(-3.5px); opacity: 1; } }
+/* duration footer bar */
+.pchat-foot {
+  display: flex; align-items: center; gap: 6px; padding: 8px 10px; flex-shrink: 0;
+  background: linear-gradient(90deg, var(--crimson), var(--crimson-dark)); color: #fff;
+}
+.pchat-foot b { font-size: 10.5px; font-weight: 800; letter-spacing: .2px; }
+.pchat-foot .pchat-arrow { margin-left: auto; display: inline-flex; opacity: .9; transition: transform .25s ease; }
+.pchat-card a:hover .pchat-arrow, .pchat-card button:hover .pchat-arrow { transform: translateX(3px); }
+/* caption below the phone */
+.pchat-title { font-weight: 700; font-size: 13px; line-height: 1.22; color: var(--text-primary); }
+.pchat-sub { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+.pchat-tag {
+  display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 20px;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100); color: var(--crimson);
+  font-size: 9.5px; font-weight: 700;
+}
+.pchat-views { font-size: 10.5px; color: var(--text-tertiary); }
+/* section subtitle */
+.pchat-eyebrow { margin: 0 0 13px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; }
+@media (prefers-reduced-motion: reduce) {
+  .pchat-dot::after, .pchat-typing i { animation: none !important; }
 }
 
 /* ---- Page-level cinematic wipe (route transitions) -------------------------- */
