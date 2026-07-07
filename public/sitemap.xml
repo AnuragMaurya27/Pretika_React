@@ -61,8 +61,28 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://pretika.in/story/-4</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/a245e04e-fe25-4595-87d0-bbed6d5dce98.jpg</image:loc>
+      <image:title>पुरानी हवेली</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://pretika.in/story/khasra-number-zero</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/1359c202-131f-47f7-af15-385434f25052.png</image:loc>
+      <image:title>खसरा नंबर ज़ीरो</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://pretika.in/story/jinn-3</loc>
-    <lastmod>2026-06-27</lastmod>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -72,7 +92,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/pav-bhaji</loc>
-    <lastmod>2026-06-21</lastmod>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -82,7 +102,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/testing-jinn-1</loc>
-    <lastmod>2026-06-28</lastmod>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -102,7 +122,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-3</loc>
-    <lastmod>2026-06-28</lastmod>
+    <lastmod>2026-07-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -111,14 +131,26 @@
     </image:image>
   </url>
   <url>
+    <loc>https://pretika.in/u/claudetest2</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pretika.in/u/Pretika</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://pretika.in/u/nikhil27</loc>
-    <lastmod>2026-06-27</lastmod>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pretika.in/u/Anurag27</loc>
-    <lastmod>2026-06-21</lastmod>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
