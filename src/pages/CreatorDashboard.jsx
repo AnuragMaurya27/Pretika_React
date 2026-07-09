@@ -197,7 +197,17 @@ export default function CreatorDashboard() {
                               )}
                             </div>
                           </div>
-                          <ChevronRight size={17} className="tertiary" style={{ flexShrink: 0 }} />
+                          <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); nav(`/creator/story/${st.id}/edit`); }}
+                            aria-label={t("common.edit", { defaultValue: "Edit" })}
+                            title={t("common.edit", { defaultValue: "Edit" })}
+                            style={{
+                              flexShrink: 0, width: 34, height: 34, borderRadius: 9, display: "grid", placeItems: "center",
+                              background: "var(--indigo-50)", color: "var(--indigo-600)", border: "1px solid var(--indigo-100)", cursor: "pointer",
+                            }}
+                          >
+                            <Pencil size={15} />
+                          </button>
                         </Link>
                       </motion.div>
                     ))}

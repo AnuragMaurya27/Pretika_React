@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, PenSquare, Eye, Heart } from "lucide-react";
+import { ArrowLeft, PenSquare, Eye, Heart, Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useMyStories } from "../lib/hooks";
 import { useAuth } from "../store/auth";
@@ -50,6 +50,18 @@ export default function MyStories() {
                   <span className={`badge ${STATUS_COLORS[st.status] || "badge-indigo"}`} style={{ position: "absolute", top: 8, left: 8, textTransform: "capitalize" }}>
                     {(st.status || "").replace(/_/g, " ")}
                   </span>
+                  <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); nav(`/creator/story/${st.id}/edit`); }}
+                    aria-label={t("common.edit", { defaultValue: "Edit" })}
+                    style={{
+                      position: "absolute", top: 8, right: 8, display: "inline-flex", alignItems: "center", gap: 4,
+                      padding: "5px 9px", borderRadius: 999, border: "none", cursor: "pointer",
+                      background: "rgba(10,6,4,.62)", color: "#fff", fontSize: 11.5, fontWeight: 700,
+                      backdropFilter: "blur(4px)",
+                    }}
+                  >
+                    <Pencil size={12} /> {t("common.edit", { defaultValue: "Edit" })}
+                  </button>
                 </div>
                 <div style={{ padding: 10 }}>
                   <div className="clamp-1" style={{ fontWeight: 600, fontSize: 13.5 }}>{st.title}</div>
