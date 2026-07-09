@@ -19,6 +19,7 @@ import { useAuth } from "../store/auth";
 import { mediaUrl } from "../lib/constants";
 import { compact } from "../lib/format";
 import { getAllProgress } from "../lib/reading";
+import { rankTrending } from "../lib/trending";
 import { EyeLogo, Candle, CategoryIcon } from "../components/Art";
 import { errMsg } from "../lib/api";
 
@@ -30,11 +31,22 @@ export default function Home() {
   const nav = useNavigate();
   const user = useAuth((s) => s.user);
 
-  const trending = useStories({ sort_by: "trending", page_size: 12 });
   const fresh = useStories({ sort_by: "latest", page_size: 12 });
   const cats = useCategories();
   const announcements = useAnnouncements();
   const mostViewed = useStories({ sort_by: "most_viewed", page_size: 50 });
+
+  // "Trending" is ranked live on the client (engagement + recency) because the
+  // API's trending sort orders by a score the backend never populates — see
+  // lib/trending.js. Pool = every published story we've already fetched.
+  const trendingItems = useMemo(() => {
+    const byId = new Map();
+    for (const s of [...(mostViewed.data?.items || []), ...(fresh.data?.items || [])]) {
+      if (s && !byId.has(s.id)) byId.set(s.id, s);
+    }
+    return rankTrending([...byId.values()], 12);
+  }, [mostViewed.data, fresh.data]);
+  const trendingLoading = mostViewed.isLoading && fresh.isLoading;
 
   // Category rails: only for the categories of the 5 most-viewed ("reading
   // viewer") stories — and only if that category actually has a story. We sort
@@ -86,7 +98,7 @@ export default function Home() {
         </header>
 
         {/* Editorial hero — ink headline + floating fan of real trending covers */}
-        <Hero name={name} covers={trending.data?.items || []} loading={trending.isLoading} />
+        <Hero name={name} covers={trendingItems} loading={trendingLoading} />
 
         {/* Announcements */}
         {announcements.data?.length > 0 && (
@@ -129,14 +141,14 @@ export default function Home() {
 
         {/* Trending — with Netflix-style rank numbers */}
         <Section title={t("home.trending")} icon={<Flame size={18} color="var(--indigo-600)" />} to="/explore?sort=trending">
-          {trending.isLoading ? <HRailSkeleton /> : (
-            <Rail>{(trending.data?.items || []).map((s, i) => <StoryCard key={s.id} story={s} index={i} rank={i + 1} />)}</Rail>
+          {trendingLoading ? <HRailSkeleton /> : (
+            <Rail>{trendingItems.map((s, i) => <StoryCard key={s.id} story={s} index={i} rank={i + 1} />)}</Rail>
           )}
         </Section>
 
         {/* Spotlight — cinematic feature of the #1 trending story */}
-        {!trending.isLoading && trending.data?.items?.[0] && (
-          <Spotlight story={trending.data.items[0]} />
+        {!trendingLoading && trendingItems[0] && (
+          <Spotlight story={trendingItems[0]} />
         )}
 
         {/* New stories */}
