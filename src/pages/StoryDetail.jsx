@@ -3,25 +3,23 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Heart, Bookmark, Share2, Eye, Star,
-  Play, BadgeCheck, Send, MessageCircle, MoreVertical, Trash2, Flag, CornerDownRight,
-  Layers, BookOpen, Pin, Clock,
+  Play, BadgeCheck, Layers, BookOpen, Clock,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import {
-  useStoryDetail, useComments, useLikeStory, useBookmarkStory,
-  useAddComment, useRateStory, useUserProfile, useFollow,
-  useLikeComment, useDeleteComment, useReportComment, useReplies,
+  useStoryDetail, useLikeStory, useBookmarkStory,
+  useRateStory, useUserProfile, useFollow,
 } from "../lib/hooks";
-import { ListItemSkeleton } from "../components/Skeleton";
 import { PageLoader } from "../components/Art";
 import EmptyState, { ErrorState } from "../components/EmptyState";
 import Img from "../components/Img";
 import Tilt from "../components/Tilt";
 import Seo from "../components/Seo";
 import StarRating from "../components/StarRating";
+import CommentSection from "../components/CommentSection";
 import { useAuth } from "../store/auth";
-import { compact, timeAgo } from "../lib/format";
+import { compact } from "../lib/format";
 import { getProgress } from "../lib/reading";
 import { thumbFor } from "../lib/constants";
 import { errMsg } from "../lib/api";
@@ -347,7 +345,9 @@ export default function StoryDetail() {
         {/* Tabs */}
         <div className="row gap-8" style={{ marginTop: 26, borderBottom: "1px solid var(--border-solid)" }}>
           <Tab active={tab === "episodes"} onClick={() => setTab("episodes")}>{t("story.episodes")} ({episodes.length})</Tab>
-          <Tab active={tab === "comments"} onClick={() => setTab("comments")}>{t("story.comments")}</Tab>
+          <Tab active={tab === "comments"} onClick={() => setTab("comments")}>
+            {t("story.comments")}{story.total_comments > 0 ? ` (${compact(story.total_comments)})` : ""}
+          </Tab>
         </div>
 
         {tab === "episodes" ? (
@@ -363,7 +363,7 @@ export default function StoryDetail() {
             ))}
           </div>
         ) : (
-          <Comments storyId={story.id} requireAuth={requireAuth} me={me} />
+          <CommentSection storyId={story.id} creatorId={story.creator_id} episodes={episodes} />
         )}
       </div>
     </div>
@@ -420,175 +420,6 @@ const epPlay = {
   width: 32, height: 32, borderRadius: "50%", display: "grid", placeItems: "center",
   background: "var(--bg-secondary)", color: "var(--text-tertiary)", flexShrink: 0,
 };
-
-function Comments({ storyId, requireAuth, me }) {
-  const { t } = useTranslation();
-  const { data, isLoading } = useComments(storyId);
-  const add = useAddComment(storyId);
-  const [text, setText] = useState("");
-
-  const post = () => {
-    if (!requireAuth()) return;
-    const v = text.trim();
-    if (!v) return;
-    add.mutate(v, {
-      onSuccess: () => { setText(""); toast.success(t("toast.commentAdded")); },
-      onError: (e) => toast.error(errMsg(e)),
-    });
-  };
-
-  const items = data?.items || [];
-  return (
-    <div style={{ paddingTop: 14, paddingBottom: 30 }}>
-      <div className="row gap-8" style={{ marginBottom: 14 }}>
-        <input className="input" placeholder={t("story.writeComment")} value={text}
-          onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && post()} />
-        <button className="btn btn-primary" style={{ width: 50, padding: 0 }} onClick={post} disabled={add.isPending}>
-          <Send size={18} />
-        </button>
-      </div>
-      {isLoading ? (
-        Array.from({ length: 3 }).map((_, i) => <ListItemSkeleton key={i} />)
-      ) : items.length === 0 ? (
-        <EmptyState icon={<MessageCircle size={32} />} sub={t("story.noComments")} />
-      ) : (
-        items.map((c) => (
-          <CommentItem key={c.id} c={c} storyId={storyId} requireAuth={requireAuth} me={me} />
-        ))
-      )}
-    </div>
-  );
-}
-
-function CommentItem({ c, storyId, requireAuth, me }) {
-  const { t } = useTranslation();
-  const likeComment = useLikeComment(storyId);
-  const delComment = useDeleteComment(storyId);
-  const reportComment = useReportComment();
-  const addReply = useAddComment(storyId);
-  const [showReplies, setShowReplies] = useState(false);
-  const [replying, setReplying] = useState(false);
-  const [replyText, setReplyText] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const replies = useReplies(c.id, showReplies);
-
-  // optimistic local like state
-  const [liked, setLiked] = useState(!!c.is_liked_by_me);
-  const [likes, setLikes] = useState(c.likes_count || 0);
-  const mine = c.is_my_comment || (me && me.id === c.author_id);
-
-  const toggleLike = () => {
-    if (!requireAuth()) return;
-    const was = liked;
-    setLiked(!was); setLikes((n) => n + (was ? -1 : 1));
-    likeComment.mutate({ id: c.id, liked: was }, {
-      onError: (e) => { setLiked(was); setLikes((n) => n + (was ? 1 : -1)); toast.error(errMsg(e)); },
-    });
-  };
-  const sendReply = () => {
-    if (!requireAuth()) return;
-    const v = replyText.trim();
-    if (!v) return;
-    addReply.mutate({ content: v, parentCommentId: c.id }, {
-      onSuccess: () => { setReplyText(""); setReplying(false); setShowReplies(true); toast.success(t("toast.commentAdded")); },
-      onError: (e) => toast.error(errMsg(e)),
-    });
-  };
-  const remove = () => {
-    setMenuOpen(false);
-    delComment.mutate(c.id, {
-      onSuccess: () => toast.success(t("report.done")),
-      onError: (e) => toast.error(errMsg(e)),
-    });
-  };
-  const report = () => {
-    setMenuOpen(false);
-    if (!requireAuth()) return;
-    reportComment.mutate({ id: c.id, reason: "inappropriate" }, {
-      onSuccess: () => toast.success(t("report.done")),
-      onError: (e) => toast.error(errMsg(e)),
-    });
-  };
-
-  return (
-    <div style={{ padding: "10px 0", borderBottom: "1px solid var(--border-solid)" }}>
-      <div className="row gap-10" style={{ alignItems: "flex-start" }}>
-        <Img path={c.author_avatar_url} seed={c.author_username} kind="avatar" alt=""
-          style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="between">
-            <div className="row gap-6" style={{ minWidth: 0 }}>
-              <span className="clamp-1" style={{ fontWeight: 700, fontSize: 13 }}>{c.author_display_name || c.author_username}</span>
-              {c.author_is_creator && <span className="badge badge-red" style={{ padding: "1px 6px" }}>{t("story.creator")}</span>}
-              {c.is_pinned && <span className="badge badge-gold" style={{ padding: "1px 6px" }}><Pin size={11} /></span>}
-              <span className="tertiary" style={{ fontSize: 11 }}>{timeAgo(c.created_at)}</span>
-            </div>
-            <div style={{ position: "relative" }}>
-              <button onClick={() => setMenuOpen((v) => !v)} className="tertiary" style={{ padding: 4 }}><MoreVertical size={15} /></button>
-              {menuOpen && (
-                <div className="card" style={{ position: "absolute", right: 0, top: 24, zIndex: 10, minWidth: 130, padding: 4 }}>
-                  {mine ? (
-                    <button onClick={remove} className="row gap-8" style={menuRow}><Trash2 size={14} color="var(--error)" /> {t("story.deleteComment")}</button>
-                  ) : (
-                    <button onClick={report} className="row gap-8" style={menuRow}><Flag size={14} /> {t("story.reportComment")}</button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-          <div style={{ fontSize: 13.5, marginTop: 3, lineHeight: 1.5 }}>{c.content}</div>
-
-          {/* actions */}
-          <div className="row gap-16" style={{ marginTop: 6 }}>
-            <button onClick={toggleLike} className="row gap-4 tertiary" style={{ fontSize: 12, color: liked ? "var(--indigo-600)" : undefined }}>
-              <Heart size={14} fill={liked ? "var(--indigo-600)" : "none"} /> {likes > 0 ? compact(likes) : t("story.like")}
-            </button>
-            <button onClick={() => setReplying((v) => !v)} className="row gap-4 tertiary" style={{ fontSize: 12 }}>
-              <CornerDownRight size={14} /> {t("story.reply")}
-            </button>
-            {c.replies_count > 0 && (
-              <button onClick={() => setShowReplies((v) => !v)} className="tertiary" style={{ fontSize: 12, fontWeight: 600 }}>
-                {showReplies ? t("story.hideReplies") : t("story.replies", { n: c.replies_count })}
-              </button>
-            )}
-          </div>
-
-          {/* reply composer */}
-          {replying && (
-            <div className="row gap-8" style={{ marginTop: 8 }}>
-              <input className="input" style={{ height: 38 }} placeholder={t("story.writeReply")} value={replyText} autoFocus
-                onChange={(e) => setReplyText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && sendReply()} />
-              <button className="btn btn-primary" style={{ width: 44, height: 38, padding: 0 }} onClick={sendReply} disabled={addReply.isPending}><Send size={16} /></button>
-            </div>
-          )}
-
-          {/* replies list */}
-          {showReplies && (
-            <div style={{ marginTop: 8, paddingLeft: 8, borderLeft: "2px solid var(--border-solid)" }}>
-              {replies.isLoading ? <div className="tertiary" style={{ fontSize: 12, padding: "4px 0" }}>{t("common.loading")}</div> : (
-                (replies.data?.items || []).map((r) => (
-                  <div key={r.id} className="row gap-8" style={{ alignItems: "flex-start", padding: "6px 0" }}>
-                    <Img path={r.author_avatar_url} seed={r.author_username} kind="avatar" alt=""
-                      style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-                    <div style={{ minWidth: 0 }}>
-                      <div className="row gap-6">
-                        <span style={{ fontWeight: 700, fontSize: 12 }}>{r.author_display_name || r.author_username}</span>
-                        <span className="tertiary" style={{ fontSize: 10.5 }}>{timeAgo(r.created_at)}</span>
-                      </div>
-                      <div style={{ fontSize: 12.5, marginTop: 2, lineHeight: 1.45 }}>{r.content}</div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const menuRow = { width: "100%", padding: "8px 10px", fontSize: 13, fontWeight: 600, textAlign: "left" };
 
 const Tab = ({ active, onClick, children }) => (
   <button onClick={onClick} style={{

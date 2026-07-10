@@ -14,6 +14,7 @@ import { renderEpisode } from "../lib/content";
 import { saveProgress, getProgress } from "../lib/reading";
 import { ErrorState } from "../components/EmptyState";
 import StarRating from "../components/StarRating";
+import CommentSection from "../components/CommentSection";
 import DarrMeter from "../components/DarrMeter";
 import Seo from "../components/Seo";
 import { Spook, PageLoader } from "../components/Art";
@@ -400,6 +401,16 @@ export default function Reader() {
             <ArrowLeft size={14} /> {t("reader.prev")}: {prev.title}
           </button>
         )}
+
+        {/* ── Episode discussion — this episode's comments only ────────────── */}
+        <div style={{ marginTop: 34, borderTop: "1px solid var(--rd-border)" }}>
+          <CommentSection
+            key={episodeId}
+            storyId={storyId}
+            episodeId={episodeId}
+            creatorId={story?.creator_id}
+          />
+        </div>
       </motion.article>
 
       {/* Darr Meter — paragraph-level fear heatmap (reading stories only).

@@ -2113,6 +2113,212 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
   border-top: 1px solid var(--border); background: var(--bg-secondary);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   ✦ COMMENTS 2.0 — shared discussion module (story page + reader).
+     All colors route through --cmt-* so the reader's three atmospheres
+     (parchment/sepia/midnight) re-skin it automatically.
+═══════════════════════════════════════════════════════════════════════════ */
+.cmt-wrap {
+  --cmt-card: var(--bg-card);
+  --cmt-soft: var(--bg-secondary);
+  --cmt-border: var(--border);
+  --cmt-line: var(--border-dark);
+  --cmt-text: var(--text-primary);
+  --cmt-muted: var(--text-secondary);
+  --cmt-faint: var(--text-tertiary);
+  --cmt-accent: var(--crimson);
+  --cmt-accent-soft: var(--indigo-50);
+  display: block; color: var(--cmt-text); padding-top: 14px;
+}
+.rd-shell .cmt-wrap {
+  --cmt-card: var(--rd-card);
+  --cmt-soft: color-mix(in srgb, var(--rd-text) 6%, transparent);
+  --cmt-border: var(--rd-border);
+  --cmt-line: color-mix(in srgb, var(--rd-text) 22%, transparent);
+  --cmt-text: var(--rd-text);
+  --cmt-muted: var(--rd-muted);
+  --cmt-faint: var(--rd-faint);
+  --cmt-accent: var(--rd-accent);
+  --cmt-accent-soft: color-mix(in srgb, var(--rd-accent) 14%, transparent);
+}
+
+.cmt-count {
+  font-size: 11.5px; font-weight: 800; padding: 2px 9px; border-radius: 999px;
+  background: var(--cmt-accent-soft); color: var(--cmt-accent);
+}
+.cmt-seg {
+  display: inline-flex; gap: 2px; padding: 3px;
+  background: var(--cmt-soft); border: 1px solid var(--cmt-border); border-radius: 999px;
+}
+.cmt-seg button {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 700; color: var(--cmt-faint);
+  padding: 5px 11px; border-radius: 999px; transition: all .18s ease;
+}
+.cmt-seg button.on { background: var(--cmt-card); color: var(--cmt-accent); box-shadow: 0 1px 6px rgba(0,0,0,.08); }
+
+/* ── composer ─────────────────────────────────────────────────────────── */
+.cmt-composer { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; }
+.cmt-inputwrap {
+  flex: 1; min-width: 0; border-radius: 16px;
+  background: var(--cmt-card); border: 1.5px solid var(--cmt-border);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.cmt-inputwrap:focus-within {
+  border-color: var(--cmt-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cmt-accent) 14%, transparent);
+}
+.cmt-inputwrap textarea {
+  display: block; width: 100%; resize: none; background: none; border: 0; outline: 0;
+  color: var(--cmt-text); font: inherit; font-size: 14px; line-height: 1.55;
+  padding: 11px 14px 6px; min-height: 42px; max-height: 170px;
+}
+.cmt-inputwrap textarea::placeholder { color: var(--cmt-faint); }
+.cmt-hint { font-size: 11px; color: var(--cmt-faint); font-variant-numeric: tabular-nums; }
+.cmt-post {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 800; color: #fff;
+  background: var(--cmt-accent); border-radius: 999px; padding: 7px 14px;
+  transition: transform .15s ease, opacity .15s ease, filter .15s ease;
+}
+.cmt-post:hover { filter: brightness(1.08); }
+.cmt-post:active { transform: scale(.96); }
+.cmt-post:disabled { opacity: .45; pointer-events: none; }
+.cmt-login {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; margin-top: 14px; padding: 13px;
+  border: 1.5px dashed var(--cmt-line); border-radius: 16px;
+  color: var(--cmt-muted); font-size: 13.5px; font-weight: 700;
+  transition: all .18s ease;
+}
+.cmt-login:hover { border-color: var(--cmt-accent); color: var(--cmt-accent); background: var(--cmt-accent-soft); }
+
+/* ── one comment thread ───────────────────────────────────────────────── */
+.cmt-item {
+  display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 2px 12px;
+  padding: 14px 0 10px; border-bottom: 1px solid var(--cmt-border);
+}
+.cmt-item.pinned {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--gold) 7%, transparent), transparent 65%);
+  border-radius: 12px; padding-left: 8px; padding-right: 8px; margin: 0 -8px;
+  border-bottom-color: transparent;
+}
+.cmt-item:last-child { border-bottom: 0; }
+
+/* the clickable thread rail under the avatar (collapses the thread) */
+.cmt-avacol { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.cmt-rail { flex: 1; width: 22px; min-height: 24px; display: flex; justify-content: center; padding: 0; }
+.cmt-rail::before {
+  content: ""; width: 2px; height: 100%; border-radius: 2px;
+  background: var(--cmt-line); transition: background .15s ease, width .15s ease;
+}
+.cmt-rail:hover::before { background: var(--cmt-accent); width: 3px; }
+
+.cmt-body {
+  font-size: 13.5px; line-height: 1.6; margin-top: 3px;
+  white-space: pre-wrap; overflow-wrap: anywhere; color: var(--cmt-text);
+}
+.cmt-readmore { font-size: 12px; font-weight: 800; color: var(--cmt-accent); margin-top: 2px; }
+
+.cmt-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 800; letter-spacing: .3px;
+  padding: 2px 7px; border-radius: 999px;
+  background: var(--cmt-soft); color: var(--cmt-muted);
+}
+.cmt-chip.crimson { background: var(--cmt-accent-soft); color: var(--cmt-accent); }
+.cmt-chip.gold { background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--gold); }
+.cmt-chip.ep { cursor: pointer; transition: all .15s ease; }
+.cmt-chip.ep:hover { background: var(--cmt-accent); color: #fff; }
+
+/* ★ rating pill beside the commenter's name */
+.cmt-stars {
+  display: inline-flex; align-items: center; gap: 1.5px;
+  padding: 2.5px 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--gold) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+  line-height: 0; flex-shrink: 0;
+}
+
+/* action buttons under a comment */
+.cmt-act {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 700; color: var(--cmt-faint);
+  padding: 5px 9px; border-radius: 999px; transition: all .15s ease;
+}
+.cmt-act:hover { background: var(--cmt-soft); color: var(--cmt-muted); }
+.cmt-act.on { color: var(--cmt-accent); }
+.cmt-act .cmt-chev { transition: transform .2s ease; }
+.cmt-act.toggle.open .cmt-chev { transform: rotate(180deg); }
+.cmt-act.toggle { color: var(--cmt-accent); background: var(--cmt-accent-soft); }
+
+.cmt-kebab {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--cmt-faint); transition: all .15s ease;
+}
+.cmt-kebab:hover { background: var(--cmt-soft); color: var(--cmt-text); }
+.cmt-menu-bd { position: fixed; inset: 0; z-index: 38; }
+.cmt-menu {
+  position: absolute; right: 0; top: 30px; z-index: 39; min-width: 150px;
+  background: var(--cmt-card); border: 1px solid var(--cmt-border); border-radius: 12px;
+  box-shadow: 0 14px 40px -8px rgba(0,0,0,.25); padding: 4px; transform-origin: top right;
+}
+.cmt-menu button {
+  width: 100%; padding: 9px 11px; border-radius: 9px;
+  font-size: 13px; font-weight: 650; color: var(--cmt-text); text-align: left;
+}
+.cmt-menu button:hover { background: var(--cmt-soft); }
+
+/* ── replies: elbow connectors branching off the rail ─────────────────── */
+/* main col starts 50px in (38 avatar + 12 gap); rail x = avatar center 19px.
+   Each reply pulls itself 31px left so its elbow starts exactly on the rail. */
+.cmt-replies { padding-top: 2px; }
+.cmt-reply {
+  position: relative; display: flex; gap: 9px; align-items: flex-start;
+  margin-left: -31px; padding: 9px 0 3px 46px;
+}
+.cmt-reply::before {
+  content: ""; position: absolute; left: 0; top: -8px; width: 34px; height: 31px;
+  border-left: 2px solid var(--cmt-line); border-bottom: 2px solid var(--cmt-line);
+  border-bottom-left-radius: 16px; pointer-events: none;
+}
+.cmt-reply:not(:last-child)::after {
+  content: ""; position: absolute; left: 0; top: -8px; bottom: 0; width: 2px;
+  background: var(--cmt-line); border-radius: 2px; pointer-events: none;
+}
+.cmt-replyinput {
+  flex: 1; min-width: 0; height: 36px; padding: 0 13px;
+  background: var(--cmt-card); border: 1.5px solid var(--cmt-border); border-radius: 999px;
+  color: var(--cmt-text); font: inherit; font-size: 13px; outline: 0;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.cmt-replyinput:focus {
+  border-color: var(--cmt-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cmt-accent) 12%, transparent);
+}
+.cmt-replyinput::placeholder { color: var(--cmt-faint); }
+
+/* misc */
+.cmt-empty {
+  display: grid; place-items: center; gap: 5px; text-align: center;
+  padding: 34px 16px; color: var(--cmt-faint);
+}
+.cmt-more {
+  display: block; width: 100%; margin-top: 6px; padding: 11px;
+  border: 1.5px solid var(--cmt-border); border-radius: 14px;
+  font-size: 13px; font-weight: 800; color: var(--cmt-muted);
+  transition: all .18s ease;
+}
+.cmt-more:hover { border-color: var(--cmt-accent); color: var(--cmt-accent); background: var(--cmt-accent-soft); }
+.cmt-more:disabled { opacity: .5; }
+
+@media (max-width: 480px) {
+  .cmt-item { grid-template-columns: 34px minmax(0, 1fr); gap: 2px 10px; }
+  /* main col = 34 + 10 → rail x = 17 → pull = 27 */
+  .cmt-reply { margin-left: -27px; padding-left: 40px; }
+  .cmt-reply::before { width: 30px; }
+}
+
 /* ---- Respect reduced motion (Apple-grade accessibility) ------------------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

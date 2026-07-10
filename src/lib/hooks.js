@@ -1,5 +1,6 @@
 import {
   useQuery,
+  useInfiniteQuery,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
@@ -92,6 +93,21 @@ export function useComments(storyId) {
   });
 }
 
+// Paged top-level comments for the CommentSection. The API has no episode
+// filter, so episode views filter the loaded pages client-side (each comment
+// carries its episode_id). Key shares the ["comments", storyId] prefix so the
+// existing add/like/delete invalidations refresh it too.
+export function useCommentsInfinite(storyId) {
+  return useInfiniteQuery({
+    queryKey: ["comments", storyId, "list"],
+    queryFn: ({ pageParam }) =>
+      get(`/stories/${storyId}/comments`, { params: { page: pageParam, page_size: 30 } }),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last?.has_next_page ? (last.page || 1) + 1 : undefined),
+    enabled: !!storyId,
+  });
+}
+
 export function useBookmarked(enabled = true) {
   return useQuery({
     queryKey: ["bookmarked"],
@@ -176,19 +192,40 @@ export function useAddComment(storyId) {
 }
 
 /* ---------------------- Comment interactions --------------------------- */
+// Pass parentId when acting on a reply so its thread refreshes too.
 export function useLikeComment(storyId) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, liked }) =>
       liked ? del(`/comments/${id}/like`) : post(`/comments/${id}/like`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["comments", storyId] }),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["comments", storyId] });
+      if (vars?.parentId) qc.invalidateQueries({ queryKey: ["replies", vars.parentId] });
+    },
   });
 }
 
 export function useDeleteComment(storyId) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id) => del(`/comments/${id}`),
+    // accepts a plain id or { id, parentId } for replies
+    mutationFn: (arg) => del(`/comments/${typeof arg === "string" ? arg : arg.id}`),
+    onSuccess: (_d, arg) => {
+      qc.invalidateQueries({ queryKey: ["comments", storyId] });
+      const parentId = typeof arg === "object" ? arg.parentId : null;
+      if (parentId) qc.invalidateQueries({ queryKey: ["replies", parentId] });
+    },
+  });
+}
+
+// Story creator pins/unpins a comment to the top of the list.
+export function usePinComment(storyId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, pinned }) =>
+      pinned
+        ? del(`/stories/${storyId}/comments/${id}/pin`)
+        : post(`/stories/${storyId}/comments/${id}/pin`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["comments", storyId] }),
   });
 }
@@ -203,7 +240,7 @@ export function useReportComment() {
 export function useReplies(commentId, enabled = false) {
   return useQuery({
     queryKey: ["replies", commentId],
-    queryFn: () => get(`/comments/${commentId}/replies`, { params: { page_size: 20 } }),
+    queryFn: () => get(`/comments/${commentId}/replies`, { params: { page_size: 50 } }),
     enabled: !!commentId && enabled,
   });
 }
