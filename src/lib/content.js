@@ -40,6 +40,22 @@ function deltaToHtml(ops) {
   return html;
 }
 
+/**
+ * Alternate group ↔ individual chat stories ("ek group, ek single") so any
+ * list of Pretika Chats shows variety regardless of API order. Stable within
+ * each type, leftovers appended in order.
+ */
+export function interleaveChatTypes(items = []) {
+  const groups = items.filter((s) => s.chat_type === "group");
+  const singles = items.filter((s) => s.chat_type !== "group");
+  const out = [];
+  for (let i = 0; i < Math.max(groups.length, singles.length); i++) {
+    if (groups[i]) out.push(groups[i]);
+    if (singles[i]) out.push(singles[i]);
+  }
+  return out;
+}
+
 /** Returns { html } ready for dangerouslySetInnerHTML, from any stored format. */
 export function renderEpisode(content) {
   if (!content) return { html: "" };

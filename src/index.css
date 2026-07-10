@@ -1405,96 +1405,167 @@ html { scroll-behavior: smooth; }
   box-shadow: 0 -8px 30px rgba(40,20,12,.06);
 }
 
-/* ---- Pretika Chats — modern, "live" chat-story cards ------------------------ */
-.pchat-card { width: 162px; flex-shrink: 0; }
-/* the phone-screen surface */
-.pchat-phone {
-  position: relative; aspect-ratio: .64; border-radius: 20px; overflow: hidden;
-  display: flex; flex-direction: column; isolation: isolate;
-  background: #fbf7ef; border: 1px solid var(--border);
-  box-shadow: 0 8px 20px rgba(40,20,12,.14), 0 22px 46px rgba(40,20,12,.12);
-  transition: box-shadow .28s ease;
+/* ---- Pretika Chats — light "haunted messenger" band + chat cards -----------
+   A blush-parchment band (chat-wallpaper doodles, crimson hairlines) that
+   breaks the home rhythm without leaving daylight. Group chats: overlapping
+   avatar cluster + GROUP tag. Singles: gradient-ring avatar + online pulse. */
+.pcs {
+  position: relative; overflow: hidden; margin-top: 30px; padding: 26px 0 30px;
+  background:
+    radial-gradient(80% 100% at 10% -10%, rgba(156,28,20,.08), transparent 55%),
+    radial-gradient(70% 90% at 96% 110%, rgba(169,129,47,.10), transparent 55%),
+    linear-gradient(180deg, #fdf3e7, #f6e9d6);
+  border-top: 1px solid rgba(156,28,20,.16);
+  border-bottom: 1px solid rgba(156,28,20,.10);
 }
-.pchat-card a:hover .pchat-phone,
-.pchat-card button:hover .pchat-phone { box-shadow: 0 12px 26px rgba(156,28,20,.20), 0 26px 56px rgba(40,20,12,.16); }
-/* thin crimson "signal" thread along the very top edge */
-.pchat-phone::before {
-  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 4;
-  background: linear-gradient(90deg, transparent, var(--crimson-mid) 28%, var(--crimson) 50%, var(--crimson-mid) 72%, transparent);
+/* faint ink doodles — same haunted wallpaper family as the chat reader */
+.pcs::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .55;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%233a2c1c' stroke-opacity='.07' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M40 44c0-9 7-16 16-16s16 7 16 16v18l-6-5-5 5-5-5-5 5-6-5zM49 40h.5M62 40h.5'/%3E%3Ccircle cx='196' cy='60' r='13'/%3E%3Ccircle cx='196' cy='60' r='4.5'/%3E%3Cpath d='M120 150c14 0 22 9 22 9s-8 9-22 9-22-9-22-9 8-9 22-9z'/%3E%3Ccircle cx='120' cy='159' r='3.4'/%3E%3Cpath d='M212 196l9 18M221 196l-9 18'/%3E%3Cpath d='M30 208c8-6 9-16 4-24 12 2 18 12 16 24-3 12-20 15-28 8 4-2 7-5 8-8z'/%3E%3Cpath d='M150 40v22M139 51h22'/%3E%3Ccircle cx='60' cy='130' r='2'/%3E%3Ccircle cx='240' cy='130' r='2'/%3E%3Ccircle cx='170' cy='236' r='2'/%3E%3C/g%3E%3C/svg%3E");
 }
-/* chat app header */
-.pchat-head {
-  display: flex; align-items: center; gap: 8px; padding: 9px 9px 8px;
-  background: #f6f1e4; border-bottom: 1px solid rgba(120,100,80,.18); position: relative; z-index: 2;
+/* band header — crimson app-icon tile + ink title + light "Sab dekho" pill */
+.pcs-head { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+.pcs-id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.pcs-appic {
+  position: relative; display: grid; place-items: center; width: 46px; height: 46px; flex-shrink: 0;
+  border-radius: 13px; color: #fff;
+  background: linear-gradient(145deg, #c43227, #7a130d);
+  border: 1px solid rgba(255,255,255,.4);
+  box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 8px 20px rgba(156,28,20,.28);
 }
-.pchat-av { position: relative; width: 27px; height: 27px; flex-shrink: 0; }
-.pchat-av img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-/* live online dot with an outward pulse ring */
-.pchat-dot {
-  position: absolute; right: -1px; bottom: -1px; width: 8px; height: 8px; border-radius: 50%;
-  background: #22b24c; box-shadow: 0 0 0 1.6px #fff;
+.pcs-appdot {
+  position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px;
+  display: grid; place-items: center; border-radius: 10px; font-style: normal;
+  background: var(--text-primary); color: #fff; font-size: 10.5px; font-weight: 800;
+  box-shadow: 0 0 0 2px #fdf3e7;
 }
-.pchat-dot::after {
+.pcs-title { color: var(--text-primary); font-size: 20px; font-weight: 800; letter-spacing: -.2px; line-height: 1.15; }
+@media (min-width: 768px) { .pcs-title { font-size: 22px; } }
+.pcs-sub { color: var(--text-secondary); font-size: 12.5px; margin-top: 3px; line-height: 1.4; }
+.pcs-all {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  padding: 8px 14px; border-radius: 999px;
+  background: var(--bg-card); border: 1px solid var(--border-dark);
+  color: var(--text-secondary); font-size: 12.5px; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(40,20,12,.06);
+  transition: color .2s, border-color .2s, transform .2s;
+}
+.pcs-all:hover { color: var(--crimson); border-color: var(--indigo-200); transform: translateY(-1px); }
+.pcs-all svg { transition: transform .25s ease; }
+.pcs-all:hover svg { transform: translateX(2px); }
+.pcs-rail { position: relative; padding-bottom: 6px; }
+
+/* the chat card */
+.pcc { width: 174px; flex-shrink: 0; }
+.pcc-box {
+  position: relative; display: flex; flex-direction: column;
+  border-radius: 22px; padding: 13px 12px 11px; overflow: hidden;
+  background: var(--bg-card); border: 1px solid var(--border);
+  box-shadow: 0 2px 6px rgba(40,20,12,.05), 0 16px 36px -14px rgba(70,9,7,.18);
+  transition: box-shadow .28s ease, border-color .28s ease;
+}
+.pcc button:hover .pcc-box {
+  border-color: var(--indigo-100);
+  box-shadow: 0 4px 10px rgba(40,20,12,.07), 0 22px 44px -14px rgba(156,28,20,.28);
+}
+/* thin crimson "signal" thread along the top edge */
+.pcc-box::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--crimson-mid) 30%, var(--crimson) 50%, var(--crimson-mid) 70%, transparent);
+}
+.pcc-type {
+  position: absolute; top: 9px; right: 9px; display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 7px; border-radius: 999px; text-transform: uppercase;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100); color: var(--crimson);
+  font-size: 8.5px; font-weight: 800; letter-spacing: .4px;
+}
+/* single — gradient story-ring avatar with live online dot */
+.pcc-ring {
+  position: relative; width: 60px; height: 60px; margin: 4px auto 0; border-radius: 50%; padding: 3px;
+  background: conic-gradient(from 210deg, #9c1c14, #d98f2b, #c43227, #9c1c14);
+  box-shadow: 0 4px 12px rgba(156,28,20,.22);
+}
+.pcc-ringin { display: block; width: 100%; height: 100%; border-radius: 50%; padding: 2px; background: var(--bg-card); }
+.pcc-ringin img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.pcc-on {
+  position: absolute; right: 1px; bottom: 1px; width: 12px; height: 12px; border-radius: 50%;
+  background: #22b24c; box-shadow: 0 0 0 2.5px var(--bg-card);
+}
+.pcc-on::after {
   content: ""; position: absolute; inset: 0; border-radius: 50%;
-  box-shadow: 0 0 0 1.6px #22b24c; animation: pchatPulse 1.9s ease-out infinite;
+  box-shadow: 0 0 0 2px #22b24c; animation: pccPulse 2s ease-out infinite;
 }
-@keyframes pchatPulse { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.4); opacity: 0; } }
-.pchat-meta { min-width: 0; flex: 1; }
-.pchat-name { font-size: 11px; font-weight: 800; color: #1c1610; line-height: 1.15; }
-.pchat-status { font-size: 8.5px; font-weight: 700; color: #1f9a43; letter-spacing: .2px; }
-.pchat-status.is-typing { color: var(--crimson-mid); }
-.pchat-kebab { color: #b7ab97; flex-shrink: 0; }
-/* conversation body */
-.pchat-body {
-  /* justify-end: newest messages hug the input bar, like a real chat — the
-     warm empty space above reads as scrolled-away history */
-  flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; padding: 10px 9px;
-  /* SAME wallpaper as the real chat-story reader (.cht-scroll): aged parchment,
-     dried-blood corner stains, faint ink doodles — so the card previews the
-     actual chat, not the website surface */
-  background-color: #ebe1cd;
-  background-image:
-    radial-gradient(60% 42% at 100% 0%, rgba(156,28,20,.10), transparent 70%),
-    radial-gradient(55% 38% at 0% 100%, rgba(110,15,10,.12), transparent 70%),
-    radial-gradient(120% 80% at 50% 50%, transparent 55%, rgba(90,60,30,.10) 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%233a2c1c' stroke-opacity='.07' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M40 44c0-9 7-16 16-16s16 7 16 16v18l-6-5-5 5-5-5-5 5-6-5zM49 40h.5M62 40h.5'/%3E%3Ccircle cx='196' cy='60' r='13'/%3E%3Ccircle cx='196' cy='60' r='4.5'/%3E%3Cpath d='M120 150c14 0 22 9 22 9s-8 9-22 9-22-9-22-9 8-9 22-9z'/%3E%3Ccircle cx='120' cy='159' r='3.4'/%3E%3Cpath d='M212 196l9 18M221 196l-9 18'/%3E%3Cpath d='M30 208c8-6 9-16 4-24 12 2 18 12 16 24-3 12-20 15-28 8 4-2 7-5 8-8z'/%3E%3Cpath d='M150 40v22M139 51h22'/%3E%3Ccircle cx='60' cy='130' r='2'/%3E%3Ccircle cx='240' cy='130' r='2'/%3E%3Ccircle cx='170' cy='236' r='2'/%3E%3C/g%3E%3C/svg%3E");
+@keyframes pccPulse { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.1); opacity: 0; } }
+/* group — overlapping avatar cluster */
+.pcc-cluster { display: flex; justify-content: center; align-items: center; height: 60px; margin-top: 4px; }
+.pcc-cav {
+  width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  box-shadow: 0 0 0 2.5px var(--bg-card), 0 3px 8px rgba(40,20,12,.18);
 }
-.pchat-bubble {
-  align-self: flex-start; max-width: 92%; padding: 7px 9px;
-  border-radius: 12px; border-top-left-radius: 4px; background: #fffdf7;
-  color: #241a12; font-size: 10.5px; line-height: 1.42; box-shadow: 0 1px 2px rgba(60,40,20,.14);
+.pcc-cav + .pcc-cav { margin-left: -15px; }
+.pcc-cav img { width: 100%; height: 100%; object-fit: cover; }
+/* name + live status */
+.pcc-name { margin-top: 9px; text-align: center; font-size: 13.5px; font-weight: 800; color: var(--text-primary); line-height: 1.25; }
+.pcc-status { display: block; text-align: center; margin-top: 2px; font-size: 10px; font-weight: 700; letter-spacing: .2px; }
+.pcc-status.is-online { color: #1f9a43; }
+.pcc-status.is-unread { color: var(--crimson-mid); }
+/* the hook line — an incoming bubble */
+.pcc-bubble {
+  position: relative; margin-top: 10px; min-height: 65px; padding: 8px 10px;
+  border-radius: 13px; border-top-left-radius: 4px;
+  background: #f6efdf; border: 1px solid var(--border);
+  font-size: 10.5px; line-height: 1.5; color: #37291b;
+  box-shadow: 0 1px 2px rgba(60,40,20,.08);
 }
-.pchat-time { align-self: flex-start; margin: -2px 0 0 4px; font-size: 8px; font-weight: 600; color: #a89b85; }
-/* animated typing indicator — the "they're still watching you type" beat */
-.pchat-typing {
-  align-self: flex-start; display: inline-flex; gap: 3.5px; padding: 8px 10px;
-  border-radius: 12px; border-top-left-radius: 4px; background: #fffdf7; box-shadow: 0 1px 2px rgba(60,40,20,.14);
+/* typing dots + cursed timestamp */
+.pcc-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 9px; }
+.pcc-typing {
+  display: inline-flex; gap: 3.5px; padding: 7px 9px;
+  border-radius: 12px; border-top-left-radius: 4px;
+  background: #fffdf7; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(60,40,20,.08);
 }
-.pchat-typing i { width: 5px; height: 5px; border-radius: 50%; background: #b3a795; animation: pchatBounce 1.25s infinite ease-in-out; }
-.pchat-typing i:nth-child(2) { animation-delay: .16s; }
-.pchat-typing i:nth-child(3) { animation-delay: .32s; }
-@keyframes pchatBounce { 0%, 65%, 100% { transform: translateY(0); opacity: .45; } 32% { transform: translateY(-3.5px); opacity: 1; } }
-/* duration footer bar */
-.pchat-foot {
-  display: flex; align-items: center; gap: 6px; padding: 8px 10px; flex-shrink: 0;
-  background: linear-gradient(90deg, var(--crimson), var(--crimson-dark)); color: #fff;
+.pcc-typing i { width: 4.5px; height: 4.5px; border-radius: 50%; background: var(--indigo-400); animation: pccBounce 1.25s infinite ease-in-out; }
+.pcc-typing i:nth-child(2) { animation-delay: .16s; }
+.pcc-typing i:nth-child(3) { animation-delay: .32s; }
+@keyframes pccBounce { 0%, 65%, 100% { transform: translateY(0); opacity: .4; } 32% { transform: translateY(-3px); opacity: 1; } }
+.pcc-time {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 9.5px; font-weight: 700; color: var(--text-tertiary); font-variant-numeric: tabular-nums;
 }
-.pchat-foot b { font-size: 10.5px; font-weight: 800; letter-spacing: .2px; }
-.pchat-foot .pchat-arrow { margin-left: auto; display: inline-flex; opacity: .9; transition: transform .25s ease; }
-.pchat-card a:hover .pchat-arrow, .pchat-card button:hover .pchat-arrow { transform: translateX(3px); }
-/* caption below the phone */
-.pchat-title { font-weight: 700; font-size: 13px; line-height: 1.22; color: var(--text-primary); }
-.pchat-sub { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
-.pchat-tag {
-  display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 20px;
+/* caption below the card */
+.pcc-cap { display: block; padding-top: 9px; }
+.pcc-captitle { font-size: 13px; font-weight: 700; line-height: 1.25; color: var(--text-primary); }
+.pcc-capmeta { display: flex; align-items: center; gap: 7px; margin-top: 5px; }
+.pcc-chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px;
   background: var(--indigo-50); border: 1px solid var(--indigo-100); color: var(--crimson);
   font-size: 9.5px; font-weight: 700;
 }
-.pchat-views { font-size: 10.5px; color: var(--text-tertiary); }
-/* section subtitle */
-.pchat-eyebrow { margin: 0 0 13px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; }
+.pcc-views { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--text-tertiary); }
+/* end card — "Saari chats" */
+.pcc-end {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  width: 174px; min-height: 228px; flex-shrink: 0; align-self: flex-start;
+  border-radius: 22px; border: 1.5px dashed var(--border-dark);
+  background: rgba(255,253,247,.6); color: var(--text-primary); text-align: center; padding: 14px;
+  transition: background .2s, border-color .2s, transform .25s ease;
+}
+.pcc-end:hover { background: var(--bg-card); border-color: var(--indigo-200); transform: translateY(-3px); }
+.pcc-end-ic {
+  display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; margin-bottom: 4px;
+  background: linear-gradient(145deg, #c43227, #7a130d); color: #fff;
+  border: 1px solid rgba(255,255,255,.35); box-shadow: 0 8px 20px rgba(156,28,20,.3);
+}
+.pcc-end b { font-size: 13.5px; font-weight: 800; }
+.pcc-end > span:not(.pcc-end-ic):not(.pcc-end-arrow) { font-size: 11px; color: var(--text-tertiary); }
+.pcc-end-arrow {
+  display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; margin-top: 6px;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100); color: var(--crimson);
+  transition: transform .25s ease;
+}
+.pcc-end:hover .pcc-end-arrow { transform: translateX(3px); }
 @media (prefers-reduced-motion: reduce) {
-  .pchat-dot::after, .pchat-typing i { animation: none !important; }
+  .pcc-on::after, .pcc-typing i { animation: none !important; }
 }
 
 /* ---- Page-level cinematic wipe (route transitions) -------------------------- */
@@ -1993,125 +2064,162 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
 .cht-end-btn.primary { background: #9c1c14; border-color: #9c1c14; }
 .cht-end-btn.primary:hover { background: #c43227; }
 
-/* ---- Chat-story browse: cinematic hero + light "haunted WhatsApp" inbox --- */
-.chtl-hero {
-  position: relative; overflow: hidden; color: #f4efe4;
+/* ---- Chat-story browse: light "haunted messages" — parchment hero + bone-white inbox ---- */
+.chp-hero { position: relative; overflow: hidden; }
+.chp-hero .fog::before, .chp-hero .fog::after {
   background:
-    radial-gradient(90% 150% at 50% -25%, rgba(156,28,20,.42), transparent 60%),
-    radial-gradient(60% 90% at 85% 10%, rgba(169,129,47,.12), transparent 55%),
-    linear-gradient(180deg, #211008 0%, #17110d 78%, #120b08 100%);
+    radial-gradient(40% 55% at 22% 60%, rgba(196,50,39,.10), transparent 70%),
+    radial-gradient(35% 50% at 78% 30%, rgba(169,129,47,.08), transparent 70%);
 }
-/* slow-drifting crimson fog inside the hero */
-.chtl-hero .fog::before, .chtl-hero .fog::after {
-  background:
-    radial-gradient(40% 55% at 25% 65%, rgba(196,50,39,.16), transparent 70%),
-    radial-gradient(35% 50% at 75% 35%, rgba(244,239,228,.05), transparent 70%);
-}
-.chtl-hero-in { position: relative; max-width: 760px; margin: 0 auto; padding: 48px 20px 66px; text-align: center; }
-.chtl-hero-badge {
+.chp-hero-in { position: relative; max-width: 760px; margin: 0 auto; padding: 42px 20px 10px; text-align: center; }
+.chp-badge {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 6px 14px; border-radius: 20px; margin-bottom: 16px;
-  background: rgba(156,28,20,.2); border: 1px solid rgba(196,50,39,.45);
-  color: #f2c5bd; font-size: 12px; font-weight: 700; letter-spacing: .4px;
-  box-shadow: 0 0 24px rgba(156,28,20,.35);
+  padding: 6px 14px; border-radius: 999px; margin-bottom: 14px;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100);
+  color: var(--crimson); font-size: 12px; font-weight: 700; letter-spacing: .4px;
+  box-shadow: 0 4px 16px rgba(156,28,20,.12);
 }
-.chtl-hero-title {
-  font-size: clamp(34px, 7vw, 56px); line-height: 1.1; margin-bottom: 12px;
-  text-shadow: 0 4px 34px rgba(196,50,39,.45);
+.chp-title {
+  font-size: clamp(34px, 7vw, 54px); line-height: 1.12; margin-bottom: 12px;
+  color: var(--text-primary); text-shadow: 0 3px 26px rgba(156,28,20,.18);
 }
-.chtl-hero-sub { color: rgba(244,239,228,.74); font-size: 14.5px; max-width: 470px; margin: 0 auto; }
-.chtl-hero-stats {
-  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 20px;
+.chp-sub { color: var(--text-secondary); font-size: 14.5px; max-width: 470px; margin: 0 auto; }
+.chp-stats { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+.chp-stat {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px;
+  background: var(--bg-card); border: 1px solid var(--border-dark);
+  color: var(--text-secondary); font-size: 12px; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(40,20,12,.05);
 }
-.chtl-stat {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 13px; border-radius: 20px;
-  background: rgba(244,239,228,.08); border: 1px solid rgba(244,239,228,.14);
-  color: rgba(244,239,228,.85); font-size: 12px; font-weight: 700;
-}
-.chtl-stat.blood { background: rgba(156,28,20,.22); border-color: rgba(196,50,39,.45); color: #f2c5bd; }
-/* torn-paper bottom edge — hero bleeds into the parchment page */
-.chtl-hero-tear {
-  position: absolute; left: 0; right: 0; bottom: -1px; height: 26px;
-  background: var(--bg);
-  clip-path: polygon(0 62%, 4% 38%, 9% 58%, 14% 30%, 19% 55%, 25% 34%, 31% 60%,
-    37% 36%, 43% 58%, 50% 28%, 56% 56%, 62% 38%, 68% 60%, 74% 32%, 80% 56%,
-    86% 36%, 92% 58%, 96% 40%, 100% 60%, 100% 100%, 0 100%);
-}
+.chp-stat.blood { background: var(--indigo-50); border-color: var(--indigo-100); color: var(--crimson); }
 
-/* ── the inbox: real WhatsApp *light* anatomy, possessed by the parchment ── */
-.chtl-panel {
-  max-width: 600px; margin: -34px auto 0; position: relative; z-index: 2;
-  background: var(--bg-card); border-radius: 20px; overflow: hidden;
-  border: 1px solid var(--border-dark);
-  box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 30px 70px -26px rgba(70,9,7,.5), 0 6px 22px rgba(40,20,12,.12);
+/* ── the inbox: bone-white messages app ── */
+.chp-panel {
+  max-width: 640px; margin: 22px auto 0; position: relative; overflow: hidden;
+  background: var(--bg-card); border-radius: 26px; border: 1px solid var(--border-dark);
+  box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 30px 70px -28px rgba(70,9,7,.35), 0 8px 24px rgba(40,20,12,.08);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Devanagari", sans-serif;
 }
 /* thin blood line along the panel top */
-.chtl-panel::before {
+.chp-panel::before {
   content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 1;
   background: linear-gradient(90deg, transparent, var(--crimson-mid) 25%, var(--crimson) 50%, var(--crimson-mid) 75%, transparent);
 }
-.chtl-panel-head {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 18px 18px 4px; color: var(--text-primary);
+.chp-phead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 18px 20px 4px; }
+.chp-ptitle { font-size: 25px; font-weight: 800; letter-spacing: -.4px; color: var(--text-primary); }
+.chp-unread { font-size: 12px; color: var(--crimson-mid); font-weight: 700; }
+.chp-compose {
+  display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100); color: var(--crimson);
+  transition: background .2s;
 }
-.chtl-panel-title { font-size: 24px; font-weight: 800; letter-spacing: -.3px; }
-.chtl-unread-note { font-size: 12px; color: var(--crimson-mid); font-weight: 700; }
-.chtl-search {
-  display: flex; align-items: center; gap: 8px;
-  margin: 10px 14px 8px; padding: 9px 14px; border-radius: 12px;
-  background: var(--bg-secondary); color: var(--text-tertiary); font-size: 13.5px;
-  user-select: none;
+.chp-compose:hover { background: var(--indigo-100); }
+.chp-search {
+  display: flex; align-items: center; gap: 8px; margin: 10px 16px 4px; padding: 9px 14px;
+  border-radius: 12px; background: var(--bg-secondary); color: var(--text-tertiary);
+  font-size: 13.5px; user-select: none;
 }
-.chtl-row {
-  display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
-  padding: 11px 16px; color: var(--text-primary); transition: background .15s ease;
-  position: relative;
+/* pinned contacts — gradient story-rings, groups get a crimson Users badge */
+.chp-pins-label {
+  margin: 12px 20px 0; font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--text-tertiary);
 }
-.chtl-row + .chtl-row::before,
-.chtl-search + .chtl-row::before, .chtl-row + .chtl-archived::before {
-  content: ""; position: absolute; top: 0; left: 78px; right: 0; height: 1px;
-  background: var(--border);
+.chp-pins {
+  display: flex; gap: 6px; overflow-x: auto; padding: 8px 12px 12px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid var(--border);
 }
-.chtl-row:hover { background: var(--indigo-50); }
-.chtl-row:active { background: var(--bg-secondary); }
-.chtl-row-avatar {
-  width: 50px; height: 50px; border-radius: 50%; object-fit: cover;
-  background: var(--bg-tertiary); flex-shrink: 0;
+.chp-pins::-webkit-scrollbar { display: none; }
+.chp-pin { width: 72px; flex-shrink: 0; text-align: center; padding: 4px; border-radius: 14px; transition: background .15s; }
+.chp-pin:hover { background: var(--indigo-50); }
+.chp-pin-ring {
+  position: relative; display: block; width: 56px; height: 56px; margin: 0 auto; border-radius: 50%; padding: 2.5px;
+  background: conic-gradient(from 210deg, #9c1c14, #d98f2b, #c43227, #9c1c14);
+}
+.chp-pin-in { display: block; width: 100%; height: 100%; border-radius: 50%; padding: 2px; background: var(--bg-card); }
+.chp-pin-in img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.chp-pin-badge {
+  position: absolute; right: -2px; bottom: -2px; display: grid; place-items: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--crimson); color: #fff; box-shadow: 0 0 0 2px var(--bg-card);
+}
+.chp-pin-name { display: block; margin-top: 5px; font-size: 10.5px; font-weight: 700; color: var(--text-secondary); }
+/* rows */
+.chp-row {
+  display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+  padding: 12px 18px 12px 14px; color: var(--text-primary); position: relative;
+  transition: background .15s ease;
+}
+.chp-row + .chp-row::before, .chp-row + .chp-arch::before {
+  content: ""; position: absolute; top: 0; left: 96px; right: 0; height: 1px; background: var(--border);
+}
+.chp-row:hover { background: var(--indigo-50); }
+.chp-row:active { background: var(--bg-secondary); }
+/* glowing unread dot — every raat is unread */
+.chp-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: var(--crimson-mid); box-shadow: 0 0 8px rgba(196,50,39,.55);
+  animation: chpPulse 2.4s ease-in-out infinite;
+}
+@keyframes chpPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.chp-av {
+  width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+  background: var(--bg-tertiary);
   box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 3.5px var(--indigo-100);
 }
-.chtl-row-mid { flex: 1; min-width: 0; }
-.chtl-row-name { font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--text-primary); }
-.chtl-row-preview { display: flex; align-items: center; gap: 5px; color: var(--text-secondary); font-size: 13.5px; margin-top: 2px; }
-.chtl-row-right { display: grid; justify-items: end; gap: 6px; flex-shrink: 0; align-content: center; }
-.chtl-row-time { font-size: 12px; color: var(--crimson-mid); font-weight: 700; font-variant-numeric: tabular-nums; }
-.chtl-badge {
-  min-width: 21px; height: 21px; padding: 0 6px; border-radius: 11px;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: linear-gradient(180deg, var(--crimson-mid), var(--crimson));
-  color: #fff; font-size: 11px; font-weight: 800;
-  box-shadow: 0 3px 10px rgba(156,28,20,.4);
+/* group cluster — two overlapping faces in the same 52px slot */
+.chp-avg { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
+.chp-avg span {
+  position: absolute; width: 36px; height: 36px; border-radius: 50%; overflow: hidden;
+  box-shadow: 0 0 0 2.5px var(--bg-card);
 }
-.chtl-row-actions { display: inline-flex; gap: 4px; }
-.chtl-action {
-  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px;
-  color: var(--text-tertiary); background: var(--bg-secondary); transition: background .15s, color .15s;
+.chp-avg span:first-child { top: 0; left: 0; }
+.chp-avg span:last-child { bottom: 0; right: 0; z-index: 1; }
+.chp-avg img { width: 100%; height: 100%; object-fit: cover; }
+.chp-mid { flex: 1; min-width: 0; }
+.chp-toprow { display: flex; align-items: center; gap: 8px; }
+.chp-name { flex: 1; min-width: 0; font-size: 15.5px; font-weight: 700; line-height: 1.3; color: var(--text-primary); }
+.chp-draft {
+  flex-shrink: 0; padding: 2px 7px; border-radius: 999px; font-size: 9px; font-weight: 800; letter-spacing: .5px;
+  background: var(--gold-bg); border: 1px solid #dcc389; color: var(--gold);
 }
-.chtl-action:hover { background: var(--indigo-50); color: var(--crimson); }
-.chtl-archived {
-  display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
-  padding: 12px 16px; position: relative; color: var(--text-secondary);
+.chp-when {
+  display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;
+  font-size: 11.5px; color: var(--text-tertiary); font-variant-numeric: tabular-nums;
+}
+.chp-when svg { color: var(--border-dark); }
+.chp-prev { margin-top: 2px; font-size: 13px; color: var(--text-secondary); }
+.chp-metaline { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 5px; margin-top: 5px; font-size: 11px; font-weight: 600; color: var(--crimson-mid); }
+.chp-meta-it { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.chp-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--border-dark); }
+.chp-gtag {
+  display: inline-flex; align-items: center; gap: 3px; margin-left: 3px; padding: 2px 7px; border-radius: 999px;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100); color: var(--crimson);
+  font-size: 9px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase;
+}
+.chp-actions { display: inline-flex; gap: 5px; margin-left: auto; }
+.chp-action {
+  display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px;
+  color: var(--text-tertiary); background: var(--bg-secondary); border: 1px solid var(--border);
+  transition: background .15s, color .15s;
+}
+.chp-action:hover { background: var(--indigo-50); color: var(--crimson); }
+.chp-action.danger:hover { background: var(--indigo-50); color: var(--crimson-mid); }
+/* archived + foot */
+.chp-arch {
+  display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+  padding: 13px 18px 13px 14px; position: relative; color: var(--text-secondary);
   font-size: 14px; font-weight: 600; transition: background .15s ease;
 }
-.chtl-archived:hover { background: var(--indigo-50); }
-.chtl-archived-ic {
-  display: grid; place-items: center; width: 50px; height: 34px; color: var(--text-tertiary);
-}
-.chtl-panel-foot {
+.chp-arch:hover { background: var(--indigo-50); }
+/* icon column lines up with the avatars (dot 8 + gap 11 to its left) */
+.chp-arch-ic { display: grid; place-items: center; width: 52px; height: 36px; margin-left: 19px; color: var(--text-tertiary); }
+.chp-arch-n { font-size: 12.5px; color: var(--crimson-mid); font-weight: 700; }
+.chp-pfoot {
   padding: 13px 18px 15px; text-align: center; font-size: 11.5px; color: var(--text-tertiary);
   border-top: 1px solid var(--border); background: var(--bg-secondary);
 }
+@media (prefers-reduced-motion: reduce) { .chp-dot { animation: none !important; } }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ✦ COMMENTS 2.0 — shared discussion module (story page + reader).

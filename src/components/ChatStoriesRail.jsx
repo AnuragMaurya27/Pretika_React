@@ -1,47 +1,65 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MessageSquareText, ChevronRight, Clock3, MoreVertical, ArrowRight } from "lucide-react";
+import {
+  MessageSquareText, ChevronRight, Clock3, ArrowRight, Eye, Users, MoonStar,
+} from "lucide-react";
 import { useChatStories } from "../lib/hooks";
 import Img from "./Img";
 import Tilt from "./Tilt";
 import { compact } from "../lib/format";
+import { interleaveChatTypes } from "../lib/content";
 import { IS_TOUCH } from "../lib/device";
 
 /**
- * Home rail for Pretika Chats. Each card is a tiny, *living* messaging screen:
- * an online contact, an unread horror line, a timestamp from the dead of night
- * and a typing indicator that never stops — the story is mid-conversation and
- * you're being pulled in. Self-fetching; renders nothing until ≥1 chat exists.
+ * Home band for Pretika Chats — light "haunted messenger" deck.
+ * A blush parchment band (chat-wallpaper doodles + crimson hairlines) breaks
+ * the home rhythm without leaving daylight. Group aur single chats interleave
+ * hoti hain — group cards get an overlapping avatar cluster + GROUP tag,
+ * singles get a big gradient-ring avatar with a live online dot. Har card ek
+ * chhota sa "abhi-abhi aaya message" hai: preview bubble, typing dots, and a
+ * dead-of-night timestamp. Self-fetching; renders nothing until ≥1 chat.
  */
 export default function ChatStoriesRail() {
   const nav = useNavigate();
   const { data, isLoading } = useChatStories({ page_size: 10 });
-  const items = data?.items || [];
+  const items = interleaveChatTypes(data?.items || []);
   if (isLoading || items.length === 0) return null;
 
   return (
     <motion.section
+      className="pcs"
       initial={{ opacity: 0, y: 26 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      style={{ marginTop: 30 }}
     >
-      <div className="container sec-head" style={{ marginBottom: 6 }}>
-        <div className="row gap-8 section-title">
-          <MessageSquareText size={18} color="var(--indigo-600)" /> Pretika Chats
+      <div className="container pcs-head">
+        <div className="pcs-id">
+          <span className="pcs-appic" aria-hidden="true">
+            <MessageSquareText size={22} strokeWidth={2.2} />
+            <i className="pcs-appdot">{items.length > 9 ? "9+" : items.length}</i>
+          </span>
+          <div>
+            <div className="pcs-title">Pretika Chats</div>
+            <div className="pcs-sub">Groups, unknown numbers, khoye hue log — sab raat ko message karte hain.</div>
+          </div>
         </div>
-        <div className="sec-rule" />
-        <Link to="/chat-stories" className="see-all">
-          Sab dekho <ChevronRight size={16} />
+        <Link to="/chat-stories" className="pcs-all">
+          Sab dekho <ChevronRight size={15} />
         </Link>
       </div>
+
       <div className="container">
-        <p className="pchat-eyebrow">Ek chat jo raat ke andhere mein shuru hoti hai — aur aapko andar khinch leti hai.</p>
-        <div className="hscroll" style={{ paddingBottom: 6 }}>
+        <div className="hscroll pcs-rail">
           {items.map((s, i) => (
-            <ChatStoryCard key={s.id} story={s} index={i} onOpen={() => nav(`/chat-stories/${s.slug}`)} />
+            <ChatCard key={s.id} story={s} index={i} onOpen={() => nav(`/chat-stories/${s.slug}`)} />
           ))}
+          <Link to="/chat-stories" className="pcc-end">
+            <span className="pcc-end-ic"><MessageSquareText size={22} /></span>
+            <b>Saari chats</b>
+            <span>Poori inbox kholo</span>
+            <span className="pcc-end-arrow"><ArrowRight size={15} /></span>
+          </Link>
         </div>
       </div>
     </motion.section>
@@ -49,14 +67,16 @@ export default function ChatStoriesRail() {
 }
 
 // Deterministic dead-of-night timestamps — stable per card, all deeply cursed.
-const NIGHT_TIMES = ["2:47 AM", "3:03 AM", "1:59 AM", "3:33 AM", "2:14 AM", "4:04 AM", "3:17 AM"];
+const NIGHT_TIMES = ["3:33 AM", "2:47 AM", "1:59 AM", "4:04 AM", "3:13 AM", "2:22 AM", "3:41 AM"];
 
-/* Poster card — a mini live chat screen, then title + meta below. */
-function ChatStoryCard({ story: s, index = 0, onOpen }) {
+/* One chat = one light "message card". Groups: overlapping avatar cluster +
+   GROUP tag + unread count. Singles: gradient-ring avatar + online pulse. */
+function ChatCard({ story: s, index = 0, onOpen }) {
   const time = NIGHT_TIMES[index % NIGHT_TIMES.length];
+  const isGroup = s.chat_type === "group";
   return (
     <motion.div
-      className="pchat-card"
+      className="pcc"
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -66,41 +86,52 @@ function ChatStoryCard({ story: s, index = 0, onOpen }) {
       whileTap={IS_TOUCH ? undefined : { scale: 0.98 }}
     >
       <button onClick={onOpen} style={{ display: "block", width: "100%", textAlign: "left" }}>
-        <Tilt max={10} scale={1.04} className="pchat-phone">
-          {/* chat app header — avatar with a live online dot, name, "typing…" */}
-          <div className="pchat-head">
-            <span className="pchat-av">
-              <Img path={s.contact_avatar} seed={s.contact_name} kind="avatar" alt="" />
-              <span className="pchat-dot" aria-hidden="true" />
-            </span>
-            <span className="pchat-meta">
-              <span className="pchat-name clamp-1">{s.contact_name}</span>
-              <span className="pchat-status is-typing">typing…</span>
-            </span>
-            <MoreVertical size={14} className="pchat-kebab" aria-hidden="true" />
-          </div>
+        <Tilt max={8} scale={1.03} className={`pcc-box ${isGroup ? "is-group" : ""}`}>
+          {isGroup && (
+            <span className="pcc-type"><Users size={9} /> Group</span>
+          )}
 
-          {/* the conversation — the hook line, a 3 AM stamp, then a live typing bubble */}
-          <div className="pchat-body">
-            <span className="pchat-bubble clamp-3">{s.preview_text || "…"}</span>
-            <span className="pchat-time">{time}</span>
-            <span className="pchat-typing" aria-hidden="true"><i /><i /><i /></span>
-          </div>
+          {/* identity — cluster for groups, ringed avatar for singles */}
+          {isGroup ? (
+            <span className="pcc-cluster" aria-hidden="true">
+              <span className="pcc-cav"><Img path={s.contact_avatar} seed={s.contact_name} kind="avatar" alt="" /></span>
+              <span className="pcc-cav"><Img seed={`${s.contact_name} do`} kind="avatar" alt="" /></span>
+              <span className="pcc-cav"><Img seed={`${s.contact_name} teen`} kind="avatar" alt="" /></span>
+            </span>
+          ) : (
+            <span className="pcc-ring" aria-hidden="true">
+              <span className="pcc-ringin">
+                <Img path={s.contact_avatar} seed={s.contact_name} kind="avatar" alt="" />
+              </span>
+              <i className="pcc-on" />
+            </span>
+          )}
 
-          {/* duration bar — same anatomy as the story poster's parts bar */}
-          <div className="pchat-foot">
-            <Clock3 size={12} color="#fff" />
-            <b className="clamp-1">{s.duration_minutes} min ka darr</b>
-            <span className="pchat-arrow"><ArrowRight size={13} color="#fff" /></span>
-          </div>
+          <span className="pcc-name clamp-1">{s.contact_name}</span>
+          {isGroup ? (
+            <span className="pcc-status is-unread">{s.message_count} naye messages</span>
+          ) : (
+            <span className="pcc-status is-online">online</span>
+          )}
+
+          {/* the hook line, straight from the chat — clamp lives on an inner
+              span: line-clamp on the padded bubble leaks the cut line into
+              the bottom padding */}
+          <span className="pcc-bubble"><span className="clamp-3">{s.preview_text || "…"}</span></span>
+
+          {/* still typing… at a time nobody should be awake */}
+          <span className="pcc-foot">
+            <span className="pcc-typing" aria-hidden="true"><i /><i /><i /></span>
+            <span className="pcc-time"><MoonStar size={10} /> {time}</span>
+          </span>
         </Tilt>
 
-        {/* caption below the phone */}
-        <span style={{ display: "block", paddingTop: 9 }}>
-          <span className="pchat-title clamp-1">{s.title}</span>
-          <span className="pchat-sub">
-            <span className="pchat-tag"><MessageSquareText size={10} /> Chat Story</span>
-            <span className="pchat-views">{compact(s.total_views)} padhi gayi</span>
+        {/* caption below the card */}
+        <span className="pcc-cap">
+          <span className="pcc-captitle clamp-1">{s.title}</span>
+          <span className="pcc-capmeta">
+            <span className="pcc-chip"><Clock3 size={10} /> {s.duration_minutes} min ka darr</span>
+            <span className="pcc-views"><Eye size={11} /> {compact(s.total_views)}</span>
           </span>
         </span>
       </button>

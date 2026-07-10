@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import {
-  MessageSquareText, Plus, Pencil, Trash2, Eye, Clock3, Check, Search,
-  Archive, MoonStar, Flame,
+  MessageSquareText, Plus, Pencil, Trash2, Eye, Clock3, Search,
+  Archive, MoonStar, Flame, ChevronRight, SquarePen, Users,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../store/auth";
@@ -13,13 +13,18 @@ import Seo from "../components/Seo";
 import Img from "../components/Img";
 import { Spook } from "../components/Art";
 import { SkeletonBox } from "../components/Skeleton";
+import { interleaveChatTypes } from "../lib/content";
+
+// Deterministic dead-of-night timestamps — stable per row, all deeply cursed.
+const NIGHT_TIMES = ["3:33 AM", "2:47 AM", "1:59 AM", "4:04 AM", "3:13 AM", "2:22 AM", "3:41 AM"];
 
 /**
- * Pretika Chats — browse page. Cinematic hero (fog + torn-paper edge) over a
- * light "haunted WhatsApp" inbox: the anatomy of a real messenger chat-list —
- * search pill, hairline dividers, unread badges, archived row — re-skinned in
- * the Daylight Horror parchment + crimson palette. The official Pretika
- * account additionally sees drafts + edit/delete + new-story CTA.
+ * Pretika Chats — browse page, light "haunted messages" edition. A parchment
+ * hero (red mist, ink Devanagari title) floats over a bone-white messages app:
+ * a pinned rail of gradient-ring contacts up top, then the inbox — group chats
+ * with overlapping avatar clusters, singles with a lone ringed face, glowing
+ * unread dots and 3 AM timestamps. Group ↔ single rows interleave for variety.
+ * The official Pretika account additionally sees drafts + edit/delete + compose.
  */
 export default function ChatStories() {
   const nav = useNavigate();
@@ -33,9 +38,10 @@ export default function ChatStories() {
   const mine = useMyChatStories(isOfficial);
   const del = useDeleteChatStory();
 
-  const items = (isOfficial ? mine.data?.items : pub.data?.items) || [];
+  const items = interleaveChatTypes((isOfficial ? mine.data?.items : pub.data?.items) || []);
   const loading = isOfficial ? mine.isLoading : pub.isLoading;
   const totalViews = items.reduce((n, s) => n + (s.total_views || 0), 0);
+  const pins = items.slice(0, 6);
 
   const onDelete = (e, s) => {
     e.stopPropagation();
@@ -54,78 +60,107 @@ export default function ChatStories() {
         path="/chat-stories"
       />
       <div className="page-scroll">
-        {/* ── cinematic hero: fog, blood glow, torn-paper edge ── */}
-        <div className="chtl-hero">
+        {/* ── light hero: parchment + red mist + ink title ── */}
+        <div className="chp-hero">
           <div className="fog" />
-          <div className="chtl-hero-in">
-            <span className="chtl-hero-badge">
-              <MessageSquareText size={14} /> PRETIKA ORIGINALS
+          <div className="chp-hero-in">
+            <span className="chp-badge">
+              <MessageSquareText size={13} /> PRETIKA ORIGINALS
             </span>
-            <h1 className="chtl-hero-title display-hi lang-hi">
+            <h1 className="chp-title display-hi lang-hi">
               प्रेतिका <span className="flicker">चैट्स</span>
             </h1>
-            <p className="chtl-hero-sub">
+            <p className="chp-sub">
               Kisi aur ka phone. Kisi aur ki raat. Har chat ek sachchi lagne
               wali darawni kahani — message-by-message, jaise tum khud scroll
               kar rahe ho.
             </p>
 
-            <div className="chtl-hero-stats">
-              <span className="chtl-stat">
+            <div className="chp-stats">
+              <span className="chp-stat">
                 <MessageSquareText size={13} /> {items.length || "…"} {items.length === 1 ? "chat" : "chats"}
               </span>
               {totalViews > 0 && (
-                <span className="chtl-stat">
+                <span className="chp-stat">
                   <Flame size={13} /> {totalViews} baar padhi gayi
                 </span>
               )}
-              <span className="chtl-stat blood">
+              <span className="chp-stat blood">
                 <MoonStar size={13} /> Raat 12 baje ke baad mat kholna
               </span>
             </div>
 
             {isOfficial && (
-              <div className="chtl-hero-stats" style={{ marginTop: 14 }}>
+              <div className="chp-stats" style={{ marginTop: 14 }}>
                 <button className="btn btn-sm btn-crimson" onClick={() => nav("/creator/chat-story/new")}>
                   <Plus size={15} /> Nai Chat Story
                 </button>
               </div>
             )}
           </div>
-          <div className="chtl-hero-tear" aria-hidden="true" />
         </div>
 
-        {/* ── the haunted inbox (WhatsApp-light anatomy, parchment skin) ── */}
+        {/* ── the inbox: bone-white messages app ── */}
         <div className="container">
-          <div className="chtl-panel">
-            <div className="chtl-panel-head">
-              <span className="chtl-panel-title">Chats</span>
-              {items.length > 0 && (
-                <span className="chtl-unread-note">
+          <div className="chp-panel">
+            <div className="chp-phead">
+              <span className="chp-ptitle">Chats</span>
+              {isOfficial ? (
+                <button
+                  className="chp-compose"
+                  aria-label="Nai chat story"
+                  onClick={() => nav("/creator/chat-story/new")}
+                >
+                  <SquarePen size={17} />
+                </button>
+              ) : items.length > 0 ? (
+                <span className="chp-unread">
                   {items.length} unread {items.length === 1 ? "raat" : "raatein"}
                 </span>
-              )}
+              ) : null}
             </div>
 
-            <div className="chtl-search" aria-hidden="true">
+            <div className="chp-search" aria-hidden="true">
               <Search size={15} />
               Dhoondo… ya mat dhoondo
             </div>
 
+            {/* pinned contacts — aaj raat kaun message kar raha hai */}
+            {!loading && pins.length > 0 && (
+              <>
+                <div className="chp-pins-label">Aaj raat</div>
+                <div className="chp-pins">
+                  {pins.map((s) => (
+                    <button key={s.id} className="chp-pin" onClick={() => nav(`/chat-stories/${s.slug}`)}>
+                      <span className="chp-pin-ring">
+                        <span className="chp-pin-in">
+                          <Img path={s.contact_avatar} seed={s.contact_name} kind="avatar" alt="" />
+                        </span>
+                        {s.chat_type === "group" && (
+                          <i className="chp-pin-badge"><Users size={9} /></i>
+                        )}
+                      </span>
+                      <span className="chp-pin-name clamp-1">{s.contact_name}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
             {loading ? (
-              <div style={{ padding: "8px 16px 18px", display: "grid", gap: 14 }}>
+              <div style={{ padding: "10px 18px 20px", display: "grid", gap: 16 }}>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="row gap-12">
-                    <SkeletonBox w={50} h={50} r={25} />
-                    <div style={{ flex: 1, display: "grid", gap: 6 }}>
+                    <SkeletonBox w={52} h={52} r={26} />
+                    <div style={{ flex: 1, display: "grid", gap: 7 }}>
                       <SkeletonBox w="55%" h={13} r={6} />
-                      <SkeletonBox w="80%" h={11} r={6} />
+                      <SkeletonBox w="82%" h={11} r={6} />
                     </div>
                   </div>
                 ))}
               </div>
             ) : items.length === 0 ? (
-              <div className="center" style={{ padding: "34px 24px 38px" }}>
+              <div className="center" style={{ padding: "36px 24px 40px" }}>
                 <Spook size={68} tone="light" />
                 <div style={{ fontWeight: 800, fontSize: 16, marginTop: 14 }}>
                   Abhi koi chat nahi aayi
@@ -135,60 +170,66 @@ export default function ChatStories() {
                 </div>
               </div>
             ) : (
-              items.map((s) => (
-                <button key={s.id} className="chtl-row" onClick={() => nav(`/chat-stories/${s.slug}`)}>
-                  <Img
-                    path={s.contact_avatar}
-                    seed={s.contact_name}
-                    kind="avatar"
-                    alt=""
-                    className="chtl-row-avatar"
-                  />
-                  <span className="chtl-row-mid">
-                    <span className="row gap-8">
-                      <span className="chtl-row-name clamp-1">{s.title}</span>
-                      {s.status === "draft" && (
-                        <span className="badge badge-gold" style={{ flexShrink: 0 }}>DRAFT</span>
-                      )}
+              items.map((s, i) => (
+                <button key={s.id} className="chp-row" onClick={() => nav(`/chat-stories/${s.slug}`)}>
+                  <span className="chp-dot" aria-hidden="true" />
+                  {s.chat_type === "group" ? (
+                    <span className="chp-avg" aria-hidden="true">
+                      <span><Img path={s.contact_avatar} seed={s.contact_name} kind="avatar" alt="" /></span>
+                      <span><Img seed={`${s.contact_name} do`} kind="avatar" alt="" /></span>
                     </span>
-                    <span className="chtl-row-preview">
-                      <Check size={14} color="var(--indigo-400)" style={{ flexShrink: 0 }} />
-                      <span className="clamp-1">
-                        {s.contact_name}: {s.preview_text || "…"}
+                  ) : (
+                    <Img
+                      path={s.contact_avatar}
+                      seed={s.contact_name}
+                      kind="avatar"
+                      alt=""
+                      className="chp-av"
+                    />
+                  )}
+                  <span className="chp-mid">
+                    <span className="chp-toprow">
+                      <span className="chp-name clamp-1">{s.title}</span>
+                      {s.status === "draft" && <span className="chp-draft">DRAFT</span>}
+                      <span className="chp-when">
+                        {NIGHT_TIMES[i % NIGHT_TIMES.length]}
+                        <ChevronRight size={13} />
                       </span>
                     </span>
-                  </span>
-                  <span className="chtl-row-right">
-                    <span className="chtl-row-time">
-                      <Clock3 size={11} style={{ verticalAlign: -1, marginRight: 3 }} />
-                      {s.duration_minutes} min
+                    <span className="chp-prev clamp-1">
+                      {s.contact_name}: {s.preview_text || "…"}
                     </span>
-                    <span className="row gap-6">
+                    <span className="chp-metaline">
+                      <span className="chp-meta-it"><Clock3 size={11} /> {s.duration_minutes} min ka darr</span>
+                      <i className="chp-sep" />
+                      <span className="chp-meta-it">{s.message_count} messages</span>
+                      {s.chat_type === "group" && (
+                        <span className="chp-gtag"><Users size={10} /> group</span>
+                      )}
                       {isOfficial && (
-                        <span className="chtl-row-actions">
+                        <span className="chp-actions">
                           <span
-                            className="chtl-action"
+                            className="chp-action"
                             role="button"
                             tabIndex={0}
                             aria-label="Edit"
                             onClick={(e) => { e.stopPropagation(); nav(`/creator/chat-story/${s.id}/edit`); }}
                             onKeyDown={(e) => e.key === "Enter" && (e.stopPropagation(), nav(`/creator/chat-story/${s.id}/edit`))}
                           >
-                            <Pencil size={14} />
+                            <Pencil size={13} />
                           </span>
                           <span
-                            className="chtl-action"
+                            className="chp-action danger"
                             role="button"
                             tabIndex={0}
                             aria-label="Delete"
                             onClick={(e) => onDelete(e, s)}
                             onKeyDown={(e) => e.key === "Enter" && onDelete(e, s)}
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={13} />
                           </span>
                         </span>
                       )}
-                      <span className="chtl-badge">{s.message_count}</span>
                     </span>
                   </span>
                 </button>
@@ -196,13 +237,13 @@ export default function ChatStories() {
             )}
 
             {/* archived easter egg → schema demo chat */}
-            <button className="chtl-archived" onClick={() => nav("/chat-stories/demo")}>
-              <span className="chtl-archived-ic"><Archive size={19} /></span>
+            <button className="chp-arch" onClick={() => nav("/chat-stories/demo")}>
+              <span className="chp-arch-ic"><Archive size={18} /></span>
               <span style={{ flex: 1 }}>Archived</span>
-              <span style={{ fontSize: 12.5, color: "var(--crimson-mid)", fontWeight: 700 }}>1</span>
+              <span className="chp-arch-n">1</span>
             </button>
 
-            <div className="chtl-panel-foot">
+            <div className="chp-pfoot">
               <span className="row gap-6" style={{ justifyContent: "center" }}>
                 <Eye size={12} />
                 Headphones laga lo. Lights bujha do. Ab taiyaar ho.
