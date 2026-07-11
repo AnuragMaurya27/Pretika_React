@@ -60,7 +60,7 @@ export default function Login() {
       toast.success(t("toast.welcome"));
       nav(loc.state?.from || "/home", { replace: true });
     } catch (err) {
-      toast.error(errMsg(err, "Login failed"));
+      toast.error(errMsg(err, t("auth.loginFailed")));
     } finally {
       setBusy(false);
     }
@@ -241,7 +241,7 @@ export function AuthShell({ title, sub, stamp, children, back = true }) {
       </div>
 
       {back && (
-        <button onClick={() => nav(-1)} className="deed-back" aria-label="Back">
+        <button onClick={() => nav(-1)} className="deed-back" aria-label={t("common.back")}>
           <ArrowLeft size={19} />
         </button>
       )}
@@ -303,6 +303,7 @@ const STRENGTH_TONES = ["#c43227", "#d97a1f", "#a9812f", "#1d7d5b"];
 /* Password line — the watcher's eye opens to reveal. When `strength` (0–4)
    is passed, the baseline itself becomes the strength meter: ink fills it. */
 export function PwField({ value, onChange, show, setShow, placeholder, label, autoComplete, strength = null }) {
+  const { t } = useTranslation();
   return (
     <motion.label className="ink-field" variants={riseVar}>
       <span className="ink-label">{label ?? placeholder}</span>
@@ -318,7 +319,7 @@ export function PwField({ value, onChange, show, setShow, placeholder, label, au
       )}
       <button type="button" className="ink-eye"
         onClick={(e) => { e.preventDefault(); setShow(!show); }}
-        aria-label={show ? "Hide password" : "Show password"} aria-pressed={show}>
+        aria-label={show ? t("auth.hidePw") : t("auth.showPw")} aria-pressed={show}>
         <LidEye open={show} />
       </button>
     </motion.label>

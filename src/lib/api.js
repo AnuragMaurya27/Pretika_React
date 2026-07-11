@@ -1,5 +1,6 @@
 import axios from "axios";
 import { BASE_URL, STORAGE } from "./constants";
+import i18n from "../i18n";
 
 // In dev we go through the Vite same-origin proxy (the Render API has no CORS);
 // in a production build we call the API directly.
@@ -83,12 +84,12 @@ export function unwrap(res) {
 }
 
 /** Human-readable message from an axios error following the API envelope. */
-export function errMsg(error, fallback = "Something went wrong") {
+export function errMsg(error, fallback) {
   const body = error?.response?.data;
   if (body?.message) return body.message;
   if (Array.isArray(body?.errors) && body.errors.length) return body.errors[0];
-  if (error?.message === "Network Error") return "Network error — check your connection";
-  return fallback;
+  if (error?.message === "Network Error") return i18n.t("common.networkError");
+  return fallback || i18n.t("common.somethingWrong");
 }
 
 /**

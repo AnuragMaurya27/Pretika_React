@@ -1,3 +1,5 @@
+import i18n from "../i18n";
+
 // Compact number: 1200 -> 1.2K, 1500000 -> 1.5M
 export function compact(n) {
   const v = Number(n) || 0;
@@ -10,16 +12,16 @@ export function timeAgo(iso) {
   if (!iso) return "";
   const d = new Date(iso);
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
-  if (s < 60) return "just now";
+  if (s < 60) return i18n.t("time.justNow");
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m`;
+  if (m < 60) return i18n.t("time.m", { n: m });
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h`;
+  if (h < 24) return i18n.t("time.h", { n: h });
   const days = Math.floor(h / 24);
-  if (days < 30) return `${days}d`;
+  if (days < 30) return i18n.t("time.d", { n: days });
   const mo = Math.floor(days / 30);
-  if (mo < 12) return `${mo}mo`;
-  return `${Math.floor(mo / 12)}y`;
+  if (mo < 12) return i18n.t("time.mo", { n: mo });
+  return i18n.t("time.y", { n: Math.floor(mo / 12) });
 }
 
 // Reader fear ranks → level + xp range (icons live in Art.jsx <RankIcon>, no emoji)

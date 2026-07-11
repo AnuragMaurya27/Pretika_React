@@ -30,16 +30,16 @@ export default function BecomeCreator() {
 
   const perks = [
     { icon: <PenSquare size={18} />, text: t("creator.becomeSub") },
-    { icon: <Users size={18} />, text: "Build an audience of readers who follow your every episode" },
-    { icon: <TrendingUp size={18} />, text: "Analytics, milestones & creator Fear Rank" },
-    { icon: <Award size={18} />, text: "Climb from Pret Aatma to Mahakaal Katha Samrat" },
+    { icon: <Users size={18} />, text: t("creator.perkAudience") },
+    { icon: <TrendingUp size={18} />, text: t("creator.perkAnalytics") },
+    { icon: <Award size={18} />, text: t("creator.perkRanks") },
   ];
 
   return (
     <div className="app-shell" style={{ background: "var(--bg)", minHeight: "100dvh" }}>
       <Seo title="Become a Creator" robots="noindex, follow" />
       <header className="container row gap-12" style={{ height: 56 }}>
-        <button onClick={() => nav(-1)}><ArrowLeft size={22} /></button>
+        <button onClick={() => nav(-1)} aria-label={t("common.back")}><ArrowLeft size={22} /></button>
         <div className="section-title">{t("creator.becomeTitle")}</div>
       </header>
 

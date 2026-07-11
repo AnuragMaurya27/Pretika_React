@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Skull } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Spook } from "./Art";
 
 // Cross-platform empty states — vector art only (no emoji). Pass a lucide
@@ -29,14 +30,15 @@ const iconCircle = {
   background: "var(--indigo-50)", color: "var(--crimson)", border: "1px solid var(--indigo-100)",
 };
 
-export function ErrorState({ onRetry, message = "Something went wrong" }) {
+export function ErrorState({ onRetry, message }) {
+  const { t } = useTranslation();
   return (
     <div style={{ textAlign: "center", padding: "48px 28px" }}>
       <div style={{ display: "grid", placeItems: "center", color: "var(--text-tertiary)" }}><Skull size={42} /></div>
-      <div className="muted" style={{ marginTop: 10, fontSize: 13.5 }}>{message}</div>
+      <div className="muted" style={{ marginTop: 10, fontSize: 13.5 }}>{message || t("common.somethingWrong")}</div>
       {onRetry && (
         <button className="btn btn-outline btn-sm" style={{ marginTop: 16 }} onClick={onRetry}>
-          Retry
+          {t("common.retry")}
         </button>
       )}
     </div>

@@ -85,7 +85,7 @@ export default function CreatorDashboard() {
                         <RankIcon rank={s?.fear_rank} size={13} color="#ffd9b0" />
                         {t(`ranks.${s?.fear_rank}`, { defaultValue: s?.fear_rank || "—" })}
                       </span>
-                      <span className="sd-badge" style={{ textTransform: "none", letterSpacing: 0 }}>Lv {s?.fear_rank_level ?? 1}</span>
+                      <span className="sd-badge" style={{ textTransform: "none", letterSpacing: 0 }}>{t("common.level", { n: s?.fear_rank_level ?? 1 })}</span>
                     </div>
                   </div>
                 </div>
@@ -122,14 +122,14 @@ export default function CreatorDashboard() {
                         <div style={{ fontWeight: 800, fontSize: 15 }}>{t(`ranks.${s?.fear_rank}`, { defaultValue: s?.fear_rank })}</div>
                       </div>
                     </div>
-                    <div className="badge badge-indigo">Lv {s?.fear_rank_level ?? 1}</div>
+                    <div className="badge badge-indigo">{t("common.level", { n: s?.fear_rank_level ?? 1 })}</div>
                   </div>
                   <div style={{ marginTop: 12, height: 8, background: "var(--bg-tertiary)", borderRadius: 8, overflow: "hidden" }}>
                     <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, (s?.milestone_progress ?? 0) * 100)}%` }} transition={{ duration: 0.8 }}
                       style={{ height: "100%", background: "linear-gradient(90deg,var(--indigo-800),var(--indigo-400))", borderRadius: 8 }} />
                   </div>
                   <div className="between tertiary" style={{ fontSize: 11, marginTop: 6 }}>
-                    <span>{compact(s?.fear_score ?? 0)} score</span>
+                    <span>{compact(s?.fear_score ?? 0)} {t("common.score")}</span>
                     {s?.next_rank_name && <span>{t("creator.nextRank")}: {t(`ranks.${s.next_rank_name}`, { defaultValue: s.next_rank_name })}</span>}
                   </div>
                 </div>

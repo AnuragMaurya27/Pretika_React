@@ -4,25 +4,37 @@ import en from "./en";
 import hi from "./hi";
 import { STORAGE } from "../lib/constants";
 
-// The UI is English-only now — language selection has been removed.
+// The UI runs in two languages (en / hi). localStorage keeps the full
+// content-language word ('hindi' / 'english' / 'hinglish' — never the i18n
+// codes, the API 500s on those); i18next runs on 'hi' / 'en'. Hinglish content
+// is Latin-script, so it maps to the English UI.
+export const uiCode = (word) => (word === "hindi" ? "hi" : "en");
+
+function storedLang() {
+  const w = localStorage.getItem(STORAGE.lang);
+  return w === "hindi" || w === "english" || w === "hinglish" ? w : "english";
+}
+
 i18n.use(initReactI18next).init({
   resources: { en: { translation: en }, hi: { translation: hi } },
-  lng: "en",
+  lng: uiCode(storedLang()),
   fallbackLng: "en",
   interpolation: { escapeValue: false },
 });
 
-// Content-language enum used when creating stories / registering. Always english
-// now (there is no language switcher); kept so the lang store has a stable value.
+/** Content-language word ('hindi'|'english'|'hinglish') currently in effect. */
 export function currentLangCode() {
-  return "english";
+  return storedLang();
 }
 
-// No-op kept for API compatibility with the (now switcher-less) lang store.
-export function applyLanguage(code) {
-  localStorage.setItem(STORAGE.lang, code);
+/** Apply a content-language word to the whole UI + persist it. */
+export function applyLanguage(word) {
+  localStorage.setItem(STORAGE.lang, word);
+  const code = uiCode(word);
+  if (i18n.language !== code) i18n.changeLanguage(code);
+  document.documentElement.lang = code;
 }
 
-document.documentElement.lang = "en";
+document.documentElement.lang = uiCode(storedLang());
 
 export default i18n;

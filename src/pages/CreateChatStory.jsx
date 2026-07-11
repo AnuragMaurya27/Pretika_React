@@ -6,6 +6,7 @@ import {
   MessageSquareText, PhoneMissed, Play, Plus, Save, Send, Smartphone,
   Trash2, UserRound, Info, MoreHorizontal, Megaphone, Ghost,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { errMsg } from "../lib/api";
 import { useAuth } from "../store/auth";
@@ -56,6 +57,7 @@ function toScript(entries) {
 }
 
 export default function CreateChatStory() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const { id: editId } = useParams();
   const user = useAuth((s) => s.user);
@@ -113,14 +115,13 @@ export default function CreateChatStory() {
           <div className="center container" style={{ maxWidth: 420 }}>
             <div style={{ display: "grid", placeItems: "center" }}><Lock size={44} color="var(--crimson)" /></div>
             <div className="display" style={{ fontSize: 22, fontWeight: 800, marginTop: 12 }}>
-              Pretika Originals Studio
+              {t("chats.studioTitle")}
             </div>
             <p className="muted" style={{ marginTop: 8 }}>
-              Chat stories sirf official Pretika account publish kar sakta hai.
-              Apni kahaniyan likhne ke liye regular story editor use karo.
+              {t("chats.studioLocked")}
             </p>
             <button className="btn btn-primary btn-block mt-24" onClick={() => nav("/creator/story/new")}>
-              Story likho
+              {t("chats.writeStory")}
             </button>
           </div>
         </div>
@@ -166,7 +167,7 @@ export default function CreateChatStory() {
   const canSubmit = f.title.trim().length >= 3 && f.contact_name.trim() && entries.length > 0;
 
   const submit = (status) => {
-    if (!canSubmit) return toast.error("Title, contact name aur kam se kam ek message chahiye");
+    if (!canSubmit) return toast.error(t("chats.needFields"));
     save.mutate(
       {
         id: editId,
@@ -182,10 +183,10 @@ export default function CreateChatStory() {
       },
       {
         onSuccess: () => {
-          toast.success(status === "published" ? "Chat story live ho gayi" : "Draft save ho gaya");
+          toast.success(status === "published" ? t("chats.liveNow") : t("chats.draftSaved"));
           nav("/chat-stories");
         },
-        onError: (e) => toast.error(errMsg(e, "Save nahi hui")),
+        onError: (e) => toast.error(errMsg(e, t("chats.saveFailed"))),
       }
     );
   };
@@ -195,7 +196,7 @@ export default function CreateChatStory() {
       <Seo title={editId ? "Edit Chat Story" : "New Chat Story"} robots="noindex, follow" />
 
       <header className="cs-head only-mobile">
-        <button onClick={() => nav("/chat-stories")} aria-label="Back"><ArrowLeft size={22} /></button>
+        <button onClick={() => nav("/chat-stories")} aria-label={t("common.back")}><ArrowLeft size={22} /></button>
         <div className="section-title">Chat Story Studio</div>
       </header>
 

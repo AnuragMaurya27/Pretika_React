@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 import {
   Settings, Bookmark, PenSquare, LogOut, ChevronRight,
   BadgeCheck, LogIn, History, CheckCircle2, Flame,
-  Camera, Pencil, Loader2, ExternalLink,
+  Camera, Pencil, Loader2, ExternalLink, Languages,
 } from "lucide-react";
+import LangToggle from "../components/LangToggle";
 import { RankIcon, Spook } from "../components/Art";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
@@ -56,7 +57,7 @@ export default function Profile() {
     const file = e.target.files?.[0];
     e.target.value = ""; // let the same file be re-picked
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) return toast.error("Max 5MB image");
+    if (file.size > 5 * 1024 * 1024) return toast.error(t("common.maxImage5"));
     const setBusy = kind === "cover" ? setBusyCover : setBusyAvatar;
     setBusy(true);
     try {
@@ -175,7 +176,7 @@ export default function Profile() {
                       <div style={{ fontWeight: 800, fontSize: 15 }}>{t(`ranks.${rankKey}`)}</div>
                     </div>
                   </div>
-                  <div className="badge badge-indigo">Lv {rank.level}</div>
+                  <div className="badge badge-indigo">{t("common.level", { n: rank.level })}</div>
                 </div>
                 <div style={{ marginTop: 12, height: 8, background: "var(--bg-tertiary)", borderRadius: 8, overflow: "hidden" }}>
                   <motion.div initial={{ width: 0 }} animate={{ width: `${progress * 100}%` }} transition={{ duration: 0.8 }}
@@ -195,6 +196,12 @@ export default function Profile() {
                   ? <MenuItem icon={<PenSquare size={19} />} label={t("creator.dashboard")} to="/creator-dashboard" />
                   : <MenuItem icon={<PenSquare size={19} />} label={t("profile.becomeCreator")} to="/become-creator" />}
                 <MenuItem icon={<Settings size={19} />} label={t("profile.settings")} to="/profile/edit" />
+                <div className="between" style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-solid)" }}>
+                  <div className="row gap-12">
+                    <Languages size={19} /> <span style={{ fontWeight: 600, fontSize: 14.5 }}>{t("profile.language")}</span>
+                  </div>
+                  <LangToggle />
+                </div>
                 <MenuItem icon={<LogOut size={19} color="var(--indigo-600)" />} label={t("auth.logout")} danger onClick={doLogout} last />
               </div>
             </div>

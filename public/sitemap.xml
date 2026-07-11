@@ -71,6 +71,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://pretika.in/story/-14</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/e9561752-97e7-4413-a0c1-7be2c4a95454.jpg</image:loc>
+      <image:title>कालकूट — वो गाँव जो नक्शे पर नहीं है</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://pretika.in/story/-13</loc>
     <lastmod>2026-07-09</lastmod>
     <changefreq>weekly</changefreq>
@@ -82,7 +92,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-12</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-07-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -102,7 +112,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-10</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-07-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -142,7 +152,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-6</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-07-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -152,7 +162,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-5</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-07-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -162,7 +172,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-4</loc>
-    <lastmod>2026-07-07</lastmod>
+    <lastmod>2026-07-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -222,7 +232,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-3</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-07-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -232,13 +242,13 @@
   </url>
   <url>
     <loc>https://pretika.in/u/Pretika</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-07-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pretika.in/u/claudetest2</loc>
-    <lastmod>2026-07-07</lastmod>
+    <lastmod>2026-07-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>

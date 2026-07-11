@@ -47,12 +47,12 @@ export default function MyStories() {
               <Link key={st.id} to={`/story/${st.slug}`} className="card" style={{ overflow: "hidden" }}>
                 <div style={{ position: "relative", aspectRatio: "0.7" }}>
                   <Img path={st.thumbnail_url} seed={st.id} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  <span className={`badge ${STATUS_COLORS[st.status] || "badge-indigo"}`} style={{ position: "absolute", top: 8, left: 8, textTransform: "capitalize" }}>
-                    {(st.status || "").replace(/_/g, " ")}
+                  <span className={`badge ${STATUS_COLORS[st.status] || "badge-indigo"}`} style={{ position: "absolute", top: 8, left: 8 }}>
+                    {st.status ? t(`status.${st.status}`, { defaultValue: st.status.replace(/_/g, " ") }) : ""}
                   </span>
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); nav(`/creator/story/${st.id}/edit`); }}
-                    aria-label={t("common.edit", { defaultValue: "Edit" })}
+                    aria-label={t("common.edit")}
                     style={{
                       position: "absolute", top: 8, right: 8, display: "inline-flex", alignItems: "center", gap: 4,
                       padding: "5px 9px", borderRadius: 999, border: "none", cursor: "pointer",
@@ -60,7 +60,7 @@ export default function MyStories() {
                       backdropFilter: "blur(4px)",
                     }}
                   >
-                    <Pencil size={12} /> {t("common.edit", { defaultValue: "Edit" })}
+                    <Pencil size={12} /> {t("common.edit")}
                   </button>
                 </div>
                 <div style={{ padding: 10 }}>

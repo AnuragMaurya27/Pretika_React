@@ -98,7 +98,7 @@ export default function FollowListSheet({ open, onClose, userId, type = "followe
 
               <div className="between fls-head">
                 <span style={{ fontWeight: 800, fontSize: 18, textTransform: "capitalize" }}>{heading}</span>
-                <button onClick={onClose} className="fls-close" aria-label="Close"><X size={19} /></button>
+                <button onClick={onClose} className="fls-close" aria-label={t("common.close")}><X size={19} /></button>
               </div>
 
               <div className="input-wrap fls-search">

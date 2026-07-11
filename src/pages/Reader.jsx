@@ -19,6 +19,7 @@ import DarrMeter from "../components/DarrMeter";
 import Seo from "../components/Seo";
 import { Spook, PageLoader } from "../components/Art";
 import { useAuth } from "../store/auth";
+import { categoryLabel } from "../lib/categories";
 
 const THEMES = [
   { key: "parchment", labelKey: "reader.themeParchment", Icon: Sun, bg: "#f4efe4", fg: "#211913" },
@@ -226,7 +227,7 @@ export default function Reader() {
       {/* ── Top chrome — auto-hides while you sink into the story ─────────── */}
       <header className={`rd-bar ${barHidden ? "hidden" : ""}`}>
         <div className="between container" style={{ height: 54, gap: 8 }}>
-          <button className="rd-iconbtn" onClick={() => nav(-1)} aria-label="Back"><ArrowLeft size={20} /></button>
+          <button className="rd-iconbtn" onClick={() => nav(-1)} aria-label={t("common.back")}><ArrowLeft size={20} /></button>
           <div style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
             <div className="clamp-1" style={{ fontWeight: 700, fontSize: 13.5 }}>
               {t("story.episode")} {ep.episode_number} · {ep.title}
@@ -323,11 +324,11 @@ export default function Reader() {
         style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: "var(--reader-max)", margin: "0 auto", padding: "78px 20px 56px" }}
       >
         <div className="eyebrow" style={{ color: "var(--rd-accent)", fontSize: 11 }}>
-          {story?.category_name || "Pretika"} · {t("story.episode")} {ep.episode_number}
+          {categoryLabel(story?.category_name) || "Pretika"} · {t("story.episode")} {ep.episode_number}
         </div>
         <h1 className="serif" style={{ fontSize: "clamp(26px, 4vw, 34px)", fontWeight: 800, lineHeight: 1.22, marginTop: 10 }}>{ep.title}</h1>
         <div style={{ fontSize: 12.5, marginTop: 8, color: "var(--rd-faint)" }}>
-          {mins} {t("story.readTime")} · {ep.word_count || 0} words
+          {mins} {t("story.readTime")} · {ep.word_count || 0} {t("studio.words")}
         </div>
 
         <Ornament />

@@ -14,6 +14,7 @@ import Seo from "../components/Seo";
 import Img from "../components/Img";
 import ThumbnailStudio from "../components/ThumbnailStudio";
 import { SkeletonBox } from "../components/Skeleton";
+import { categoryLabel } from "../lib/categories";
 
 const STATUS_COLORS = {
   published: "badge-green", draft: "badge-gold", under_review: "badge-blue",
@@ -237,10 +238,10 @@ export default function EditStory() {
 
       {/* header */}
       <header className="cs-head only-mobile">
-        <button onClick={() => nav(-1)} aria-label="Back"><ArrowLeft size={22} /></button>
+        <button onClick={() => nav(-1)} aria-label={t("common.back")}><ArrowLeft size={22} /></button>
         <div className="section-title">{t("editStory.title", { defaultValue: "Edit story" })}</div>
         {story?.slug && (
-          <button onClick={() => nav(`/story/${story.slug}`)} aria-label="View" style={{ marginLeft: "auto" }}><ExternalLink size={18} /></button>
+          <button onClick={() => nav(`/story/${story.slug}`)} aria-label={t("editStory.view")} style={{ marginLeft: "auto" }}><ExternalLink size={18} /></button>
         )}
       </header>
 
@@ -265,8 +266,8 @@ export default function EditStory() {
           <>
             {/* status row */}
             <div className="row gap-8" style={{ marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
-              <span className={`badge ${STATUS_COLORS[story.status] || "badge-indigo"}`} style={{ textTransform: "capitalize" }}>
-                {(story.status || "").replace(/_/g, " ")}
+              <span className={`badge ${STATUS_COLORS[story.status] || "badge-indigo"}`}>
+                {story.status ? t(`status.${story.status}`, { defaultValue: story.status.replace(/_/g, " ") }) : ""}
               </span>
               <span className="tertiary" style={{ fontSize: 12.5 }}>{episodes.length} {t("story.episodes", { defaultValue: "episodes" })}</span>
               <span style={{ flex: 1 }} />
@@ -314,19 +315,19 @@ export default function EditStory() {
                 <Field label={t("creator.category")}>
                   <select className="input" value={f.category_id} onChange={set("category_id")}>
                     <option value="">{t("studio.pick", { defaultValue: "Choose…" })}</option>
-                    {(cats.data || []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    {(cats.data || []).map((c) => <option key={c.id} value={c.id}>{categoryLabel(c)}</option>)}
                   </select>
                 </Field>
                 <Field label={t("creator.language")}>
                   <select className="input" value={f.language} onChange={set("language")}>
-                    <option value="hindi">Hindi</option>
-                    <option value="english">English</option>
-                    <option value="hinglish">Hinglish</option>
+                    <option value="hindi">{t("creator.langHindi")}</option>
+                    <option value="english">{t("creator.langEnglish")}</option>
+                    <option value="hinglish">{t("creator.langHinglish")}</option>
                   </select>
                 </Field>
                 <Field label={t("creator.ageRating")}>
                   <select className="input" value={f.age_rating} onChange={set("age_rating")}>
-                    <option value="all">All</option><option value="13+">13+</option><option value="16+">16+</option><option value="18+">18+</option>
+                    <option value="all">{t("creator.ageAll")}</option><option value="13+">13+</option><option value="16+">16+</option><option value="18+">18+</option>
                   </select>
                 </Field>
                 <Field label={t("creator.storyType")}>
@@ -355,7 +356,7 @@ export default function EditStory() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div className="clamp-1" style={{ fontWeight: 700, fontSize: 14 }}>{ep.title}</div>
                         <div className="row gap-8 tertiary" style={{ fontSize: 11.5, marginTop: 3 }}>
-                          <span className={`badge ${STATUS_COLORS[ep.status] || "badge-gold"}`} style={{ textTransform: "capitalize" }}>{(ep.status || "").replace(/_/g, " ")}</span>
+                          <span className={`badge ${STATUS_COLORS[ep.status] || "badge-gold"}`}>{ep.status ? t(`status.${ep.status}`, { defaultValue: ep.status.replace(/_/g, " ") }) : ""}</span>
                           {ep.word_count ? <span>{ep.word_count} {t("studio.words", { defaultValue: "words" })}</span> : null}
                         </div>
                       </div>
@@ -365,7 +366,7 @@ export default function EditStory() {
                       <button className="btn btn-ghost btn-sm" onClick={() => openEpisode(ep)}>
                         {openId === ep.id ? <X size={15} /> : <><Pencil size={14} /> {t("common.edit", { defaultValue: "Edit" })}</>}
                       </button>
-                      <button className="btn btn-ghost btn-sm" style={{ color: "var(--error)" }} onClick={() => deleteEpisode(ep)} aria-label="Delete"><Trash2 size={15} /></button>
+                      <button className="btn btn-ghost btn-sm" style={{ color: "var(--error)" }} onClick={() => deleteEpisode(ep)} aria-label={t("common.delete")}><Trash2 size={15} /></button>
                     </div>
 
                     {openId === ep.id && (

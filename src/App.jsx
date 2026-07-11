@@ -4,6 +4,7 @@ import { useAuth } from "./store/auth";
 
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import LanguageGate from "./components/LanguageGate";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -36,6 +37,8 @@ export default function App() {
   }, [init]);
 
   return (
+    <>
+    <LanguageGate />
     <Routes>
       <Route path="/" element={<Navigate to="/home" replace />} />
       <Route path="/login" element={<Login />} />
@@ -68,5 +71,6 @@ export default function App() {
 
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </>
   );
 }

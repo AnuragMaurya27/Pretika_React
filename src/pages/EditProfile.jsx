@@ -36,7 +36,7 @@ export default function EditProfile() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) return toast.error("Max 5MB image");
+    if (file.size > 5 * 1024 * 1024) return toast.error(t("common.maxImage5"));
     setBusyAvatar(true);
     try {
       const data = await api.put("/users/me/avatar", fd(file), { headers: { "Content-Type": "multipart/form-data" } }).then(unwrap);
@@ -63,7 +63,7 @@ export default function EditProfile() {
     try {
       await post("/users/me/become-creator");
       promoteToCreator();          // flip UI immediately (survives a failed refetch)
-      toast.success("You're a creator now!");
+      toast.success(t("profile.creatorNow"));
       fetchMe().catch(() => {});   // reconcile fuller profile in the background
     } catch (e) { toast.error(errMsg(e)); }
   };
@@ -74,7 +74,7 @@ export default function EditProfile() {
 
       <header className="ep-head">
         <div className="row gap-12">
-          <button onClick={() => nav(-1)} aria-label="Back"><ArrowLeft size={22} /></button>
+          <button onClick={() => nav(-1)} aria-label={t("common.back")}><ArrowLeft size={22} /></button>
           <div className="section-title">{t("profile.edit")}</div>
         </div>
         <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>
@@ -104,7 +104,7 @@ export default function EditProfile() {
             </div>
             <div className="tertiary" style={{ fontSize: 12.5 }}>@{user?.username}</div>
           </div>
-          <div className="tertiary" style={{ fontSize: 11.5 }}>JPG · PNG · WebP · max 5MB</div>
+          <div className="tertiary" style={{ fontSize: 11.5 }}>{t("profile.imgFormats")}</div>
         </div>
 
         {/* ═══ About you ═══ */}
@@ -116,7 +116,7 @@ export default function EditProfile() {
               placeholder={t("auth.displayName")} />
           </Field>
 
-          <Field label="Bio" hint={`${f.bio.length}/500`}>
+          <Field label={t("profile.bio")} hint={`${f.bio.length}/500`}>
             <textarea className="input" rows={3} value={f.bio} onChange={set("bio")} maxLength={500}
               placeholder={t("profile.bioPh", { defaultValue: "Tell readers about yourself…" })} />
           </Field>
@@ -134,13 +134,13 @@ export default function EditProfile() {
         <section className="ep-sec">
           <div className="ep-sec-title"><MapPin size={16} /> {t("profile.contact", { defaultValue: "Contact & location" })}</div>
 
-          <Field label="Phone" icon={<Phone size={15} />}>
+          <Field label={t("profile.phone")} icon={<Phone size={15} />}>
             <input className="input ep-input-icon" value={f.phone} onChange={set("phone")} inputMode="tel"
               placeholder="+91…" />
           </Field>
           <div className="row gap-12">
-            <Field label="City" style={{ flex: 1 }}><input className="input" value={f.city} onChange={set("city")} /></Field>
-            <Field label="State" style={{ flex: 1 }}><input className="input" value={f.state} onChange={set("state")} /></Field>
+            <Field label={t("profile.city")} style={{ flex: 1 }}><input className="input" value={f.city} onChange={set("city")} /></Field>
+            <Field label={t("profile.state")} style={{ flex: 1 }}><input className="input" value={f.state} onChange={set("state")} /></Field>
           </div>
         </section>
 

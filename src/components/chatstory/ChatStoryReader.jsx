@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { Volume2, VolumeX, Play, Pause, RotateCcw, Share2, ArrowLeft, History } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import ChatHeader from "./ChatHeader";
 import MessageBubble from "./MessageBubble";
@@ -90,6 +91,7 @@ function StatusBar({ time }) {
  *   shareUrl optional absolute URL for the share button
  */
 export default function ChatStoryReader({ story, onExit, shareUrl }) {
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const sound = useChatSound();
   const onReveal = useCallback(
@@ -159,7 +161,7 @@ export default function ChatStoryReader({ story, onExit, shareUrl }) {
         await navigator.share({ title: story.title, url });
       } else {
         await navigator.clipboard.writeText(url);
-        toast.success("Link copy ho gaya");
+        toast.success(t("toast.linkCopied"));
       }
     } catch { /* user dismissed the share sheet */ }
   };
@@ -245,11 +247,11 @@ export default function ChatStoryReader({ story, onExit, shareUrl }) {
           {typing && <TypingIndicator sender={typing.sender} group={isGroup} />}
         </div>
 
-        {showHint && <div className="cht-hint">Tap karo — agla message aayega</div>}
+        {showHint && <div className="cht-hint">{t("chats.tapHint")}</div>}
 
         <div className="cht-footer">
           <div className="cht-composer" aria-hidden="true">
-            <span style={{ flex: 1 }}>Message</span>
+            <span style={{ flex: 1 }}>{t("chats.composer")}</span>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
               <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4" />
@@ -261,10 +263,9 @@ export default function ChatStoryReader({ story, onExit, shareUrl }) {
           <div className="cht-resume-scrim" onClick={(e) => e.stopPropagation()}>
             <div className="cht-resume-card">
               <span className="cht-resume-ic"><History size={22} /></span>
-              <div className="cht-resume-title">Chat wahi ruki hai…</div>
+              <div className="cht-resume-title">{t("chats.resumeTitle")}</div>
               <div className="cht-resume-sub">
-                Tum {Math.round((resumeAsk / Math.max(totalBeats, 1)) * 100)}% tak
-                padh chuke ho. Wahi se aage padhna hai?
+                {t("chats.resumeSub", { pct: Math.round((resumeAsk / Math.max(totalBeats, 1)) * 100) })}
               </div>
               <div className="cht-resume-btns">
                 <button
@@ -275,7 +276,7 @@ export default function ChatStoryReader({ story, onExit, shareUrl }) {
                     setResumeAsk(null);
                   }}
                 >
-                  <RotateCcw size={15} /> Shuru se
+                  <RotateCcw size={15} /> {t("chats.fromStart")}
                 </button>
                 <button
                   className="cht-end-btn primary"
@@ -284,7 +285,7 @@ export default function ChatStoryReader({ story, onExit, shareUrl }) {
                     setResumeAsk(null);
                   }}
                 >
-                  <Play size={15} /> Wahi se aage
+                  <Play size={15} /> {t("chats.resumeGo")}
                 </button>
               </div>
             </div>
@@ -293,17 +294,17 @@ export default function ChatStoryReader({ story, onExit, shareUrl }) {
 
         {done && (
           <div className="cht-end" onClick={(e) => e.stopPropagation()}>
-            <div className="cht-end-title lang-hi">कहानी ख़त्म…</div>
-            <div className="cht-end-sub">ya bas shuru hui hai?</div>
+            <div className="cht-end-title lang-hi">{t("chats.endTitle")}</div>
+            <div className="cht-end-sub">{t("chats.endSub")}</div>
             <div className="cht-end-btns">
               <button className="cht-end-btn" onClick={() => { setTaps(0); restart(); }}>
-                <RotateCcw size={15} /> Dobara
+                <RotateCcw size={15} /> {t("chats.again")}
               </button>
               <button className="cht-end-btn" onClick={share}>
-                <Share2 size={15} /> Share
+                <Share2 size={15} /> {t("chats.share")}
               </button>
               <button className="cht-end-btn primary" onClick={() => onExit?.()}>
-                <ArrowLeft size={15} /> Aur kahaniyan
+                <ArrowLeft size={15} /> {t("chats.moreStories")}
               </button>
             </div>
           </div>

@@ -1,14 +1,17 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Seo from "./Seo";
 
 /* StaticPage — shared shell for the informational pages (About, Contact,
    Privacy, Terms). Pure token-based typography; no new global CSS. Every page
    ends with cross-links so these pages are reachable on mobile too (the
-   desktop footer is hidden there). */
-export default function StaticPage({ title, subtitle, path, description, updated, children }) {
+   desktop footer is hidden there). `seoTitle`/`seoDescription` stay English
+   for crawlers; the visible title follows the UI language. */
+export default function StaticPage({ title, subtitle, path, description, seoTitle, updated, children }) {
+  const { t } = useTranslation();
   return (
     <div className="page">
-      <Seo title={title} description={description} path={path} />
+      <Seo title={seoTitle || title} description={description} path={path} />
       <div className="page-scroll">
         <div className="container" style={{ maxWidth: 760, paddingTop: 36, paddingBottom: 60 }}>
           <header style={{ marginBottom: 28 }}>
@@ -17,7 +20,7 @@ export default function StaticPage({ title, subtitle, path, description, updated
               <p className="muted" style={{ marginTop: 10, fontSize: 15, lineHeight: 1.7 }}>{subtitle}</p>
             )}
             {updated && (
-              <p className="tertiary" style={{ marginTop: 8, fontSize: 12.5 }}>Last updated: {updated}</p>
+              <p className="tertiary" style={{ marginTop: 8, fontSize: 12.5 }}>{t("footer.lastUpdated")} {updated}</p>
             )}
           </header>
 
@@ -26,12 +29,12 @@ export default function StaticPage({ title, subtitle, path, description, updated
           <nav aria-label="Site pages" style={{ marginTop: 44, paddingTop: 18, borderTop: "1px solid var(--border-solid)" }}>
             <div className="eyebrow" style={{ marginBottom: 10 }}>Pretika</div>
             <div className="row" style={{ gap: 14, flexWrap: "wrap", fontSize: 13.5, fontWeight: 600 }}>
-              <Link to="/home">Home</Link>
-              <Link to="/explore">Stories</Link>
-              <Link to="/about">About</Link>
-              <Link to="/contact">Contact</Link>
-              <Link to="/privacy">Privacy Policy</Link>
-              <Link to="/terms">Terms of Use</Link>
+              <Link to="/home">{t("nav.home")}</Link>
+              <Link to="/explore">{t("footer.stories")}</Link>
+              <Link to="/about">{t("footer.aboutUs")}</Link>
+              <Link to="/contact">{t("footer.contact")}</Link>
+              <Link to="/privacy">{t("footer.privacy")}</Link>
+              <Link to="/terms">{t("footer.terms")}</Link>
             </div>
           </nav>
         </div>

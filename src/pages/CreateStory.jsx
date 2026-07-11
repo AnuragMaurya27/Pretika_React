@@ -12,6 +12,7 @@ import { useAuth } from "../store/auth";
 import Seo from "../components/Seo";
 import ThumbnailStudio from "../components/ThumbnailStudio";
 import { useLang } from "../store/lang";
+import { categoryLabel } from "../lib/categories";
 
 export default function CreateStory() {
   const { t } = useTranslation();
@@ -77,7 +78,7 @@ export default function CreateStory() {
       toast.success(publish ? t("creator.published") : t("creator.storyCreated"));
       nav(`/story/${story.slug}`);
     } catch (e) {
-      toast.error(errMsg(e, "Could not create story"));
+      toast.error(errMsg(e, t("creator.couldNotCreate")));
     } finally {
       setBusy(false);
     }
@@ -89,7 +90,7 @@ export default function CreateStory() {
 
       {/* Mobile header */}
       <header className="cs-head only-mobile">
-        <button onClick={() => nav(-1)} aria-label="Back"><ArrowLeft size={22} /></button>
+        <button onClick={() => nav(-1)} aria-label={t("common.back")}><ArrowLeft size={22} /></button>
         <div className="section-title">{t("creator.createStory")}</div>
       </header>
 
@@ -159,7 +160,7 @@ export default function CreateStory() {
             <Field label={t("creator.category")}>
               <select className="input" value={f.category_id} onChange={set("category_id")}>
                 <option value="">{t("studio.pick", { defaultValue: "Choose…" })}</option>
-                {(cats.data || []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {(cats.data || []).map((c) => <option key={c.id} value={c.id}>{categoryLabel(c)}</option>)}
               </select>
             </Field>
             <Field label={t("creator.storyType")}>
@@ -170,14 +171,14 @@ export default function CreateStory() {
             </Field>
             <Field label={t("creator.language")}>
               <select className="input" value={f.language} onChange={set("language")}>
-                <option value="hindi">Hindi</option>
-                <option value="english">English</option>
-                <option value="hinglish">Hinglish</option>
+                <option value="hindi">{t("creator.langHindi")}</option>
+                <option value="english">{t("creator.langEnglish")}</option>
+                <option value="hinglish">{t("creator.langHinglish")}</option>
               </select>
             </Field>
             <Field label={t("creator.ageRating")}>
               <select className="input" value={f.age_rating} onChange={set("age_rating")}>
-                <option value="all">All</option><option value="13+">13+</option><option value="16+">16+</option><option value="18+">18+</option>
+                <option value="all">{t("creator.ageAll")}</option><option value="13+">13+</option><option value="16+">16+</option><option value="18+">18+</option>
               </select>
             </Field>
           </div>

@@ -16,12 +16,12 @@ export default function Forgot() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!/.+@.+\..+/.test(email)) return toast.error("Enter a valid email");
+    if (!/.+@.+\..+/.test(email)) return toast.error(t("auth.validEmail"));
     setBusy(true);
     try {
       await post("/auth/forgot-password", { email: email.trim() });
       setSent(true);
-      toast.success("Reset link sent");
+      toast.success(t("auth.resetSent"));
     } catch (e2) {
       toast.error(errMsg(e2));
     } finally {

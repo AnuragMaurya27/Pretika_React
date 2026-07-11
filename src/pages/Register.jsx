@@ -25,11 +25,11 @@ export default function Register() {
   const set = (k) => (v) => setF({ ...f, [k]: v });
 
   const valid = () => {
-    if (f.username.length < 3) return "Username must be at least 3 characters";
-    if (!/^[\w]+$/.test(f.username)) return "Username: letters, numbers & _ only";
-    if (!/.+@.+\..+/.test(f.email)) return "Enter a valid email";
+    if (f.username.length < 3) return t("auth.usernameMin");
+    if (!/^[\w]+$/.test(f.username)) return t("auth.usernameChars");
+    if (!/.+@.+\..+/.test(f.email)) return t("auth.validEmail");
     if (pwScore(f.password) < 4)
-      return "Password: 8+ chars, 1 upper, 1 lower, 1 digit";
+      return t("auth.pwRule");
     return null;
   };
 
@@ -50,7 +50,7 @@ export default function Register() {
       toast.success(t("auth.verifyEmailNote"), { duration: 5000 });
       nav("/login", { replace: true });
     } catch (e2) {
-      toast.error(errMsg(e2, "Registration failed"));
+      toast.error(errMsg(e2, t("auth.registerFailed")));
     } finally {
       setBusy(false);
     }

@@ -15,6 +15,7 @@ import Tilt from "../components/Tilt";
 import { HRailSkeleton, SkeletonBox } from "../components/Skeleton";
 import EmptyState from "../components/EmptyState";
 import ChatStoriesRail from "../components/ChatStoriesRail";
+import LangToggle from "../components/LangToggle";
 import { useAuth } from "../store/auth";
 import { mediaUrl } from "../lib/constants";
 import { compact } from "../lib/format";
@@ -22,6 +23,7 @@ import { getAllProgress } from "../lib/reading";
 import { rankTrending } from "../lib/trending";
 import { EyeLogo, Candle, CategoryIcon } from "../components/Art";
 import { errMsg } from "../lib/api";
+import { categoryLabel } from "../lib/categories";
 
 // Social-share fallback image for <Seo> (hero itself is drawn from live covers).
 const HERO_IMG = "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=1600&q=70";
@@ -91,9 +93,12 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <button onClick={() => nav("/explore")} aria-label={t("nav.explore")} style={mSearchBtn}>
-              <Search size={19} />
-            </button>
+            <div className="row gap-8">
+              <LangToggle dark />
+              <button onClick={() => nav("/explore")} aria-label={t("nav.explore")} style={mSearchBtn}>
+                <Search size={19} />
+              </button>
+            </div>
           </div>
         </header>
 
@@ -126,7 +131,7 @@ export default function Home() {
               <button className="chip active" onClick={() => nav("/explore")}><Sparkles size={15} /> {t("home.all")}</button>
               {(cats.data || []).filter((c) => (c.total_stories ?? 0) > 0).map((c) => (
                 <button key={c.id} className="chip" onClick={() => nav(`/explore?category=${encodeURIComponent(c.slug)}`)}>
-                  <CategoryIcon name={c.name} size={15} /> {c.name}
+                  <CategoryIcon name={c.name} size={15} /> {categoryLabel(c)}
                 </button>
               ))}
             </div>
@@ -188,13 +193,22 @@ const wordVar = {
 // drips per word of the crimson line — positions are % of THAT word's width,
 // so blood always beads off the glyphs themselves at every viewport size.
 const WORD_DRIPS = [
-  [{ left: "22%", delay: 1.6, dur: 9.5, w: 7 }, { left: "74%", delay: 5.6, dur: 11.5, w: 6 }], // कहानी
-  [{ left: "34%", delay: 3.8, dur: 10.5, w: 8 }, { left: "82%", delay: 7.8, dur: 12.5, w: 6.5 }], // सुनाता
-  [{ left: "52%", delay: 2.6, dur: 9, w: 7 }], // है
+  [{ left: "22%", delay: 1.6, dur: 9.5, w: 7 }, { left: "74%", delay: 5.6, dur: 11.5, w: 6 }],
+  [{ left: "34%", delay: 3.8, dur: 10.5, w: 8 }, { left: "82%", delay: 7.8, dur: 12.5, w: 6.5 }],
+  [{ left: "52%", delay: 2.6, dur: 9, w: 7 }],
 ];
 
+// Headline per UI language — line 2 carries the blood drips (3 words each).
+const HERO_LINES = {
+  hi: { l1: ["जहाँ", "अंधेरा"], l2: ["कहानी", "सुनाता", "है"] },
+  en: { l1: ["Where", "darkness"], l2: ["tells", "the", "story"] },
+};
+
 function Hero({ name, covers, loading }) {
+  const { t, i18n } = useTranslation();
   const reduce = useReducedMotion();
+  const isHi = i18n.language === "hi";
+  const lines = HERO_LINES[isHi ? "hi" : "en"];
   return (
     <section className="container" style={{ paddingTop: "clamp(24px, 4.5vw, 52px)" }}>
       <div className="hero-grid">
@@ -206,27 +220,28 @@ function Hero({ name, covers, loading }) {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             style={heroEyebrow}
           >
-            <EyeLogo size={20} /> {name ? `Welcome back, ${name}` : "Pretika · Hindi Horror"}
+            <EyeLogo size={20} /> {name ? `${t("home.welcomeBack")}, ${name}` : t("home.brandTag")}
           </motion.span>
 
           <motion.h1
-            className="display-hi"
+            key={isHi ? "hi" : "en"}
+            className={isHi ? "display-hi" : "display"}
             variants={lineVar}
             initial="hidden"
             animate="show"
             style={heroTitle}
-            lang="hi"
+            lang={isHi ? "hi" : "en"}
           >
             <span style={{ display: "block" }}>
-              {["जहाँ", "अंधेरा"].map((w) => (
+              {lines.l1.map((w) => (
                 <motion.span key={w} variants={wordVar} style={heroWord}>{w}</motion.span>
               ))}
             </span>
             <span style={{ display: "block" }}>
-              {["कहानी", "सुनाता", "है"].map((w, wi) => (
+              {lines.l2.map((w, wi) => (
                 <motion.span key={w} variants={wordVar} className="gradient-text bleed-word" style={heroWord}>
                   {w}
-                  {!reduce && WORD_DRIPS[wi].map((d, i) => (
+                  {!reduce && (WORD_DRIPS[wi] || []).map((d, i) => (
                     <span key={i} className="drip" aria-hidden style={{
                       left: d.left, "--delay": `${d.delay}s`, "--dur": `${d.dur}s`, "--w": `${d.w}px`,
                     }}>
@@ -245,7 +260,7 @@ function Hero({ name, covers, loading }) {
             className="muted"
             style={{ marginTop: 30, maxWidth: 480, fontSize: "clamp(14.5px, 1.6vw, 16.5px)", lineHeight: 1.65 }}
           >
-            A new terror every night — read, write, and feel the fear that follows you home.
+            {t("home.heroSub")}
           </motion.p>
 
           <motion.div
@@ -255,9 +270,9 @@ function Hero({ name, covers, loading }) {
             transition={{ delay: 1.15 }}
             style={{ gap: 8, marginTop: 24, flexWrap: "wrap" }}
           >
-            <span className="chip" style={heroStat}><Flame size={14} color="var(--crimson)" /> New terror daily</span>
-            <span className="chip" style={heroStat}><BookOpen size={14} color="var(--crimson)" /> Hundreds of stories</span>
-            <span className="chip" style={heroStat}><Users size={14} color="var(--crimson)" /> Rising writers</span>
+            <span className="chip" style={heroStat}><Flame size={14} color="var(--crimson)" /> {t("home.chipDaily")}</span>
+            <span className="chip" style={heroStat}><BookOpen size={14} color="var(--crimson)" /> {t("home.chipStories")}</span>
+            <span className="chip" style={heroStat}><Users size={14} color="var(--crimson)" /> {t("home.chipWriters")}</span>
           </motion.div>
         </div>
 
@@ -279,6 +294,7 @@ const FAN_POSES = [
 ];
 
 function CoverFan({ covers = [], loading }) {
+  const { t } = useTranslation();
   const reduce = useReducedMotion();
   const items = covers.slice(0, 4);
   const n = items.length || 3;
@@ -319,7 +335,7 @@ function CoverFan({ covers = [], loading }) {
                   <Img path={s.thumbnail_url} seed={s.id} alt={s.title}
                     style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   {isTop && (
-                    <span style={fanBadge}><Flame size={11} /> #1 Trending</span>
+                    <span style={fanBadge}><Flame size={11} /> {t("home.topTrending")}</span>
                   )}
                 </Link>
               ) : (
@@ -421,7 +437,7 @@ function CategorySection({ category }) {
   if (!isLoading && !items.length) return null;
   return (
     <Section
-      title={category.name}
+      title={categoryLabel(category)}
       icon={<CategoryIcon name={category.name} size={18} color="var(--indigo-600)" />}
       to={`/explore?category=${encodeURIComponent(category.slug)}`}
     >
@@ -513,7 +529,7 @@ function Spotlight({ story }) {
             ? <p className="sotd-sum clamp-2">{story.summary}</p>
             : <p className="sotd-sum clamp-2">{t("home.spotlightSub", { defaultValue: "Tonight's hand-picked terror — dim the lights and begin." })}</p>}
           <div className="sotd-meta">
-            {story.category_name && <span className="sotd-cat">{story.category_name}</span>}
+            {story.category_name && <span className="sotd-cat">{categoryLabel(story.category_name)}</span>}
             {story.average_rating > 0 && (
               <span className="row gap-4"><Star size={13} fill="var(--gold)" color="var(--gold)" /> {story.average_rating.toFixed(1)}</span>
             )}

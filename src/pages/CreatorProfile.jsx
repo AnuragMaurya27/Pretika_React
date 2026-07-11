@@ -47,7 +47,7 @@ export default function CreatorProfile() {
     const url = window.location.href;
     try {
       if (navigator.share) await navigator.share({ title: u.display_name || u.username, url });
-      else { await navigator.clipboard.writeText(url); toast.success("Link copied"); }
+      else { await navigator.clipboard.writeText(url); toast.success(t("toast.linkCopied")); }
     } catch { /* cancelled */ }
   };
 

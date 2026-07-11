@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useChatStory } from "../lib/hooks";
 import { post } from "../lib/api";
 import Seo from "../components/Seo";
@@ -14,6 +15,7 @@ import { normalizeChatStory, SAMPLE_CHAT_STORY } from "../components/chatstory/c
  * `/chat-stories/demo` plays the bundled sample JSON (schema example page).
  */
 export default function ChatStoryPlay() {
+  const { t } = useTranslation();
   const { slug } = useParams();
   const nav = useNavigate();
   const isDemo = slug === "demo";
@@ -34,7 +36,7 @@ export default function ChatStoryPlay() {
   if (!isDemo && isLoading) {
     return (
       <div className="cht-stage">
-        <EyeLoader label="Chat khul rahi hai…" />
+        <EyeLoader label={t("chats.loading")} />
       </div>
     );
   }
@@ -44,13 +46,13 @@ export default function ChatStoryPlay() {
       <div className="cht-stage">
         <div className="center" style={{ color: "#e9edef" }}>
           <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
-            Yeh chat delete ho chuki hai…
+            {t("chats.goneTitle")}
           </div>
           <div style={{ color: "#8696a0", fontSize: 13.5, marginBottom: 18 }}>
-            ya shayad kabhi thi hi nahi.
+            {t("chats.goneSub")}
           </div>
           <button className="cht-end-btn primary" onClick={exit}>
-            Aur kahaniyan
+            {t("chats.moreStories")}
           </button>
         </div>
       </div>

@@ -40,31 +40,31 @@ export default function Footer() {
               <span className="serif" style={{ fontSize: 26, fontWeight: 800, color: "#fff", letterSpacing: 1 }}>Pretika</span>
             </div>
             <p style={{ color: "rgba(255,255,255,.6)", fontSize: 13.5, lineHeight: 1.7 }}>
-              Spine-chilling Hindi horror stories — read, write, and feel the fear that follows you home.
+              {t("footer.blurb")}
             </p>
           </div>
 
           <FooterCol title={t("nav.explore")} links={[
             { to: "/explore?sort=trending", label: t("home.trending") },
             { to: "/explore?sort=latest", label: t("home.newStories") },
-            { to: "/explore?sort=top_rated", label: "Top rated" },
+            { to: "/explore?sort=top_rated", label: t("footer.topRated") },
             { to: "/explore", label: t("home.all") },
           ]} />
 
           <FooterCol title="Pretika" links={accountLinks} />
 
-          <FooterCol title="Company" links={[
-            { to: "/about", label: "About us" },
-            { to: "/contact", label: "Contact" },
-            { to: "/privacy", label: "Privacy Policy" },
-            { to: "/terms", label: "Terms of Use" },
+          <FooterCol title={t("footer.company")} links={[
+            { to: "/about", label: t("footer.aboutUs") },
+            { to: "/contact", label: t("footer.contact") },
+            { to: "/privacy", label: t("footer.privacy") },
+            { to: "/terms", label: t("footer.terms") },
           ]} />
         </div>
 
         <div style={hr} />
         <div className="between" style={{ flexWrap: "wrap", gap: 10, color: "rgba(255,255,255,.45)", fontSize: 12.5 }}>
-          <span>© {year} Pretika · Hindi Horror Stories</span>
-          <span>Read · Write · Feel the fear</span>
+          <span>{t("footer.rights", { year })}</span>
+          <span>{t("footer.tagline2")}</span>
         </div>
       </div>
     </footer>

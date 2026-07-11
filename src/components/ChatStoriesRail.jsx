@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import {
   MessageSquareText, ChevronRight, Clock3, ArrowRight, Eye, Users, MoonStar,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useChatStories } from "../lib/hooks";
 import Img from "./Img";
 import Tilt from "./Tilt";
@@ -20,6 +21,7 @@ import { IS_TOUCH } from "../lib/device";
  * dead-of-night timestamp. Self-fetching; renders nothing until ≥1 chat.
  */
 export default function ChatStoriesRail() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const { data, isLoading } = useChatStories({ page_size: 10 });
   const items = interleaveChatTypes(data?.items || []);
@@ -40,12 +42,12 @@ export default function ChatStoriesRail() {
             <i className="pcs-appdot">{items.length > 9 ? "9+" : items.length}</i>
           </span>
           <div>
-            <div className="pcs-title">Pretika Chats</div>
-            <div className="pcs-sub">Groups, unknown numbers, khoye hue log — sab raat ko message karte hain.</div>
+            <div className="pcs-title">{t("chats.titleA")} {t("chats.titleB")}</div>
+            <div className="pcs-sub">{t("chats.railSub")}</div>
           </div>
         </div>
         <Link to="/chat-stories" className="pcs-all">
-          Sab dekho <ChevronRight size={15} />
+          {t("chats.seeAll")} <ChevronRight size={15} />
         </Link>
       </div>
 
@@ -56,8 +58,8 @@ export default function ChatStoriesRail() {
           ))}
           <Link to="/chat-stories" className="pcc-end">
             <span className="pcc-end-ic"><MessageSquareText size={22} /></span>
-            <b>Saari chats</b>
-            <span>Poori inbox kholo</span>
+            <b>{t("chats.allChats")}</b>
+            <span>{t("chats.openInbox")}</span>
             <span className="pcc-end-arrow"><ArrowRight size={15} /></span>
           </Link>
         </div>
@@ -72,6 +74,7 @@ const NIGHT_TIMES = ["3:33 AM", "2:47 AM", "1:59 AM", "4:04 AM", "3:13 AM", "2:2
 /* One chat = one light "message card". Groups: overlapping avatar cluster +
    GROUP tag + unread count. Singles: gradient-ring avatar + online pulse. */
 function ChatCard({ story: s, index = 0, onOpen }) {
+  const { t } = useTranslation();
   const time = NIGHT_TIMES[index % NIGHT_TIMES.length];
   const isGroup = s.chat_type === "group";
   return (
@@ -88,7 +91,7 @@ function ChatCard({ story: s, index = 0, onOpen }) {
       <button onClick={onOpen} style={{ display: "block", width: "100%", textAlign: "left" }}>
         <Tilt max={8} scale={1.03} className={`pcc-box ${isGroup ? "is-group" : ""}`}>
           {isGroup && (
-            <span className="pcc-type"><Users size={9} /> Group</span>
+            <span className="pcc-type"><Users size={9} /> {t("chats.group")}</span>
           )}
 
           {/* identity — cluster for groups, ringed avatar for singles */}
@@ -109,9 +112,9 @@ function ChatCard({ story: s, index = 0, onOpen }) {
 
           <span className="pcc-name clamp-1">{s.contact_name}</span>
           {isGroup ? (
-            <span className="pcc-status is-unread">{s.message_count} naye messages</span>
+            <span className="pcc-status is-unread">{t("chats.newMessages", { n: s.message_count })}</span>
           ) : (
-            <span className="pcc-status is-online">online</span>
+            <span className="pcc-status is-online">{t("chats.online")}</span>
           )}
 
           {/* the hook line, straight from the chat — clamp lives on an inner
@@ -130,7 +133,7 @@ function ChatCard({ story: s, index = 0, onOpen }) {
         <span className="pcc-cap">
           <span className="pcc-captitle clamp-1">{s.title}</span>
           <span className="pcc-capmeta">
-            <span className="pcc-chip"><Clock3 size={10} /> {s.duration_minutes} min ka darr</span>
+            <span className="pcc-chip"><Clock3 size={10} /> {t("chats.minFear", { n: s.duration_minutes })}</span>
             <span className="pcc-views"><Eye size={11} /> {compact(s.total_views)}</span>
           </span>
         </span>

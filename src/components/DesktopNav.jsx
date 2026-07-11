@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { useAuth } from "../store/auth";
 import Img from "./Img";
+import LangToggle from "./LangToggle";
 import { EyeLogo } from "./Art";
 
 const links = [
@@ -60,6 +61,7 @@ export default function DesktopNav() {
 
         <div style={{ flex: 1 }} />
 
+        <LangToggle dark />
         <button onClick={() => nav("/creator/story/new")} style={writeBtn}>
           <PenSquare size={16} /> {t("nav.write")}
         </button>

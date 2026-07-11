@@ -10,13 +10,14 @@ import Img from "../components/Img";
 import Seo from "../components/Seo";
 import { compact } from "../lib/format";
 import { CategoryIcon } from "../components/Art";
+import { categoryLabel } from "../lib/categories";
 
 const SORTS = [
-  { key: "trending", label: "Trending", Icon: Flame },
-  { key: "latest", label: "Latest", Icon: Sparkles },
-  { key: "most_viewed", label: "Most viewed", Icon: Eye },
-  { key: "most_liked", label: "Most liked", Icon: Heart },
-  { key: "top_rated", label: "Top rated", Icon: Star },
+  { key: "trending", tKey: "explore.sortTrending", Icon: Flame },
+  { key: "latest", tKey: "explore.sortLatest", Icon: Sparkles },
+  { key: "most_viewed", tKey: "explore.sortMostViewed", Icon: Eye },
+  { key: "most_liked", tKey: "explore.sortMostLiked", Icon: Heart },
+  { key: "top_rated", tKey: "explore.sortTopRated", Icon: Star },
 ];
 
 export default function Explore() {
@@ -85,14 +86,14 @@ export default function Explore() {
                 <button className={`chip ${!category ? "active" : ""}`} onClick={() => setParam("category", "")}>{t("explore.all")}</button>
                 {(cats.data || []).filter((c) => (c.total_stories ?? 0) > 0).map((c) => (
                   <button key={c.id} className={`chip ${category === c.slug ? "active" : ""}`} onClick={() => setParam("category", c.slug)}>
-                    <CategoryIcon name={c.name} size={14} /> {c.name}
+                    <CategoryIcon name={c.name} size={14} /> {categoryLabel(c)}
                   </button>
                 ))}
               </div>
               <div className="hscroll container" style={{ marginTop: 8, paddingBottom: 6, borderBottom: "1px solid var(--border-solid)" }}>
                 {SORTS.map((s) => (
                   <button key={s.key} className={`chip ${sort === s.key ? "active" : ""}`} onClick={() => setParam("sort", s.key)}>
-                    <s.Icon size={14} /> {s.label}
+                    <s.Icon size={14} /> {t(s.tKey)}
                   </button>
                 ))}
               </div>
@@ -112,13 +113,14 @@ export default function Explore() {
 }
 
 function Browse({ state }) {
+  const { t } = useTranslation();
   const items = state.data?.items || [];
   if (state.isLoading) return (
     <div className="container poster-grid" style={{ marginTop: 16 }}>
       {Array.from({ length: 8 }).map((_, i) => <SkeletonBox key={i} h={210} r={16} />)}
     </div>
   );
-  if (!items.length) return <EmptyState title="No stories" sub="Try a different filter" />;
+  if (!items.length) return <EmptyState title={t("explore.noStories")} sub={t("explore.tryFilter")} />;
   return (
     <div className="container poster-grid" style={{ marginTop: 16, paddingBottom: 12 }}>
       {items.map((s, i) => <StoryCard key={s.id} story={s} index={i} />)}
@@ -146,7 +148,7 @@ function SearchResults({ state, q }) {
                   <span className="clamp-1" style={{ fontSize: 11.5, fontWeight: 600 }}>{u.display_name || u.username}</span>
                   {u.is_verified_creator && <BadgeCheck size={12} color="var(--blue)" />}
                 </div>
-                <div className="tertiary" style={{ fontSize: 10 }}>{compact(u.total_followers)} followers</div>
+                <div className="tertiary" style={{ fontSize: 10 }}>{compact(u.total_followers)} {t("common.followers")}</div>
               </Link>
             ))}
           </div>

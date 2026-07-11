@@ -1,4 +1,5 @@
 import { ArrowLeft, Phone, Video } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import Img from "../Img";
 
 /**
@@ -8,10 +9,11 @@ import Img from "../Img";
  * `children` = player chrome (sound/autoplay toggles) so the row stays one bar.
  */
 export default function ChatHeader({ contactName, contactAvatar, statusText, onBack, children }) {
+  const { t } = useTranslation();
   const isTyping = /typing/i.test(statusText || "");
   return (
     <div className="cht-header">
-      <button className="cht-iconbtn" onClick={onBack} aria-label="Back">
+      <button className="cht-iconbtn" onClick={onBack} aria-label={t("common.back")}>
         <ArrowLeft size={21} />
       </button>
       <Img

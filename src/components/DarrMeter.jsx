@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { post } from "../lib/api";
 import { useFearStats } from "../lib/hooks";
 import {
@@ -51,6 +52,7 @@ function heatColor(rate, maxRate) {
 }
 
 export default function DarrMeter({ storyId, episodeId, contentKey }) {
+  const { t, i18n } = useTranslation();
   const { data: stats } = useFearStats(episodeId);
   const [paras, setParas] = useState([]); // DOM nodes, index = paragraph_id
   const [current, setCurrent] = useState(null);
@@ -217,12 +219,13 @@ export default function DarrMeter({ storyId, episodeId, contentKey }) {
       const host = document.createElement("div");
       host.className = "dm-proof-host";
       host.innerHTML =
-        `<span class="dm-proof">${GHOST_SVG(13)}${s.total_reactions} log yahan dare the</span>`;
+        `<span class="dm-proof">${GHOST_SVG(13)}${t("darr.scaredHere", { n: s.total_reactions })}</span>`;
       node.insertAdjacentElement("afterend", host);
       created.push(host);
     });
     return () => created.forEach((h) => h.remove());
-  }, [paras, stats]);
+    // i18n.language: re-inject the chips in the new language on switch
+  }, [paras, stats, t, i18n.language]);
 
   /* ── render (portals only — the reader's DOM stays untouched) ──────────── */
   if (!paras.length) return null;
@@ -236,7 +239,7 @@ export default function DarrMeter({ storyId, episodeId, contentKey }) {
         <>
           {/* heatmap strip — YouTube "most replayed", par darr ke liye */}
           {paras.length >= 4 && (
-            <div className="dm-strip" aria-label="Darr Meter heatmap">
+            <div className="dm-strip" aria-label={t("darr.heatmap")}>
               {paras.map((_, i) => {
                 const s = statMap.get(i);
                 const rate = s?.fear_rate || 0;
@@ -247,10 +250,10 @@ export default function DarrMeter({ storyId, episodeId, contentKey }) {
                     style={{ background: heatColor(rate, maxRate) }}
                     title={
                       s?.total_reactions
-                        ? `${s.total_reactions} log yahan dare (${Math.round(rate * 100)}%)`
-                        : `Paragraph ${i + 1}`
+                        ? t("darr.scaredTip", { n: s.total_reactions, pct: Math.round(rate * 100) })
+                        : t("darr.paragraph", { n: i + 1 })
                     }
-                    aria-label={`Jump to paragraph ${i + 1}`}
+                    aria-label={t("darr.jumpTo", { n: i + 1 })}
                     onClick={() =>
                       paras[i]?.scrollIntoView({ behavior: "smooth", block: "center" })
                     }
@@ -269,14 +272,10 @@ export default function DarrMeter({ storyId, episodeId, contentKey }) {
               className={`dm-fab ${canReact ? "ready pulse-glow" : "spent"}`}
               onClick={react}
               disabled={!canReact}
-              aria-label={
-                canReact
-                  ? "Yahan darr laga — tap karo"
-                  : "Is paragraph pe aapka darr count ho chuka hai"
-              }
+              aria-label={canReact ? t("darr.fabReady") : t("darr.fabSpent")}
             >
               <DarrGhost />
-              <span className="dm-fab-label">{canReact ? "DARR!" : "COUNTED"}</span>
+              <span className="dm-fab-label">{canReact ? t("darr.darr") : t("darr.counted")}</span>
             </button>
             {currentTotal > 0 && (
               <span className="dm-fab-count">{currentTotal}</span>

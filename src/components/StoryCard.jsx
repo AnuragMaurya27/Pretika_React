@@ -6,6 +6,7 @@ import Img from "./Img";
 import Tilt from "./Tilt";
 import { compact } from "../lib/format";
 import { IS_TOUCH } from "../lib/device";
+import { categoryLabel } from "../lib/categories";
 
 /* Poster card — mirrors the Flutter app's StoryCard (0.68 ratio, badges, parts bar) */
 export function StoryCard({ story, index = 0, rank }) {
@@ -50,7 +51,7 @@ export function StoryCard({ story, index = 0, rank }) {
         <div style={{ paddingTop: 8 }}>
           <div className="clamp-1" style={{ fontWeight: 600, fontSize: 13.5, lineHeight: 1.2 }}>{story.title}</div>
           {story.category_name && (
-            <span style={catBadge}>{story.category_name}</span>
+            <span style={catBadge}>{categoryLabel(story.category_name)}</span>
           )}
           <div className="tertiary" style={{ fontSize: 11, marginTop: 4 }}>
             {t("card.reads", { n: compact(story.total_views) })}
@@ -63,6 +64,7 @@ export function StoryCard({ story, index = 0, rank }) {
 
 /* Wide list row — used in search / lists / bookmarks */
 export function StoryRow({ story, index = 0 }) {
+  useTranslation(); // subscribe to language changes (categoryLabel below)
   return (
     <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: Math.min(index * 0.03, 0.25) }}>
       <Link to={`/story/${story.slug}`} className="row gap-12" style={{ padding: "10px 0" }}>
@@ -79,7 +81,7 @@ export function StoryRow({ story, index = 0 }) {
           <div className="row gap-10 tertiary" style={{ fontSize: 11.5, marginTop: 6 }}>
             <span className="row gap-4"><Eye size={12} /> {compact(story.total_views)}</span>
             {story.average_rating > 0 && <span className="row gap-4"><Star size={12} fill="var(--gold)" color="var(--gold)" /> {story.average_rating.toFixed(1)}</span>}
-            {story.category_name && <span style={{ ...catBadge, marginTop: 0 }}>{story.category_name}</span>}
+            {story.category_name && <span style={{ ...catBadge, marginTop: 0 }}>{categoryLabel(story.category_name)}</span>}
           </div>
         </div>
       </Link>

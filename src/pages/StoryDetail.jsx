@@ -23,6 +23,7 @@ import { compact } from "../lib/format";
 import { getProgress } from "../lib/reading";
 import { thumbFor } from "../lib/constants";
 import { errMsg } from "../lib/api";
+import { categoryLabel } from "../lib/categories";
 
 export default function StoryDetail() {
   const { slug } = useParams();
@@ -85,7 +86,7 @@ export default function StoryDetail() {
     const url = window.location.href;
     try {
       if (navigator.share) await navigator.share({ title: story.title, url });
-      else { await navigator.clipboard.writeText(url); toast.success("Link copied"); }
+      else { await navigator.clipboard.writeText(url); toast.success(t("toast.linkCopied")); }
     } catch { /* cancelled */ }
   };
 
@@ -169,7 +170,7 @@ export default function StoryDetail() {
         <div className="fog" style={{ opacity: 0.45 }} />
 
         {/* floating chrome */}
-        <button onClick={() => nav(-1)} className="sd-glass-ic" style={floatBtn(14, 14)} aria-label="Back"><ArrowLeft size={20} /></button>
+        <button onClick={() => nav(-1)} className="sd-glass-ic" style={floatBtn(14, 14)} aria-label={t("common.back")}><ArrowLeft size={20} /></button>
         <button onClick={share} className="sd-glass-ic" style={floatBtn(14, null, 14)} aria-label={t("story.share")}><Share2 size={18} /></button>
 
         <div className="container sd-hero-grid">
@@ -194,13 +195,13 @@ export default function StoryDetail() {
               transition={{ delay: 0.1, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
               style={{ flexWrap: "wrap" }}
             >
-              {story.category_name && <span className="sd-badge crimson">{story.category_name}</span>}
+              {story.category_name && <span className="sd-badge crimson">{categoryLabel(story.category_name)}</span>}
               <span className="sd-badge">
                 {story.story_type === "series"
-                  ? <><Layers size={12} /> {episodes.length} Episodes</>
-                  : <><BookOpen size={12} /> Single</>}
+                  ? <><Layers size={12} /> {episodes.length} {t("common.episodes")}</>
+                  : <><BookOpen size={12} /> {t("creator.single")}</>}
               </span>
-              {story.is_editor_pick && <span className="sd-badge gold"><Star size={12} fill="currentColor" /> Editor's pick</span>}
+              {story.is_editor_pick && <span className="sd-badge gold"><Star size={12} fill="currentColor" /> {t("story.editorsPick")}</span>}
             </motion.div>
 
             <motion.h1

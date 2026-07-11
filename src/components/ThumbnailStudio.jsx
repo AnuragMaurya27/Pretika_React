@@ -157,7 +157,7 @@ export default function ThumbnailStudio({ open, onClose, onDone, suggestedText =
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (file.size > 8 * 1024 * 1024) return toast.error("Max 8MB image");
+    if (file.size > 8 * 1024 * 1024) return toast.error(t("studio.max8"));
     const url = URL.createObjectURL(file);
     const image = new Image();
     image.onload = () => {

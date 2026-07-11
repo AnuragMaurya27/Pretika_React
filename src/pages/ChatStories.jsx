@@ -3,6 +3,7 @@ import {
   MessageSquareText, Plus, Pencil, Trash2, Eye, Clock3, Search,
   Archive, MoonStar, Flame, ChevronRight, SquarePen, Users,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { useAuth } from "../store/auth";
 import {
@@ -27,6 +28,7 @@ const NIGHT_TIMES = ["3:33 AM", "2:47 AM", "1:59 AM", "4:04 AM", "3:13 AM", "2:2
  * The official Pretika account additionally sees drafts + edit/delete + compose.
  */
 export default function ChatStories() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const user = useAuth((s) => s.user);
   // client-side hint only — the server enforces the real gate
@@ -45,9 +47,9 @@ export default function ChatStories() {
 
   const onDelete = (e, s) => {
     e.stopPropagation();
-    if (!window.confirm(`"${s.title}" delete karein? Wapas nahi aayegi.`)) return;
+    if (!window.confirm(t("chats.deleteConfirm", { title: s.title }))) return;
     del.mutate(s.id, {
-      onSuccess: () => toast.success("Chat story delete ho gayi"),
+      onSuccess: () => toast.success(t("chats.deleted")),
       onError: (err) => toast.error(errMsg(err)),
     });
   };
@@ -68,32 +70,30 @@ export default function ChatStories() {
               <MessageSquareText size={13} /> PRETIKA ORIGINALS
             </span>
             <h1 className="chp-title display-hi lang-hi">
-              प्रेतिका <span className="flicker">चैट्स</span>
+              {t("chats.titleA")} <span className="flicker">{t("chats.titleB")}</span>
             </h1>
             <p className="chp-sub">
-              Kisi aur ka phone. Kisi aur ki raat. Har chat ek sachchi lagne
-              wali darawni kahani — message-by-message, jaise tum khud scroll
-              kar rahe ho.
+              {t("chats.heroSub")}
             </p>
 
             <div className="chp-stats">
               <span className="chp-stat">
-                <MessageSquareText size={13} /> {items.length || "…"} {items.length === 1 ? "chat" : "chats"}
+                <MessageSquareText size={13} /> {items.length || "…"} {t("chats.chatsWord")}
               </span>
               {totalViews > 0 && (
                 <span className="chp-stat">
-                  <Flame size={13} /> {totalViews} baar padhi gayi
+                  <Flame size={13} /> {t("chats.readTimes", { n: totalViews })}
                 </span>
               )}
               <span className="chp-stat blood">
-                <MoonStar size={13} /> Raat 12 baje ke baad mat kholna
+                <MoonStar size={13} /> {t("chats.midnight")}
               </span>
             </div>
 
             {isOfficial && (
               <div className="chp-stats" style={{ marginTop: 14 }}>
                 <button className="btn btn-sm btn-crimson" onClick={() => nav("/creator/chat-story/new")}>
-                  <Plus size={15} /> Nai Chat Story
+                  <Plus size={15} /> {t("chats.newStory")}
                 </button>
               </div>
             )}
@@ -104,31 +104,31 @@ export default function ChatStories() {
         <div className="container">
           <div className="chp-panel">
             <div className="chp-phead">
-              <span className="chp-ptitle">Chats</span>
+              <span className="chp-ptitle">{t("chats.panelTitle")}</span>
               {isOfficial ? (
                 <button
                   className="chp-compose"
-                  aria-label="Nai chat story"
+                  aria-label={t("chats.newStory")}
                   onClick={() => nav("/creator/chat-story/new")}
                 >
                   <SquarePen size={17} />
                 </button>
               ) : items.length > 0 ? (
                 <span className="chp-unread">
-                  {items.length} unread {items.length === 1 ? "raat" : "raatein"}
+                  {t("chats.unreadNights", { n: items.length })}
                 </span>
               ) : null}
             </div>
 
             <div className="chp-search" aria-hidden="true">
               <Search size={15} />
-              Dhoondo… ya mat dhoondo
+              {t("chats.searchPh")}
             </div>
 
             {/* pinned contacts — aaj raat kaun message kar raha hai */}
             {!loading && pins.length > 0 && (
               <>
-                <div className="chp-pins-label">Aaj raat</div>
+                <div className="chp-pins-label">{t("chats.tonight")}</div>
                 <div className="chp-pins">
                   {pins.map((s) => (
                     <button key={s.id} className="chp-pin" onClick={() => nav(`/chat-stories/${s.slug}`)}>
@@ -163,10 +163,10 @@ export default function ChatStories() {
               <div className="center" style={{ padding: "36px 24px 40px" }}>
                 <Spook size={68} tone="light" />
                 <div style={{ fontWeight: 800, fontSize: 16, marginTop: 14 }}>
-                  Abhi koi chat nahi aayi
+                  {t("chats.emptyTitle")}
                 </div>
                 <div className="muted" style={{ fontSize: 13, marginTop: 5, lineHeight: 1.6 }}>
-                  Pretika ka phone abhi shaant hai… jaldi hi pehli chat aayegi.
+                  {t("chats.emptySub")}
                 </div>
               </div>
             ) : (
@@ -190,7 +190,7 @@ export default function ChatStories() {
                   <span className="chp-mid">
                     <span className="chp-toprow">
                       <span className="chp-name clamp-1">{s.title}</span>
-                      {s.status === "draft" && <span className="chp-draft">DRAFT</span>}
+                      {s.status === "draft" && <span className="chp-draft">{t("chats.draft")}</span>}
                       <span className="chp-when">
                         {NIGHT_TIMES[i % NIGHT_TIMES.length]}
                         <ChevronRight size={13} />
@@ -200,11 +200,11 @@ export default function ChatStories() {
                       {s.contact_name}: {s.preview_text || "…"}
                     </span>
                     <span className="chp-metaline">
-                      <span className="chp-meta-it"><Clock3 size={11} /> {s.duration_minutes} min ka darr</span>
+                      <span className="chp-meta-it"><Clock3 size={11} /> {t("chats.minFear", { n: s.duration_minutes })}</span>
                       <i className="chp-sep" />
-                      <span className="chp-meta-it">{s.message_count} messages</span>
+                      <span className="chp-meta-it">{s.message_count} {t("chats.messagesWord")}</span>
                       {s.chat_type === "group" && (
-                        <span className="chp-gtag"><Users size={10} /> group</span>
+                        <span className="chp-gtag"><Users size={10} /> {t("chats.group")}</span>
                       )}
                       {isOfficial && (
                         <span className="chp-actions">
@@ -212,7 +212,7 @@ export default function ChatStories() {
                             className="chp-action"
                             role="button"
                             tabIndex={0}
-                            aria-label="Edit"
+                            aria-label={t("common.edit")}
                             onClick={(e) => { e.stopPropagation(); nav(`/creator/chat-story/${s.id}/edit`); }}
                             onKeyDown={(e) => e.key === "Enter" && (e.stopPropagation(), nav(`/creator/chat-story/${s.id}/edit`))}
                           >
@@ -222,7 +222,7 @@ export default function ChatStories() {
                             className="chp-action danger"
                             role="button"
                             tabIndex={0}
-                            aria-label="Delete"
+                            aria-label={t("common.delete")}
                             onClick={(e) => onDelete(e, s)}
                             onKeyDown={(e) => e.key === "Enter" && onDelete(e, s)}
                           >
@@ -239,14 +239,14 @@ export default function ChatStories() {
             {/* archived easter egg → schema demo chat */}
             <button className="chp-arch" onClick={() => nav("/chat-stories/demo")}>
               <span className="chp-arch-ic"><Archive size={18} /></span>
-              <span style={{ flex: 1 }}>Archived</span>
+              <span style={{ flex: 1 }}>{t("chats.archived")}</span>
               <span className="chp-arch-n">1</span>
             </button>
 
             <div className="chp-pfoot">
               <span className="row gap-6" style={{ justifyContent: "center" }}>
                 <Eye size={12} />
-                Headphones laga lo. Lights bujha do. Ab taiyaar ho.
+                {t("chats.panelFooter")}
               </span>
             </div>
           </div>

@@ -97,7 +97,7 @@ export default function CommentSection({ storyId, episodeId = null, creatorId, e
           {totalThreads > 0 && <span className="cmt-count">{compact(totalThreads)}</span>}
         </div>
         {visible.length > 1 && (
-          <div className="cmt-seg" role="tablist" aria-label="Sort comments">
+          <div className="cmt-seg" role="tablist" aria-label={t("common.sortComments")}>
             <button className={sort === "top" ? "on" : ""} onClick={() => setSort("top")}>
               <Sparkles size={12} /> {t("story.topComments")}
             </button>
@@ -309,7 +309,7 @@ function CommentCard({ c, storyId, creatorId, me, requireAuth, epNumber }) {
 
           {/* kebab */}
           <div style={{ position: "relative", flexShrink: 0 }}>
-            <button className="cmt-kebab" onClick={() => setMenuOpen((v) => !v)} aria-label="More">
+            <button className="cmt-kebab" onClick={() => setMenuOpen((v) => !v)} aria-label={t("common.more")}>
               <MoreVertical size={15} />
             </button>
             <AnimatePresence>
@@ -474,7 +474,7 @@ function ReplyRow({ r, parentId, storyId, me, requireAuth, onReply }) {
             <span style={{ fontSize: 10.5, color: "var(--cmt-faint)" }}>{timeAgo(r.created_at)}</span>
           </div>
           <div style={{ position: "relative", flexShrink: 0 }}>
-            <button className="cmt-kebab" onClick={() => setMenuOpen((v) => !v)} aria-label="More">
+            <button className="cmt-kebab" onClick={() => setMenuOpen((v) => !v)} aria-label={t("common.more")}>
               <MoreVertical size={13} />
             </button>
             <AnimatePresence>
