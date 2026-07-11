@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import BottomNav from "./BottomNav";
 import DesktopNav from "./DesktopNav";
 import Footer from "./Footer";
@@ -19,23 +19,25 @@ export default function Layout() {
     <div className="app-shell">
       <ScrollManager />
       {!immersive && <DesktopNav />}
-      {/* NOTE: no `filter` in this transition. A resting `filter: blur(0px)` on
-          the wrapper stays inline forever and makes it a containing block +
-          composited layer — which traps position:fixed children AND makes the
-          sticky mobile header glitch during scroll (content bleeds above it).
-          Plain opacity + y settles to a clean wrapper (transform:none), so
-          sticky/fixed work normally. */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={location.pathname}
-          initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <Outlet />
-        </motion.div>
-      </AnimatePresence>
+      {/* Enter-only page transition — a plain keyed motion.div, deliberately NOT
+          wrapped in <AnimatePresence mode="wait">. That combo intermittently left
+          the incoming page mounted at its `initial` opacity:0 on back/forward (POP)
+          navigation and never fired the enter animation, so the page looked blank
+          until a manual refresh (React 19 + framer-motion 12). A keyed motion.div
+          remounts on every navigation and reliably animates in; the key change
+          still gives ScrollManager its per-route remount.
+          NOTE: no `filter` here — a resting `filter: blur(0px)` stays inline and
+          makes the wrapper a containing block/composited layer, which traps
+          position:fixed children and glitches the sticky mobile header. Plain
+          opacity + y settles to transform:none, so sticky/fixed work normally. */}
+      <motion.div
+        key={location.pathname}
+        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <Outlet />
+      </motion.div>
       {!immersive && <Footer />}
       {showBottom && <BottomNav />}
     </div>
