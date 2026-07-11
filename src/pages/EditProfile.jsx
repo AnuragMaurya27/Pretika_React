@@ -17,6 +17,7 @@ export default function EditProfile() {
   const user = useAuth((s) => s.user);
   const fetchMe = useAuth((s) => s.fetchMe);
   const setUser = useAuth((s) => s.setUser);
+  const promoteToCreator = useAuth((s) => s.promoteToCreator);
   const fileRef = useRef();
 
   const [f, setF] = useState({
@@ -61,8 +62,9 @@ export default function EditProfile() {
   const becomeCreator = async () => {
     try {
       await post("/users/me/become-creator");
+      promoteToCreator();          // flip UI immediately (survives a failed refetch)
       toast.success("You're a creator now!");
-      fetchMe().catch(() => {});
+      fetchMe().catch(() => {});   // reconcile fuller profile in the background
     } catch (e) { toast.error(errMsg(e)); }
   };
 

@@ -13,7 +13,7 @@ import {
 } from "../lib/hooks";
 import Img from "./Img";
 import { useAuth } from "../store/auth";
-import { errMsg } from "../lib/api";
+import { errMsg, writeLikelySucceeded } from "../lib/api";
 import { compact, timeAgo } from "../lib/format";
 
 /**
@@ -70,14 +70,18 @@ export default function CommentSection({ storyId, episodeId = null, creatorId, e
     if (!requireAuth()) return;
     const v = text.trim();
     if (!v) return;
+    const done = () => {
+      setText("");
+      if (taRef.current) taRef.current.style.height = "auto";
+      setSort("new");
+      toast.success(t("toast.commentAdded"));
+    };
     add.mutate({ content: v, ...(episodeId ? { episodeId } : {}) }, {
-      onSuccess: () => {
-        setText("");
-        if (taRef.current) taRef.current.style.height = "auto";
-        setSort("new");
-        toast.success(t("toast.commentAdded"));
-      },
-      onError: (e) => toast.error(errMsg(e)),
+      onSuccess: done,
+      // The comment still saves when the server's post-insert XP step 500s (or
+      // that 500 gets CORS-blocked into a "Network Error") — useAddComment's
+      // onSettled refetch surfaces it, so treat those as success, not an error.
+      onError: (e) => (writeLikelySucceeded(e) ? done() : toast.error(errMsg(e))),
     });
   };
 
@@ -227,11 +231,14 @@ function CommentCard({ c, storyId, creatorId, me, requireAuth, epNumber }) {
     if (!requireAuth()) return;
     const v = replyText.trim();
     if (!v) return;
+    const done = () => { setReplyText(""); setReplying(false); setOpen(true); toast.success(t("toast.commentAdded")); };
     addReply.mutate(
       { content: v, parentCommentId: c.id, ...(c.episode_id ? { episodeId: c.episode_id } : {}) },
       {
-        onSuccess: () => { setReplyText(""); setReplying(false); setOpen(true); toast.success(t("toast.commentAdded")); },
-        onError: (e) => toast.error(errMsg(e)),
+        onSuccess: done,
+        // Reply saves even when the post-insert XP step 500s / CORS-blocks into a
+        // "Network Error"; the onSettled refetch shows it, so don't false-alarm.
+        onError: (e) => (writeLikelySucceeded(e) ? done() : toast.error(errMsg(e))),
       }
     );
   };

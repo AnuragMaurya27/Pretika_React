@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -36,6 +36,13 @@ export default function Profile() {
   const avatarRef = useRef();
   const [busyCover, setBusyCover] = useState(false);
   const [busyAvatar, setBusyAvatar] = useState(false);
+
+  // Refresh /users/me each time the profile opens so freshly earned reader XP
+  // (comments +5, episode complete +25, daily login +10) shows the up-to-date
+  // rank/score without a full page reload. init/login already hydrate on boot.
+  useEffect(() => {
+    if (authed) fetchMe().catch(() => {});
+  }, [authed, fetchMe]);
 
   if (!authed) return <GuestProfile />;
 

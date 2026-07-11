@@ -13,13 +13,15 @@ export default function BecomeCreator() {
   const nav = useNavigate();
   const user = useAuth((s) => s.user);
   const fetchMe = useAuth((s) => s.fetchMe);
+  const promoteToCreator = useAuth((s) => s.promoteToCreator);
   const [busy, setBusy] = useState(false);
 
   const go = async () => {
     setBusy(true);
     try {
       await post("/users/me/become-creator");
-      await fetchMe().catch(() => {});
+      promoteToCreator();          // flip UI immediately (survives a failed refetch)
+      fetchMe().catch(() => {});   // reconcile fuller profile in the background
       toast.success(t("creator.becomeTitle"));
       nav("/creator-dashboard");
     } catch (e) { toast.error(errMsg(e)); }

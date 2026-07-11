@@ -91,6 +91,22 @@ export function errMsg(error, fallback = "Something went wrong") {
   return fallback;
 }
 
+/**
+ * True when a write most likely still succeeded server-side despite the request
+ * "failing" for the client: a genuine network failure (no response) or any 5xx.
+ * The comments endpoint INSERTs the row BEFORE a non-transactional XP update that
+ * can throw (the reader_rank enum bug), so the comment lands even though the POST
+ * returns 500 — and cross-origin that 500 (lacking CORS headers) surfaces to axios
+ * as a plain "Network Error". Callers use this to reconcile silently instead of
+ * showing a false error for a write that actually went through. 4xx (auth,
+ * validation, rate-limit) is a real failure and is NOT treated as success.
+ */
+export function writeLikelySucceeded(error) {
+  if (error?.message === "Network Error") return true;
+  const status = error?.response?.status;
+  return typeof status === "number" && status >= 500;
+}
+
 // Thin GET/POST helpers that already unwrap the envelope.
 export const get = (url, config) => api.get(url, config).then(unwrap);
 export const post = (url, data, config) => api.post(url, data, config).then(unwrap);

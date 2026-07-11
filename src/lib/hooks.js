@@ -183,7 +183,11 @@ export function useAddComment(storyId) {
         ...(episodeId ? { episode_id: episodeId } : {}),
       });
     },
-    onSuccess: (_d, arg) => {
+    // Reconcile on settled — success OR error. The backend saves the comment
+    // BEFORE a non-transactional XP update that can 500 (reader_rank enum bug),
+    // so the write usually lands even when the request "fails"; refetching either
+    // way surfaces the new comment without a manual page refresh.
+    onSettled: (_d, _e, arg) => {
       qc.invalidateQueries({ queryKey: ["comments", storyId] });
       const parentId = typeof arg === "object" ? arg.parentCommentId : null;
       if (parentId) qc.invalidateQueries({ queryKey: ["replies", parentId] });

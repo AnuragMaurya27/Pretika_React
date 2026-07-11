@@ -74,6 +74,17 @@ export const useAuth = create((set, get) => ({
     set({ user: u });
   },
 
+  // Reflect a successful become-creator locally so the UI flips to creator right
+  // away — even if the follow-up /users/me refetch fails (e.g. API cold-start).
+  // The server has already set is_creator + role; fetchMe reconciles the rest.
+  promoteToCreator: () => {
+    const u = get().user;
+    if (!u) return;
+    const nu = { ...u, is_creator: true, role: "creator" };
+    saveUser(nu);
+    set({ user: nu });
+  },
+
   logout: async () => {
     const refresh = localStorage.getItem(STORAGE.refresh);
     try {
