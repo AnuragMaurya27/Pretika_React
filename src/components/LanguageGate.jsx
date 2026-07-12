@@ -49,8 +49,8 @@ export default function LanguageGate() {
 
         <div style={{ display: "grid", gap: 10, marginTop: 20 }}>
           <LangOption
-            title="हिन्दी"
-            sub="पूरी वेबसाइट हिन्दी में"
+            title="हिंदी"
+            sub="पूरी वेबसाइट हिंदी में"
             sample="डर यहाँ कहानी बन जाता है…"
             onPick={() => setLang("hindi")}
           />

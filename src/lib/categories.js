@@ -9,7 +9,7 @@ import i18n from "../i18n";
 const HI_BY_SLUG = {
   "ghost-stories": "भूतिया कहानियाँ",
   "haunted-places": "भुतहा जगहें",
-  "urban-legends": "शहरी किंवदंतियाँ",
+  "urban-legends": "अर्बन लीजेंड्स",
   "real-experiences": "सच्चे अनुभव",
   "paranormal": "पैरानॉर्मल",
   "jinn-spirits": "जिन्न और रूहें",
