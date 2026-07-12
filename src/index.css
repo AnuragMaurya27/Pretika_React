@@ -127,6 +127,15 @@ ul { list-style: none; }
    Single 400 weight by design: keep font-weight 400 or strokes go muddy. */
 .display-hi, .display-hi :lang(hi) { font-family: "Yatra One", "Noto Serif Devanagari", Georgia, serif; font-weight: 400; }
 
+/* Devanagari must never carry letter-spacing: positive tracking splits every
+   glyph with a visible gap (वे ल क म) and negative tracking mangles matras /
+   conjuncts. Kill it site-wide whenever the UI is Hindi, and on any element
+   explicitly tagged Hindi (story titles etc. under the English UI). `!important`
+   so it also overrides inline `letterSpacing` styles — hero eyebrow, badges,
+   kickers, footer/nav wordmark, and so on. */
+html[lang="hi"] *,
+:lang(hi), .lang-hi { letter-spacing: normal !important; }
+
 ::selection { background: var(--indigo-600); color: #fff; }
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 8px; }
