@@ -1341,20 +1341,116 @@ html { scroll-behavior: smooth; }
 }
 
 /* ===========================================================================
-   ✦ DARR METER — paragraph-level fear heatmap (reader only, .dm-*)
+   ✦ DARR METER v3 — slim inline darr line + bulging edge strip + haunted FAB
+   (reader only, .dm-*). No card, no box — invisible until there's data.
    =========================================================================== */
-/* right-edge heat strip — anticipation from the first scroll */
+/* — the darr line: one airy row between the ornament and paragraph 1.
+     Inside .rd-shell → uses the --rd-* theme vars (parchment/sepia/midnight). */
+.dm-inline { margin: 0 0 22px; }
+.dm-line-wrap { display: flex; align-items: center; justify-content: space-between; gap: 8px 14px; flex-wrap: wrap; }
+.dm-line {
+  display: inline-flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap;
+  font-size: 12px; font-weight: 700; color: var(--rd-muted, var(--text-secondary));
+  padding: 4px 0; text-align: left;
+}
+.dm-line-name {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-weight: 800; color: var(--rd-text, var(--text-primary));
+}
+.dm-line-name svg { color: var(--rd-accent, var(--crimson)); flex-shrink: 0; }
+/* darr level — five little ghosts, filled = scarier (spice-level pattern) */
+.dm-lvl { display: inline-flex; align-items: center; gap: 5px; }
+.dm-lvl-g { display: inline-flex; line-height: 0; opacity: .2; color: var(--rd-text, #3a2b20); }
+.dm-lvl-g.on { opacity: 1; color: var(--rd-accent, var(--crimson)); }
+.dm-lvl-txt { font-weight: 800; color: var(--rd-accent, var(--crimson)); }
+.dm-line-dim { color: var(--rd-faint, var(--text-tertiary)); font-variant-numeric: tabular-nums; }
+.dm-line-chev { color: var(--rd-faint, var(--text-tertiary)); flex-shrink: 0; transition: transform .2s ease; }
+.dm-line-chev.open { transform: rotate(180deg); }
+.dm-line-peak {
+  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+  font-size: 12px; font-weight: 800; color: var(--rd-accent, var(--crimson));
+  padding: 5px 11px; border-radius: 999px;
+  background: color-mix(in srgb, var(--rd-accent, #9c1c14) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rd-accent, #9c1c14) 22%, transparent);
+  transition: transform .15s ease, background .2s ease;
+}
+.dm-line-peak:hover { background: color-mix(in srgb, var(--rd-accent, #9c1c14) 15%, transparent); }
+.dm-line-peak:active { transform: scale(.95); }
+
+/* expandable mini heat map — appears only when the darr line is tapped */
+.dm-mini { position: relative; padding-top: 12px; animation: dmSlide .28s ease both; }
+@keyframes dmSlide { from { opacity: 0; transform: translateY(-5px); } }
+.dm-bar {
+  position: relative; height: 14px; border-radius: 8px; cursor: pointer; width: 100%;
+  border: 1px solid color-mix(in srgb, var(--rd-text, #3a2b20) 13%, transparent);
+}
+.dm-bar-you {
+  position: absolute; top: 9px; width: 3px; height: 20px; border-radius: 2px;
+  transform: translateX(-50%); background: var(--rd-text, #241708);
+  box-shadow: 0 0 0 1.5px var(--rd-card, #fff);
+  transition: left .3s ease; pointer-events: none;
+}
+.dm-bar-peak {
+  position: absolute; top: 0; transform: translateX(-50%);
+  color: var(--rd-accent, var(--crimson)); line-height: 0; pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(70,9,7,.35));
+}
+
+/* paragraph flash after a map/strip jump — you see exactly where you landed */
+.dm-flash { animation: dmFlash 1.7s ease-out both; border-radius: 8px; }
+@keyframes dmFlash {
+  0% {
+    background: color-mix(in srgb, var(--rd-accent, #9c1c14) 15%, transparent);
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--rd-accent, #9c1c14) 15%, transparent);
+  }
+  100% { background: transparent; box-shadow: 0 0 0 7px transparent; }
+}
+
+/* — right-edge fear-scape: like YouTube "most replayed", scarier buckets
+     bulge wider toward the text; hot ones breathe an ember glow. Reads
+     without a legend: ubhaar = darr. — */
 .dm-strip {
   position: fixed; top: 76px; bottom: 76px; right: 3px; z-index: 26;
-  display: flex; flex-direction: column; gap: 1px;
-  width: 6px; border-radius: 4px; overflow: hidden;
-  opacity: .8; transition: width .18s ease, opacity .18s ease;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+  width: 14px; opacity: .9;
 }
-.dm-strip:hover { width: 13px; opacity: 1; }
-.dm-seg { flex: 1; min-height: 2px; padding: 0; display: block; width: 100%; cursor: pointer; }
-.dm-seg:hover { filter: brightness(1.25); }
+.dm-seg {
+  flex: 1; min-height: 2px; padding: 0; display: block; cursor: pointer;
+  width: var(--w, 3px); border-radius: 3px 0 0 3px;
+  transition: width .18s ease, filter .18s ease;
+}
+.dm-seg:hover { width: calc(var(--w, 3px) + 4px); filter: brightness(1.2); }
+.dm-seg.hot { animation: dmEmber 2.8s ease-in-out infinite; }
+@keyframes dmEmber {
+  0%, 100% { box-shadow: -1px 0 3px rgba(156,28,20,0); }
+  50% { box-shadow: -3px 0 9px rgba(156,28,20,.55); }
+}
+/* markers ride beside the strip, clear of the widest bulge */
+.dm-strip-marks { position: fixed; top: 76px; bottom: 76px; right: 2px; width: 0; z-index: 27; pointer-events: none; }
+.dm-mark-you {
+  position: absolute; right: 19px; transform: translateY(-50%);
+  border: 4px solid transparent; border-left: 6px solid var(--crimson);
+  filter: drop-shadow(0 1px 2px rgba(70,9,7,.4));
+  transition: top .25s ease;
+}
+.dm-mark-peak {
+  position: absolute; right: 18px; transform: translateY(-50%);
+  color: var(--crimson); line-height: 0;
+  filter: drop-shadow(0 0 2px rgba(255,255,255,.75)) drop-shadow(0 2px 4px rgba(70,9,7,.35));
+}
+/* hover tooltip — title attrs don't work on touch, this works everywhere.
+   Default: anchored left of the strip. `.float`: at the cursor (mini bar). */
+.dm-tip {
+  position: fixed; right: 30px; z-index: 40; transform: translateY(-50%);
+  padding: 6px 11px; border-radius: 10px;
+  background: #241207; color: #f6ead6;
+  font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+  white-space: nowrap; pointer-events: none;
+  box-shadow: 0 10px 26px -10px rgba(20,6,3,.6);
+}
+.dm-tip.float { right: auto; transform: translate(-50%, -130%); }
 
-/* floating darr button — above the reader's % pill */
+/* — floating darr button, above the reader's % pill — */
 .dm-fab-wrap {
   position: fixed; right: 12px; bottom: calc(64px + env(safe-area-inset-bottom));
   z-index: 27; display: grid; justify-items: center;
@@ -1373,6 +1469,16 @@ html { scroll-behavior: smooth; }
   box-shadow: 0 6px 16px -6px rgba(40,20,12,.4);
   opacity: .78; cursor: default;
 }
+/* current paragraph is community-hot → the ghost shivers */
+.dm-fab.haunt { animation: dmShiver 1.9s ease-in-out infinite; }
+@keyframes dmShiver {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  15% { transform: translate(-1.5px, .5px) rotate(-2deg); }
+  30% { transform: translate(1.5px, -1px) rotate(2deg); }
+  45% { transform: translate(-1px, 1px) rotate(-1.4deg); }
+  60% { transform: translate(1px, .5px) rotate(1.6deg); }
+  75% { transform: translate(-.5px, -.5px) rotate(-.8deg); }
+}
 .dm-fab-label { font-size: 7.5px; font-weight: 900; letter-spacing: .8px; margin-top: -3px; }
 .dm-fab-count {
   position: absolute; top: -5px; right: -3px;
@@ -1390,6 +1496,34 @@ html { scroll-behavior: smooth; }
   from { opacity: 1; transform: translate(-50%, 0) scale(1); }
   to { opacity: 0; transform: translate(-50%, -34px) scale(1.35); }
 }
+/* mini-ghost particles rising off the FAB on each darr */
+.dm-spook {
+  position: absolute; bottom: 48px; left: 50%; color: var(--crimson-mid);
+  line-height: 0; opacity: 0; pointer-events: none;
+  animation: dmSpook .95s ease-out both;
+}
+@keyframes dmSpook {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(.6); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), -44px) scale(1.2); }
+}
+/* the one hint pill above the FAB — coach mark / tap feedback / dread whisper */
+.dm-hint {
+  position: absolute; bottom: calc(100% + 10px); right: 0;
+  display: inline-flex; align-items: flex-start; gap: 7px;
+  width: max-content; max-width: min(250px, calc(100vw - 40px));
+  padding: 9px 13px; border-radius: 13px 13px 4px 13px;
+  background: #241207; color: #f6ead6; text-align: left;
+  font-size: 12px; font-weight: 700; line-height: 1.45;
+  box-shadow: 0 14px 34px -12px rgba(20,6,3,.65);
+  animation: dmHintIn .35s var(--ease-spring, ease) both;
+}
+.dm-hint svg { flex-shrink: 0; color: #ff9c8a; margin-top: 1px; }
+.dm-hint.coach {
+  background: linear-gradient(180deg, #3a1109, #240a05);
+  border: 1px solid rgba(255,140,110,.4);
+}
+@keyframes dmHintIn { from { opacity: 0; transform: translateY(8px) scale(.92); } }
 
 /* social proof chip — sits right after the paragraph that scared people */
 .dm-proof-host { margin: -6px 0 14px; }
@@ -1400,6 +1534,12 @@ html { scroll-behavior: smooth; }
   border: 1px solid color-mix(in srgb, var(--rd-accent, #9c1c14) 30%, transparent);
   color: var(--rd-accent, #9c1c14);
   font-size: 11.5px; font-weight: 700; letter-spacing: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dm-fab.haunt, .dm-seg.hot { animation: none; }
+  .dm-spook { display: none; }
+  .dm-bar-you, .dm-mark-you { transition: none; }
 }
 
 /* ---- Bottom nav (mobile) — frosted, springy --------------------------------- */
