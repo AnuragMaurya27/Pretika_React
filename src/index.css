@@ -127,6 +127,16 @@ ul { list-style: none; }
    Single 400 weight by design: keep font-weight 400 or strokes go muddy. */
 .display-hi, .display-hi :lang(hi) { font-family: "Yatra One", "Noto Serif Devanagari", Georgia, serif; font-weight: 400; }
 
+/* Hero headline only — scarier display faces than the rest of the site.
+   English → "Pirata One" (gothic, ominous); हिंदी → "Rozha One" (dramatic,
+   high-contrast Didone Devanagari). Scoped to `.hero-title` so section titles,
+   rank numbers and the reader's "समाप्त" keep Cinzel / Yatra One. The inner
+   `:lang(hi)` selectors beat the base display rules for animated word spans. */
+.hero-title.display,
+.hero-title.display :lang(hi) { font-family: "Pirata One", "Cinzel", Georgia, serif; }
+.hero-title.display-hi,
+.hero-title.display-hi :lang(hi) { font-family: "Rozha One", "Noto Serif Devanagari", Georgia, serif; }
+
 /* Devanagari must never carry letter-spacing: positive tracking splits every
    glyph with a visible gap (वे ल क म) and negative tracking mangles matras /
    conjuncts. Kill it site-wide whenever the UI is Hindi, and on any element
@@ -1541,6 +1551,95 @@ html { scroll-behavior: smooth; }
   .dm-spook { display: none; }
   .dm-bar-you, .dm-mark-you { transition: none; }
 }
+
+/* ===========================================================================
+   ✦ NOTIFICATIONS — bell + unread badge + dropdown panel (.ntf-*)
+   =========================================================================== */
+.ntf-bell {
+  position: relative; width: 40px; height: 40px; border-radius: 12px;
+  display: grid; place-items: center; flex-shrink: 0;
+  background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.16);
+  transition: background .18s ease, transform .12s ease;
+}
+.ntf-bell:not(.dark) { background: var(--bg-secondary); border: 1px solid var(--border); }
+.ntf-bell.dark:hover { background: rgba(255,255,255,.18); }
+.ntf-bell:not(.dark):hover { background: var(--bg-tertiary); }
+.ntf-bell:active { transform: scale(.92); }
+.ntf-badge {
+  position: absolute; top: -5px; right: -4px; min-width: 18px; height: 18px;
+  padding: 0 5px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--crimson); color: #fff; font-size: 10.5px; font-weight: 800;
+  font-variant-numeric: tabular-nums; border: 2px solid var(--bg);
+  box-shadow: 0 2px 6px rgba(156,28,20,.5);
+}
+.ntf-bell.dark .ntf-badge { border-color: #1a0605; }
+
+.ntf-panel {
+  position: fixed; z-index: 80;
+  background: var(--bg-card); color: var(--text-primary);
+  border: 1px solid var(--border-solid); border-radius: 16px; overflow: hidden;
+  box-shadow: 0 22px 60px -16px rgba(40,14,8,.5), 0 4px 12px rgba(40,14,8,.12);
+}
+.ntf-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 10px 10px 14px; border-bottom: 1px solid var(--border);
+}
+.ntf-title { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 800; color: var(--text-primary); }
+.ntf-title svg { color: var(--crimson); }
+.ntf-head-count {
+  font-style: normal; font-size: 11px; font-weight: 800; color: #fff; background: var(--crimson);
+  padding: 1px 7px; border-radius: 999px; font-variant-numeric: tabular-nums;
+}
+.ntf-head-actions { display: inline-flex; align-items: center; gap: 2px; }
+.ntf-mark-all { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; color: var(--crimson); padding: 5px 9px; border-radius: 8px; }
+.ntf-mark-all:hover { background: color-mix(in srgb, var(--crimson) 10%, transparent); }
+.ntf-mark-all:disabled { opacity: .5; }
+.ntf-close { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; color: var(--text-tertiary); }
+.ntf-close:hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+.ntf-list { max-height: min(64vh, 460px); overflow-y: auto; overscroll-behavior: contain; }
+
+.ntf-item {
+  position: relative; width: 100%; text-align: left;
+  display: flex; align-items: flex-start; gap: 11px;
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  transition: background .15s ease;
+}
+.ntf-item:last-child { border-bottom: none; }
+.ntf-item:not(.skeleton):hover { background: var(--bg-secondary); }
+.ntf-item.unread { background: color-mix(in srgb, var(--crimson) 6%, transparent); }
+.ntf-item.unread:hover { background: color-mix(in srgb, var(--crimson) 11%, transparent); }
+
+.ntf-av-wrap { position: relative; flex-shrink: 0; }
+.ntf-av { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; background: var(--bg-tertiary); }
+.ntf-av-icon { display: grid; place-items: center; background: color-mix(in srgb, var(--crimson) 12%, var(--bg-tertiary)); color: var(--crimson); }
+.ntf-type {
+  position: absolute; right: -3px; bottom: -3px; width: 18px; height: 18px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--crimson); color: #fff; border: 2px solid var(--bg-card);
+}
+.ntf-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-right: 14px; }
+.ntf-item-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.ntf-msg { font-size: 12.5px; line-height: 1.4; color: var(--text-secondary); }
+.ntf-time { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+.ntf-dot { position: absolute; top: 16px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: var(--crimson); box-shadow: 0 0 0 3px color-mix(in srgb, var(--crimson) 18%, transparent); }
+.ntf-del {
+  position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; display: grid; place-items: center;
+  border-radius: 7px; color: var(--text-tertiary); opacity: 0; transition: opacity .15s ease, background .15s ease;
+}
+.ntf-item:hover .ntf-del { opacity: 1; }
+.ntf-del:hover { background: var(--bg-tertiary); color: var(--crimson); }
+.ntf-item:hover .ntf-dot { opacity: 0; }
+
+.ntf-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 42px 20px; text-align: center; color: var(--text-tertiary); }
+.ntf-empty svg { opacity: .7; }
+.ntf-empty p { font-size: 13.5px; font-weight: 700; color: var(--text-secondary); }
+.ntf-empty-sub { font-size: 12px; max-width: 220px; line-height: 1.5; }
+.ntf-retry { margin-top: 4px; font-size: 12.5px; font-weight: 700; color: var(--crimson); padding: 6px 14px; border-radius: 8px; background: color-mix(in srgb, var(--crimson) 10%, transparent); }
+
+.ntf-sk-line { display: block; height: 10px; border-radius: 5px; margin: 5px 0; background: var(--bg-tertiary); }
+.ntf-foot { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; font-size: 11.5px; color: var(--text-tertiary); border-top: 1px solid var(--border); }
+.ntf-spin { animation: ntfspin 1s linear infinite; }
+@keyframes ntfspin { to { transform: rotate(360deg); } }
 
 /* ---- Bottom nav (mobile) — frosted, springy --------------------------------- */
 .bnav {

@@ -490,6 +490,15 @@ export default {
     darr: "DARR!",
     counted: "COUNTED",
   },
+  notif: {
+    title: "Notifications",
+    unreadN: "{{n}} unread notifications",
+    markAll: "Mark all read",
+    delete: "Delete",
+    empty: "No notifications yet",
+    emptySub: "Follows, comments & updates will show up here.",
+    updating: "Updating…",
+  },
   notfound: {
     title: "404 — Lost?",
     sub: "This page vanished somewhere in the dark. Let's head back to the light.",

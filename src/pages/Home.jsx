@@ -16,6 +16,7 @@ import { HRailSkeleton, SkeletonBox } from "../components/Skeleton";
 import EmptyState from "../components/EmptyState";
 import ChatStoriesRail from "../components/ChatStoriesRail";
 import LangToggle from "../components/LangToggle";
+import NotificationBell from "../components/NotificationBell";
 import { useAuth } from "../store/auth";
 import { mediaUrl } from "../lib/constants";
 import { compact } from "../lib/format";
@@ -95,6 +96,7 @@ export default function Home() {
             </div>
             <div className="row gap-8">
               <LangToggle dark />
+              {user && <NotificationBell dark />}
               <button onClick={() => nav("/explore")} aria-label={t("nav.explore")} style={mSearchBtn}>
                 <Search size={19} />
               </button>
@@ -225,7 +227,7 @@ function Hero({ name, covers, loading }) {
 
           <motion.h1
             key={isHi ? "hi" : "en"}
-            className={isHi ? "display-hi" : "display"}
+            className={`hero-title ${isHi ? "display-hi" : "display"}`}
             variants={lineVar}
             initial="hidden"
             animate="show"
@@ -574,11 +576,12 @@ const heroEyebrow = {
   textTransform: "uppercase", boxShadow: "var(--shadow-sm)",
 };
 const heroTitle = {
-  // Yatra One ships one (heavy) weight; extra bold/negative tracking mangles
-  // Devanagari matras, so give the script normal weight + roomy leading.
-  color: "var(--text-primary)", fontWeight: 400, lineHeight: 1.26, marginTop: 18,
-  fontSize: "clamp(40px, 6vw, 74px)", letterSpacing: 0,
-  textShadow: "0 3px 26px rgba(156,28,20,.16)",
+  // Display face comes from the `.hero-title` class (Pirata One / Rozha One) —
+  // both single-weight, so keep fontWeight 400 (bolder faux weights mangle the
+  // Devanagari matras) and let the heavier faces + glow carry the menace.
+  color: "var(--text-primary)", fontWeight: 400, lineHeight: 1.24, marginTop: 18,
+  fontSize: "clamp(42px, 6.4vw, 80px)", letterSpacing: 0,
+  textShadow: "0 2px 1px rgba(30,6,4,.2), 0 6px 34px rgba(156,28,20,.32)",
 };
 const heroWord = { display: "inline-block", marginRight: "0.26em", willChange: "transform, filter" };
 const heroStat = { height: 32, fontSize: 12, pointerEvents: "none" };

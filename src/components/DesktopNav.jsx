@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../store/auth";
 import Img from "./Img";
 import LangToggle from "./LangToggle";
+import NotificationBell from "./NotificationBell";
 import { EyeLogo } from "./Art";
 
 const links = [
@@ -65,6 +66,7 @@ export default function DesktopNav() {
         <button onClick={() => nav("/creator/story/new")} style={writeBtn}>
           <PenSquare size={16} /> {t("nav.write")}
         </button>
+        {user && <NotificationBell dark />}
         {user ? (
           <div
             style={{ position: "relative" }}

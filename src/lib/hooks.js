@@ -135,6 +135,62 @@ export function useAnnouncements() {
   });
 }
 
+/* ------------------------------ Notifications --------------------------- */
+// All endpoints are [Authorize] — only enable when logged in. The badge polls
+// on an interval (no websockets) so it stays fresh; the list fetches lazily
+// when the panel opens.
+export function useUnreadCount(enabled = true) {
+  return useQuery({
+    queryKey: ["notif-unread"],
+    queryFn: () => get("/notifications/unread-count"),
+    enabled,
+    refetchInterval: enabled ? 60_000 : false, // near-real-time badge
+    staleTime: 30_000,
+  });
+}
+
+export function useNotifications(enabled = true) {
+  return useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => get("/notifications", { params: { page: 1, page_size: 30 } }),
+    enabled,
+    staleTime: 10_000,
+  });
+}
+
+export function useMarkNotifRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => post(`/notifications/${id}/read`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["notif-unread"] });
+    },
+  });
+}
+
+export function useMarkAllNotifRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => post("/notifications/read-all"),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["notif-unread"] });
+    },
+  });
+}
+
+export function useDeleteNotif() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => del(`/notifications/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["notif-unread"] });
+    },
+  });
+}
+
 /* --------------------------- Leaderboard creators ----------------------- */
 export function useTopCreators() {
   return useQuery({
