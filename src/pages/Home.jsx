@@ -362,16 +362,10 @@ function ContinueRail() {
     <Section title={t("home.continueReading")} icon={<BookOpen size={18} color="var(--crimson)" />}>
       <div className="container">
         <div className="hscroll" style={{ paddingBottom: 6 }}>
-          {items.map((h, i) => {
+          {items.map((h) => {
             const pct = Math.max(0, Math.min(100, Math.round(h.scroll_percentage || 0)));
             return (
-              <motion.div
-                key={h.story_id}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ delay: Math.min(i * 0.05, 0.3), duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              >
+              <div key={h.story_id}>
                 <Link to={`/read/${h.story_id}/${h.episode_id}`} className="hover-lift" style={contCard}>
                   <Img path={h.thumbnail_url} seed={h.story_id} alt=""
                     style={{ width: 52, height: 72, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
@@ -392,7 +386,7 @@ function ContinueRail() {
                   </div>
                   <ChevronRight size={15} className="tertiary" style={{ flexShrink: 0 }} />
                 </Link>
-              </motion.div>
+              </div>
             );
           })}
         </div>
@@ -406,20 +400,14 @@ function ContinueRail() {
 function Section({ title, icon, to, children }) {
   const { t } = useTranslation();
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 26 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      style={{ marginTop: 30 }}
-    >
+    <section style={{ marginTop: 30 }}>
       <div className="container sec-head" style={{ marginBottom: 12 }}>
         <div className="row gap-8 section-title">{icon} {title}</div>
         <div className="sec-rule" />
         {to && <Link to={to} className="see-all">{t("home.seeAll")} <ChevronRight size={16} /></Link>}
       </div>
       {children}
-    </motion.section>
+    </section>
   );
 }
 
@@ -469,14 +457,10 @@ function NewCreators() {
       <div className="container"><div className="hscroll" style={{ paddingBottom: 6 }}>
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => <SkeletonBox key={i} w={150} h={150} r={16} />)
-          : creators.map((c, i) => (
-              <motion.div
+          : creators.map((c) => (
+              <div
                 key={c.entity_id}
                 className="hover-lift"
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ delay: Math.min(i * 0.05, 0.3), duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 style={creatorCard}
               >
                 <Link to={`/u/${c.creator_username}`} style={{ display: "block" }}>
@@ -490,7 +474,7 @@ function NewCreators() {
                 <button className={`btn btn-sm ${done[c.entity_id] ? "btn-ghost" : "btn-primary"}`} style={{ marginTop: 10, width: "100%" }} onClick={() => onFollow(c)}>
                   {done[c.entity_id] ? t("home.following") : t("home.follow")}
                 </button>
-              </motion.div>
+              </div>
             ))}
       </div></div>
     </Section>
@@ -502,14 +486,7 @@ function NewCreators() {
 function Spotlight({ story }) {
   const { t } = useTranslation();
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 26 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="container"
-      style={{ marginTop: 34 }}
-    >
+    <section className="container" style={{ marginTop: 34 }}>
       <Link to={`/story/${story.slug}`} className="sotd">
         {/* poster with soft glow + star seal */}
         <div className="sotd-poster-wrap scene-3d">
@@ -538,7 +515,7 @@ function Spotlight({ story }) {
           <span className="sotd-cta">{t("home.readNow")} <ArrowRight size={16} /></span>
         </div>
       </Link>
-    </motion.section>
+    </section>
   );
 }
 
@@ -557,14 +534,7 @@ function WriterCta() {
   const nav = useNavigate();
   const reduce = useReducedMotion();
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="container"
-      style={{ marginTop: 40 }}
-    >
+    <section className="container" style={{ marginTop: 40 }}>
       <div className="wcta">
         <div className="aurora" style={{ opacity: 0.4 }} />
         <div className="fog" style={{ opacity: 0.45 }} />
@@ -591,7 +561,7 @@ function WriterCta() {
           </motion.button>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }
 

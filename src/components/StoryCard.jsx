@@ -9,7 +9,7 @@ import { IS_TOUCH } from "../lib/device";
 import { categoryLabel } from "../lib/categories";
 
 /* Poster card — mirrors the Flutter app's StoryCard (0.68 ratio, badges, parts bar) */
-export function StoryCard({ story, index = 0, rank }) {
+export function StoryCard({ story, rank }) {
   const { t } = useTranslation();
   const parts =
     story.story_type === "single"
@@ -18,11 +18,8 @@ export function StoryCard({ story, index = 0, rank }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ delay: Math.min(index * 0.04, 0.3), ease: [0.16, 1, 0.3, 1], duration: 0.5 }}
-      // Tap-scale only where there's a real cursor. On touch it fires on the
+      // Cards sit static — no scroll-triggered slide-up (kept still by design).
+      // Tap-scale only where there's a real cursor: on touch it fires on the
       // press that begins a scroll → card shakes under the finger and scroll janks.
       whileTap={IS_TOUCH ? undefined : { scale: 0.98 }}
       style={{ minWidth: 150, width: "100%", maxWidth: 190 }}

@@ -28,13 +28,7 @@ export default function ChatStoriesRail() {
   if (isLoading || items.length === 0) return null;
 
   return (
-    <motion.section
-      className="pcs"
-      initial={{ opacity: 0, y: 26 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <section className="pcs">
       <div className="container pcs-head">
         <div className="pcs-id">
           <span className="pcs-appic" aria-hidden="true">
@@ -64,7 +58,7 @@ export default function ChatStoriesRail() {
           </Link>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }
 
@@ -80,12 +74,8 @@ function ChatCard({ story: s, index = 0, onOpen }) {
   return (
     <motion.div
       className="pcc"
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ delay: Math.min(index * 0.05, 0.3), ease: [0.16, 1, 0.3, 1], duration: 0.5 }}
-      // Tap-scale only on desktop — on touch it shakes the card under the finger
-      // mid-scroll and fights the native scroll (matches StoryCard).
+      // Static in place — no scroll-triggered slide-up. Tap-scale on desktop
+      // only; on touch it shakes the card mid-scroll (matches StoryCard).
       whileTap={IS_TOUCH ? undefined : { scale: 0.98 }}
     >
       <button onClick={onOpen} style={{ display: "block", width: "100%", textAlign: "left" }}>
