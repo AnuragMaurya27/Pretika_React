@@ -339,7 +339,34 @@ export function useFollow() {
   return useMutation({
     mutationFn: ({ id, following }) =>
       following ? del(`/users/${id}/follow`) : post(`/users/${id}/follow`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["leaderboard"] }),
+    // Optimistically flip is_following on every cached profile of this user.
+    // Profiles are keyed by USERNAME (["user", username]) but we only have the
+    // id here, so match on the id inside the cached data. Without this the
+    // 5-min staleTime kept serving the pre-toggle is_following, so the button
+    // showed "Following" after an unfollow (and vice-versa) on revisit.
+    onMutate: async ({ id, following }) => {
+      await qc.cancelQueries({ queryKey: ["user"] });
+      const prev = [];
+      qc.getQueriesData({ queryKey: ["user"] }).forEach(([key, data]) => {
+        if (data?.id === id) {
+          prev.push([key, data]);
+          qc.setQueryData(key, {
+            ...data,
+            is_following: !following,
+            total_followers: Math.max(0, (data.total_followers || 0) + (following ? -1 : 1)),
+          });
+        }
+      });
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => ctx?.prev?.forEach(([key, data]) => qc.setQueryData(key, data)),
+    // Refetch from the server so the cache reflects the truth after the write.
+    onSettled: (_d, _e, { id }) => {
+      qc.invalidateQueries({ queryKey: ["user"] });
+      qc.invalidateQueries({ queryKey: ["followers", id] });
+      qc.invalidateQueries({ queryKey: ["following"] });
+      qc.invalidateQueries({ queryKey: ["leaderboard"] });
+    },
   });
 }
 
@@ -434,4 +461,90 @@ export function useCreatorEarnings(enabled = true) {
 }
 export function useMyStories(enabled = true) {
   return useQuery({ queryKey: ["my-stories"], queryFn: () => get("/stories/my", { params: { page_size: 30 } }), enabled });
+}
+
+/* ----------------------------- Support ----------------------------------- */
+// Reader & creator help-desk — /api/support (categories, tickets, messages).
+export function useSupportCategories() {
+  return useQuery({
+    queryKey: ["support-categories"],
+    queryFn: () => get("/support/categories"),
+    staleTime: 1000 * 60 * 30,
+  });
+}
+
+export function useMyTickets(status) {
+  return useQuery({
+    queryKey: ["support-tickets", status || "all"],
+    queryFn: () => get("/support/tickets", { params: { status: status || undefined, page_size: 50 } }),
+  });
+}
+
+export function useTicket(id) {
+  return useQuery({
+    queryKey: ["support-ticket", id],
+    queryFn: () => get(`/support/tickets/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useTicketMessages(id) {
+  return useQuery({
+    queryKey: ["support-ticket-messages", id],
+    queryFn: () => get(`/support/tickets/${id}/messages`),
+    enabled: !!id,
+    refetchInterval: 30000, // light polling so support replies show up
+  });
+}
+
+export function useCreateTicket() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload) => post("/support/tickets", payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["support-tickets"] }),
+  });
+}
+
+export function useAddTicketMessage(id) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (message) => post(`/support/tickets/${id}/messages`, { message }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["support-ticket-messages", id] });
+      qc.invalidateQueries({ queryKey: ["support-ticket", id] });
+    },
+  });
+}
+
+export function useCloseTicket(id) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => post(`/support/tickets/${id}/close`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["support-ticket", id] });
+      qc.invalidateQueries({ queryKey: ["support-tickets"] });
+    },
+  });
+}
+
+export function useRateTicket(id) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ rating, feedback }) => post(`/support/tickets/${id}/rate`, { rating, feedback }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["support-ticket", id] });
+      qc.invalidateQueries({ queryKey: ["support-tickets"] });
+    },
+  });
+}
+
+/* ------------------------------ Reports ---------------------------------- */
+// User-side content report — POST /api/search/reports
+// entity_type: story|episode|user|comment; reason: inappropriate|spam|
+// hate_speech|adult_content|copyright|misinformation|other
+export function useCreateReport() {
+  return useMutation({
+    mutationFn: ({ entity_type, entity_id, reason, description }) =>
+      post("/search/reports", { entity_type, entity_id, reason, description }),
+  });
 }

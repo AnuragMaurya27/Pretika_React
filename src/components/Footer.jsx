@@ -56,6 +56,7 @@ export default function Footer() {
           <FooterCol title={t("footer.company")} links={[
             { to: "/about", label: t("footer.aboutUs") },
             { to: "/contact", label: t("footer.contact") },
+            { to: "/support", label: t("support.title") },
             { to: "/privacy", label: t("footer.privacy") },
             { to: "/terms", label: t("footer.terms") },
           ]} />

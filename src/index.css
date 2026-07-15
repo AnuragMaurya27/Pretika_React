@@ -127,15 +127,17 @@ ul { list-style: none; }
    Single 400 weight by design: keep font-weight 400 or strokes go muddy. */
 .display-hi, .display-hi :lang(hi) { font-family: "Yatra One", "Noto Serif Devanagari", Georgia, serif; font-weight: 400; }
 
-/* Hero headline only — scarier display faces than the rest of the site.
-   English → "Pirata One" (gothic, ominous); हिंदी → "Rozha One" (dramatic,
-   high-contrast Didone Devanagari). Scoped to `.hero-title` so section titles,
-   rank numbers and the reader's "समाप्त" keep Cinzel / Yatra One. The inner
-   `:lang(hi)` selectors beat the base display rules for animated word spans. */
+/* Hero headline only — haunted display faces, easy on the eyes (the old
+   Pirata One / Rozha One pair was too heavy). English → "IM Fell English"
+   (17th-century worn book print, quietly eerie); हिंदी → "Jaini Purva"
+   (Jain-manuscript calligraphy — cursed old पोथी lettering, unique to the
+   hero). Scoped to `.hero-title` so section titles, rank numbers and the
+   reader's "समाप्त" keep Cinzel / Yatra One. The inner `:lang(hi)` selectors
+   beat the base display rules for animated word spans. */
 .hero-title.display,
-.hero-title.display :lang(hi) { font-family: "Pirata One", "Cinzel", Georgia, serif; }
+.hero-title.display :lang(hi) { font-family: "IM Fell English", "Cinzel", Georgia, serif; }
 .hero-title.display-hi,
-.hero-title.display-hi :lang(hi) { font-family: "Rozha One", "Noto Serif Devanagari", Georgia, serif; }
+.hero-title.display-hi :lang(hi) { font-family: "Jaini Purva", "Yatra One", "Noto Serif Devanagari", Georgia, serif; font-weight: 400; }
 
 /* Devanagari must never carry letter-spacing: positive tracking splits every
    glyph with a visible gap (वे ल क म) and negative tracking mangles matras /
@@ -1029,7 +1031,9 @@ html { scroll-behavior: smooth; }
    Tucked slightly behind the glyphs (z -1) so blood looks like it seeps out. */
 .bleed-word { position: relative; }
 .drip {
-  position: absolute; top: 71%; z-index: -1; pointer-events: none;
+  /* 65% (was 71%): hero words now carry ±0.24em vertical padding (Devanagari
+     overshoot fix), so the box is taller — 65% keeps beads at the baseline. */
+  position: absolute; top: 65%; z-index: -1; pointer-events: none;
   width: var(--w, 7px); height: 2px;
 }
 .drip::before {

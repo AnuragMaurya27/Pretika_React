@@ -187,9 +187,12 @@ const lineVar = {
   hidden: {},
   show: { transition: { staggerChildren: 0.09, delayChildren: 0.2 } },
 };
+// No filter/blur here: an animated filter promotes each word to its own
+// rasterized layer whose box clips Devanagari overshoot (chandrabindu, matras)
+// and leaves stale text-shadow rectangles. Opacity + y keeps the reveal clean.
 const wordVar = {
-  hidden: { opacity: 0, y: 26, filter: "blur(10px)" },
-  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] } },
+  hidden: { opacity: 0, y: 26 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] } },
 };
 
 // drips per word of the crimson line — positions are % of THAT word's width,
@@ -576,14 +579,23 @@ const heroEyebrow = {
   textTransform: "uppercase", boxShadow: "var(--shadow-sm)",
 };
 const heroTitle = {
-  // Display face comes from the `.hero-title` class (Pirata One / Rozha One) —
-  // both single-weight, so keep fontWeight 400 (bolder faux weights mangle the
-  // Devanagari matras) and let the heavier faces + glow carry the menace.
+  // Display face comes from the `.hero-title` class (IM Fell English / Jaini
+  // Purva) — both single-weight, so keep fontWeight 400 (bolder faux weights
+  // mangle the Devanagari matras) and let the glow carry the menace.
   color: "var(--text-primary)", fontWeight: 400, lineHeight: 1.24, marginTop: 18,
   fontSize: "clamp(42px, 6.4vw, 80px)", letterSpacing: 0,
   textShadow: "0 2px 1px rgba(30,6,4,.2), 0 6px 34px rgba(156,28,20,.32)",
 };
-const heroWord = { display: "inline-block", marginRight: "0.26em", willChange: "transform, filter" };
+// Padding grows each word's paint box so Devanagari marks that overshoot the
+// line box (ँ ऊपर, ु/ू नीचे) stay inside the gradient's background-clip:text
+// area (outside it they paint transparent = "cropped"). Negative margins hand
+// the space back so layout and the 0.26em word gap are unchanged.
+const heroWord = {
+  display: "inline-block",
+  padding: "0.24em 0.12em",
+  margin: "-0.24em calc(0.26em - 0.12em) -0.24em -0.12em",
+  willChange: "transform",
+};
 const heroStat = { height: 32, fontSize: 12, pointerEvents: "none" };
 const fanBadge = {
   position: "absolute", top: 10, left: 10, display: "inline-flex", alignItems: "center", gap: 5,

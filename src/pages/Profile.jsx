@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Settings, Bookmark, PenSquare, LogOut, ChevronRight,
+  Settings, Bookmark, PenSquare, LogOut, ChevronRight, LifeBuoy,
   BadgeCheck, LogIn, History, CheckCircle2, Flame,
   Camera, Pencil, Loader2, ExternalLink, Languages,
 } from "lucide-react";
@@ -196,6 +196,7 @@ export default function Profile() {
                   ? <MenuItem icon={<PenSquare size={19} />} label={t("creator.dashboard")} to="/creator-dashboard" />
                   : <MenuItem icon={<PenSquare size={19} />} label={t("profile.becomeCreator")} to="/become-creator" />}
                 <MenuItem icon={<Settings size={19} />} label={t("profile.settings")} to="/profile/edit" />
+                <MenuItem icon={<LifeBuoy size={19} />} label={t("support.title")} to="/support" />
                 <div className="between" style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-solid)" }}>
                   <div className="row gap-12">
                     <Languages size={19} /> <span style={{ fontWeight: 600, fontSize: 14.5 }}>{t("profile.language")}</span>

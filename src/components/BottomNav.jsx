@@ -17,12 +17,14 @@ export default function BottomNav() {
       <div style={{ display: "flex", height: 58 }}>
         <Tab {...tabs[0]} t={t} />
 
-        {/* Write FAB — center create-story button */}
+        {/* Write FAB — center create-story button. The circle floats above the
+            bar and the label is pinned to the bar's bottom edge so it can
+            never slip under the safe-area / get clipped by the 58px row. */}
         <button onClick={() => nav("/creator/story/new")} style={fabWrap} aria-label={t("nav.write")}>
           <motion.div whileTap={{ scale: 0.88 }} className="pulse-glow" style={fabCircle}>
             <Plus size={22} color="#fff" />
           </motion.div>
-          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-tertiary)", marginTop: 32 }}>{t("nav.write")}</span>
+          <span style={fabLabel}>{t("nav.write")}</span>
         </button>
 
         <Tab {...tabs[1]} t={t} />
@@ -63,8 +65,12 @@ const item = { display: "flex", flexDirection: "column", alignItems: "center", j
 const pill = { position: "absolute", inset: 0, borderRadius: 13, background: "var(--indigo-50)", border: "1px solid var(--indigo-100)" };
 const fabWrap = { flex: 1, position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" };
 const fabCircle = {
-  position: "absolute", top: -4, width: 50, height: 50, borderRadius: "50%",
+  position: "absolute", top: -16, width: 50, height: 50, borderRadius: "50%",
   background: "linear-gradient(180deg, var(--crimson-mid), var(--crimson))",
   border: "3px solid var(--bg-card)", display: "grid", placeItems: "center",
   boxShadow: "0 6px 20px -4px rgba(156,28,20,.55)",
+};
+const fabLabel = {
+  position: "absolute", bottom: 5, left: 0, right: 0, textAlign: "center",
+  fontSize: 10, fontWeight: 600, color: "var(--text-tertiary)",
 };

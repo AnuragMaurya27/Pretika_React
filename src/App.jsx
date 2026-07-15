@@ -24,6 +24,8 @@ import MyStories from "./pages/MyStories";
 import CreateStory from "./pages/CreateStory";
 import EditStory from "./pages/EditStory";
 import BecomeCreator from "./pages/BecomeCreator";
+import Support from "./pages/Support";
+import SupportTicket from "./pages/SupportTicket";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
@@ -63,6 +65,8 @@ export default function App() {
         <Route path="/creator/stories" element={<ProtectedRoute><MyStories /></ProtectedRoute>} />
         <Route path="/creator/story/new" element={<ProtectedRoute><CreateStory /></ProtectedRoute>} />
         <Route path="/creator/story/:id/edit" element={<ProtectedRoute><EditStory /></ProtectedRoute>} />
+        <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
+        <Route path="/support/:id" element={<ProtectedRoute><SupportTicket /></ProtectedRoute>} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy" element={<Privacy />} />

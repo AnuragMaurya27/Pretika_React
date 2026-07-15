@@ -39,6 +39,10 @@ local Postgres (`localhost:5432`, db `Anurag_ki_vani_DBO`). Auth: email/password
 disabled in the UI). Login does **not** require email verification.
 
 ## Gotchas
+- **BILINGUAL RULE (main rule):** every user-facing change ships in BOTH UI languages.
+  Never hardcode UI text in JSX — add every new string to `src/i18n/en.js` **and**
+  `src/i18n/hi.js` and render via `t("…")`. This includes toasts, empty states, aria-labels
+  and API-text re-templating (e.g. notifications). No exceptions.
 - **Content language** is a full word: `hindi` / `english` / `hinglish` — never the i18n
   codes `hi`/`en` (the API 500s on those). `localStorage["pretika_app_language"]` must be a
   full word; the lang store already uses them.

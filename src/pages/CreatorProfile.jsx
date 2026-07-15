@@ -27,9 +27,10 @@ export default function CreatorProfile() {
   const stories = useCreatorStories(u?.id, !!u?.id);
   const follow = useFollow();
 
-  const [followOverride, setFollowOverride] = useState(null);
   const [followSheet, setFollowSheet] = useState(null); // null | "followers" | "following"
-  const isFollowing = followOverride ?? u?.is_following ?? false;
+  // useFollow flips is_following in the react-query cache optimistically, so
+  // read it straight from the profile — no local override to fall out of sync.
+  const isFollowing = u?.is_following ?? false;
   const isSelf = !!me && (me.id === u?.id || me.username === u?.username);
 
   if (isLoading) return <ProfileSkeleton />;
@@ -37,10 +38,9 @@ export default function CreatorProfile() {
 
   const toggleFollow = () => {
     if (!authed) { toast.error(t("toast.loginRequired")); nav("/login"); return; }
-    const next = !isFollowing;
-    setFollowOverride(next);
+    if (follow.isPending) return;
     follow.mutate({ id: u.id, following: isFollowing }, {
-      onError: (e) => { setFollowOverride(!next); toast.error(errMsg(e)); },
+      onError: (e) => toast.error(errMsg(e)),
     });
   };
   const share = async () => {

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Heart, Bookmark, Share2, Eye, Star,
-  Play, BadgeCheck, Layers, BookOpen, Clock,
+  Play, BadgeCheck, Layers, BookOpen, Clock, Flag,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
@@ -18,6 +18,7 @@ import Tilt from "../components/Tilt";
 import Seo from "../components/Seo";
 import StarRating from "../components/StarRating";
 import CommentSection from "../components/CommentSection";
+import ReportSheet from "../components/ReportSheet";
 import { useAuth } from "../store/auth";
 import { compact } from "../lib/format";
 import { getProgress } from "../lib/reading";
@@ -38,12 +39,13 @@ export default function StoryDetail() {
   const rate = useRateStory(slug);
   const follow = useFollow();
   const [tab, setTab] = useState("episodes");
+  const [reportOpen, setReportOpen] = useState(false);
 
-  // creator follow status (story payload doesn't include it)
+  // creator follow status (story payload doesn't include it). useFollow keeps
+  // the cached profile's is_following in sync optimistically — no local override.
   const isOwn = !!me && me.id === story?.creator_id;
   const creatorProfile = useUserProfile(story?.creator_username, authed && !!story && !isOwn);
-  const [followOverride, setFollowOverride] = useState(null);
-  const isFollowing = followOverride ?? creatorProfile.data?.is_following ?? false;
+  const isFollowing = creatorProfile.data?.is_following ?? false;
 
   if (isLoading) return <div className="app-shell"><PageLoader minHeight="80dvh" /></div>;
   if (isError || !story) return <div className="app-shell"><ErrorState onRetry={refetch} /></div>;
@@ -69,10 +71,9 @@ export default function StoryDetail() {
   };
   const toggleFollow = () => {
     if (!requireAuth()) return;
-    const next = !isFollowing;
-    setFollowOverride(next);
+    if (follow.isPending) return;
     follow.mutate({ id: story.creator_id, following: isFollowing }, {
-      onError: (e) => { setFollowOverride(!next); toast.error(errMsg(e)); },
+      onError: (e) => toast.error(errMsg(e)),
     });
   };
   const rateStory = (n) => {
@@ -279,6 +280,16 @@ export default function StoryDetail() {
                 <button className={`sd-glass-ic ${story.is_bookmarked ? "on" : ""}`} onClick={toggleSave} aria-label={t("story.bookmark")}>
                   <Bookmark size={19} fill={story.is_bookmarked ? "#fff" : "none"} />
                 </button>
+                {!isOwn && (
+                  <button
+                    className="sd-glass-ic"
+                    onClick={() => { if (requireAuth()) setReportOpen(true); }}
+                    aria-label={t("story.reportStory")}
+                    title={t("story.reportStory")}
+                  >
+                    <Flag size={19} />
+                  </button>
+                )}
               </div>
             </motion.div>
 
@@ -367,6 +378,14 @@ export default function StoryDetail() {
           <CommentSection storyId={story.id} creatorId={story.creator_id} episodes={episodes} />
         )}
       </div>
+
+      {/* report story — portal sheet (Layout's transition filter traps fixed) */}
+      <ReportSheet
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        entityType="story"
+        entityId={story.id}
+      />
     </div>
   );
 }

@@ -31,7 +31,34 @@ import Img from "./Img";
  * escapes any ancestor transform (page-transition wrapper / sticky headers).
  */
 
-const TYPE_ICON = { follow: UserPlus, new_comment: MessageCircle, system: Megaphone };
+// "comment" is the real enum value; "new_comment" kept for any legacy rows.
+const TYPE_ICON = { follow: UserPlus, comment: MessageCircle, new_comment: MessageCircle, system: Megaphone };
+const isComment = (t) => t === "comment" || t === "new_comment";
+
+/**
+ * The API stores notification title/message in Hinglish at creation time, so
+ * re-template the known types client-side to follow the UI language (hi/en).
+ * Unknown types (system/announcements) fall back to the raw API text.
+ */
+function localizeNotif(n, t) {
+  const type = n.notification_type;
+  if (type === "follow") {
+    const user =
+      n.actor_username || /^(.+?) ne aapko follow kiya/i.exec(n.message || "")?.[1];
+    if (user) return { title: t("notif.followTitle"), message: t("notif.followMsg", { user }) };
+  }
+  if (isComment(type)) {
+    // Backend template: @{author} ne tumhari story '{title}' par comment kiya: "{preview}"
+    const m = /^@?(.+?) ne tumhari story '(.+)' par comment kiya:\s*"([\s\S]*)"\s*$/.exec(n.message || "");
+    if (m) {
+      return {
+        title: t("notif.commentTitle"),
+        message: t("notif.commentMsg", { user: m[1], story: m[2], preview: m[3] }),
+      };
+    }
+  }
+  return { title: n.title, message: n.message };
+}
 
 export default function NotificationBell({ dark = false }) {
   const { t } = useTranslation();
@@ -86,7 +113,7 @@ export default function NotificationBell({ dark = false }) {
   const resolveHref = useCallback(async (n) => {
     const type = n.notification_type;
     if (type === "follow" && n.actor_username) return `/u/${n.actor_username}`;
-    if (type === "new_comment") {
+    if (isComment(type)) {
       const m = /\/story\/([0-9a-fA-F-]{36})/.exec(n.action_url || "");
       if (m) {
         try {
@@ -190,6 +217,7 @@ export default function NotificationBell({ dark = false }) {
                 ) : (
                   items.map((n) => {
                     const Icon = TYPE_ICON[n.notification_type] || Bell;
+                    const loc = localizeNotif(n, t);
                     return (
                       <button
                         key={n.id}
@@ -211,8 +239,8 @@ export default function NotificationBell({ dark = false }) {
                           <span className="ntf-type"><Icon size={10} /></span>
                         </span>
                         <span className="ntf-body">
-                          <span className="ntf-item-title clamp-1">{n.title}</span>
-                          <span className="ntf-msg clamp-2">{n.message}</span>
+                          <span className="ntf-item-title clamp-1">{loc.title}</span>
+                          <span className="ntf-msg clamp-2">{loc.message}</span>
                           <span className="ntf-time">{timeAgo(n.created_at)}</span>
                         </span>
                         {!n.is_read && <i className="ntf-dot" aria-hidden="true" />}
