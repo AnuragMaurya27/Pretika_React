@@ -579,8 +579,8 @@ const heroEyebrow = {
   textTransform: "uppercase", boxShadow: "var(--shadow-sm)",
 };
 const heroTitle = {
-  // Display face comes from the `.hero-title` class (IM Fell English / Jaini
-  // Purva) — both single-weight, so keep fontWeight 400 (bolder faux weights
+  // Display face comes from the `.hero-title` class (IM Fell English / Yatra
+  // One) — both single-weight, so keep fontWeight 400 (bolder faux weights
   // mangle the Devanagari matras) and let the glow carry the menace.
   color: "var(--text-primary)", fontWeight: 400, lineHeight: 1.24, marginTop: 18,
   fontSize: "clamp(42px, 6.4vw, 80px)", letterSpacing: 0,
