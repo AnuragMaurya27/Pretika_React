@@ -11,6 +11,7 @@ import Seo from "../components/Seo";
 import { compact } from "../lib/format";
 import { CategoryIcon } from "../components/Art";
 import { categoryLabel } from "../lib/categories";
+import AdSlot from "../components/AdSlot";
 
 const SORTS = [
   { key: "trending", tKey: "explore.sortTrending", Icon: Flame },
@@ -107,6 +108,9 @@ export default function Explore() {
         ) : (
           <Browse state={browse} />
         )}
+
+        {/* browse-page anchor ad (spec 4.4) — no-op until AdSense approval */}
+        <div className="container"><AdSlot format="auto" /></div>
       </div>
     </div>
   );

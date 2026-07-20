@@ -3,12 +3,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft, ImagePlus, Loader2, Pencil, Feather, Layers, Save,
   Send, EyeOff, Trash2, Plus, ExternalLink, Check, X, PenSquare,
+  Lock, IndianRupee,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { get, post, put, del, errMsg } from "../lib/api";
 import { useCategories } from "../lib/hooks";
+import { useMonetizationEligibility, useLockChapters, useMonetizationPublicConfig } from "../lib/wallet";
 import { useAuth } from "../store/auth";
 import Seo from "../components/Seo";
 import Img from "../components/Img";
@@ -357,6 +360,11 @@ export default function EditStory() {
                         <div className="clamp-1" style={{ fontWeight: 700, fontSize: 14 }}>{ep.title}</div>
                         <div className="row gap-8 tertiary" style={{ fontSize: 11.5, marginTop: 3 }}>
                           <span className={`badge ${STATUS_COLORS[ep.status] || "badge-gold"}`}>{ep.status ? t(`status.${ep.status}`, { defaultValue: ep.status.replace(/_/g, " ") }) : ""}</span>
+                          {ep.access_type === "premium" && (
+                            <span className="badge badge-indigo row gap-4" style={{ fontSize: 10.5 }}>
+                              <Lock size={10} /> {ep.unlock_coin_cost} {t("wallet.coins")}
+                            </span>
+                          )}
                           {ep.word_count ? <span>{ep.word_count} {t("studio.words", { defaultValue: "words" })}</span> : null}
                         </div>
                       </div>
@@ -403,6 +411,9 @@ export default function EditStory() {
               )}
             </section>
 
+            {/* ═══ 4 · Monetization — lock chapters (spec 5.2) ═══ */}
+            <MonetizeSection storyId={id} episodes={episodes} onChanged={load} />
+
             {/* ═══ Danger zone ═══ */}
             <section className="cs-sec">
               <button className="btn btn-ghost btn-block" style={{ color: "var(--error)" }} disabled={busyStory} onClick={deleteStory}>
@@ -446,6 +457,95 @@ function EpisodeEditor({ epForm, setEpForm, busy, words, onSave, onCancel, t }) 
         </button>
       </div>
     </>
+  );
+}
+
+/**
+ * "Monetize from chapter X" (spec 5.2). Only KYC-approved creators can lock;
+ * first min_free_chapters stay free, price stays inside the configured range,
+ * published free chapters are never re-locked (the API enforces all three —
+ * this UI mirrors them).
+ */
+function MonetizeSection({ storyId, episodes, onChanged }) {
+  const { t } = useTranslation();
+  const eligibility = useMonetizationEligibility();
+  const cfg = useMonetizationPublicConfig();
+  const lock = useLockChapters(storyId);
+
+  const minFree = cfg.data?.min_free_chapters ?? 3;
+  const priceMin = cfg.data?.unlock_price_min ?? 5;
+  const priceMax = cfg.data?.unlock_price_max ?? 15;
+  const [fromChapter, setFromChapter] = useState(minFree + 1);
+  const [price, setPrice] = useState(cfg.data?.unlock_price_default ?? 8);
+
+  const approved = eligibility.data?.kyc_status === "approved";
+  const lockedCount = episodes.filter((e) => e.access_type === "premium").length;
+
+  const apply = () => {
+    if (lock.isPending) return;
+    lock.mutate(
+      { from_chapter: Number(fromChapter), coin_price: Number(price) },
+      {
+        onSuccess: () => { toast.success(t("monetization.chaptersLocked")); onChanged?.(); },
+        onError: (e) => toast.error(errMsg(e)),
+      }
+    );
+  };
+
+  return (
+    <section className="cs-sec">
+      <SecHead
+        icon={<IndianRupee size={20} />} n={4}
+        title={t("monetization.sectionTitle")}
+        sub={t("monetization.sectionSub", { n: minFree })}
+      />
+      {!approved ? (
+        <div className="card" style={{ padding: 14 }}>
+          <p className="muted" style={{ fontSize: 13, lineHeight: 1.6 }}>
+            {t("monetization.notApprovedHint")}
+          </p>
+          <Link to="/creator/monetization" className="btn btn-outline btn-sm" style={{ marginTop: 10 }}>
+            {t("monetization.title")}
+          </Link>
+        </div>
+      ) : (
+        <div className="card" style={{ padding: 14 }}>
+          {lockedCount > 0 && (
+            <div className="badge badge-indigo row gap-4" style={{ marginBottom: 12 }}>
+              <Lock size={11} /> {t("monetization.lockedNow", { n: lockedCount })}
+            </div>
+          )}
+          <div className="row gap-12" style={{ flexWrap: "wrap", alignItems: "flex-end" }}>
+            <div className="cs-field" style={{ margin: 0, flex: "1 1 140px" }}>
+              <label className="field-label">{t("monetization.fromChapter")}</label>
+              <input
+                className="input" type="number" min={minFree + 1} max={Math.max(minFree + 1, episodes.length)}
+                value={fromChapter} onChange={(e) => setFromChapter(e.target.value)}
+              />
+            </div>
+            <div className="cs-field" style={{ margin: 0, flex: "1 1 140px" }}>
+              <label className="field-label">
+                {t("monetization.pricePerChapter", { min: priceMin, max: priceMax })}
+              </label>
+              <input
+                className="input" type="number" min={priceMin} max={priceMax}
+                value={price} onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+            <button
+              className="btn btn-primary"
+              disabled={lock.isPending || Number(fromChapter) <= minFree}
+              onClick={apply}
+            >
+              {lock.isPending ? <Loader2 size={16} className="spin" /> : <><Lock size={15} /> {t("monetization.lockCta")}</>}
+            </button>
+          </div>
+          <p className="muted" style={{ fontSize: 11.5, marginTop: 10, lineHeight: 1.5 }}>
+            {t("monetization.lockNote", { n: minFree })}
+          </p>
+        </div>
+      )}
+    </section>
   );
 }
 

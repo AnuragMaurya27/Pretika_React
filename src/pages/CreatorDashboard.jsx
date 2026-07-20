@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Eye, Heart, MessageCircle, Users, BookOpen, Layers,
-  PenSquare, ChevronRight, Trophy, Star, Library, UserRound, Pencil,
+  PenSquare, ChevronRight, Trophy, Star, Library, UserRound, Pencil, IndianRupee,
 } from "lucide-react";
 import { RankIcon } from "../components/Art";
 import { useTranslation } from "react-i18next";
@@ -151,6 +151,7 @@ export default function CreatorDashboard() {
                 <div className="eyebrow" style={{ margin: "22px 0 10px" }}>{t("creator.quickActions")}</div>
                 <div style={{ display: "grid", gap: 10 }}>
                   <Action icon={<PenSquare size={19} />} title={t("creator.newStory")} sub={t("creator.newStorySub")} onClick={() => nav("/creator/story/new")} primary />
+                  <Action icon={<IndianRupee size={19} />} title={t("monetization.title")} sub={t("monetization.dashSub")} onClick={() => nav("/creator/monetization")} />
                   <Action icon={<Library size={19} />} title={t("creator.myStories")} sub={t("creator.manageSub")} onClick={() => nav("/creator/stories")} />
                   {user?.username && (
                     <Action icon={<UserRound size={19} />} title={t("creator.viewPublic")} sub={t("creator.publicSub")} onClick={() => nav(`/u/${user.username}`)} />

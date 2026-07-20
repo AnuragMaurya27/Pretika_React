@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Settings, Bookmark, PenSquare, LogOut, ChevronRight, LifeBuoy,
-  BadgeCheck, LogIn, History, CheckCircle2, Flame,
+  BadgeCheck, LogIn, History, CheckCircle2, Flame, Coins,
   Camera, Pencil, Loader2, ExternalLink, Languages,
 } from "lucide-react";
 import LangToggle from "../components/LangToggle";
@@ -192,6 +192,7 @@ export default function Profile() {
               <div className="card" style={{ marginTop: 14 }}>
                 <MenuItem icon={<Bookmark size={19} />} label={t("profile.bookmarks")} extra={compact(bookmarks.data?.items?.length || 0)} onClick={() => document.getElementById("saved")?.scrollIntoView({ behavior: "smooth" })} />
                 <MenuItem icon={<History size={19} />} label={t("profile.readingHistory")} extra={compact(history.length)} onClick={() => document.getElementById("history")?.scrollIntoView({ behavior: "smooth" })} />
+                <MenuItem icon={<Coins size={19} />} label={t("wallet.title")} to="/wallet" />
                 {user?.is_creator
                   ? <MenuItem icon={<PenSquare size={19} />} label={t("creator.dashboard")} to="/creator-dashboard" />
                   : <MenuItem icon={<PenSquare size={19} />} label={t("profile.becomeCreator")} to="/become-creator" />}

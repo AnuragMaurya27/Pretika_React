@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Heart, Bookmark, Share2, Eye, Star,
-  Play, BadgeCheck, Layers, BookOpen, Clock, Flag,
+  Play, BadgeCheck, Layers, BookOpen, Clock, Flag, Lock, Gift, Coins,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
@@ -19,6 +19,9 @@ import Seo from "../components/Seo";
 import StarRating from "../components/StarRating";
 import CommentSection from "../components/CommentSection";
 import ReportSheet from "../components/ReportSheet";
+import UnlockSheet from "../components/UnlockSheet";
+import GiftTray from "../components/GiftTray";
+import TopGifters from "../components/TopGifters";
 import { useAuth } from "../store/auth";
 import { compact } from "../lib/format";
 import { getProgress } from "../lib/reading";
@@ -40,6 +43,8 @@ export default function StoryDetail() {
   const follow = useFollow();
   const [tab, setTab] = useState("episodes");
   const [reportOpen, setReportOpen] = useState(false);
+  const [unlockEp, setUnlockEp] = useState(null);
+  const [giftOpen, setGiftOpen] = useState(false);
 
   // creator follow status (story payload doesn't include it). useFollow keeps
   // the cached profile's is_following in sync optimistically — no local override.
@@ -91,7 +96,16 @@ export default function StoryDetail() {
     } catch { /* cancelled */ }
   };
 
-  const openEpisode = (ep) => nav(`/read/${story.id}/${ep.id}`);
+  // Locked chapter → unlock sheet (spec 4.2); everything else reads directly.
+  const epLocked = (ep) => ep.access_type === "premium" && !ep.is_unlocked && !isOwn;
+  const openEpisode = (ep) => {
+    if (epLocked(ep)) {
+      if (!requireAuth()) return;
+      setUnlockEp(ep);
+      return;
+    }
+    nav(`/read/${story.id}/${ep.id}`);
+  };
 
   const episodes = story.episodes || [];
   const firstEp = episodes[0];
@@ -280,6 +294,16 @@ export default function StoryDetail() {
                 <button className={`sd-glass-ic ${story.is_bookmarked ? "on" : ""}`} onClick={toggleSave} aria-label={t("story.bookmark")}>
                   <Bookmark size={19} fill={story.is_bookmarked ? "#fff" : "none"} />
                 </button>
+                {!isOwn && story.creator_monetized && (
+                  <button
+                    className="sd-glass-ic"
+                    onClick={() => { if (requireAuth()) setGiftOpen(true); }}
+                    aria-label={t("gift.title")}
+                    title={t("gift.title")}
+                  >
+                    <Gift size={19} />
+                  </button>
+                )}
                 {!isOwn && (
                   <button
                     className="sd-glass-ic"
@@ -368,6 +392,7 @@ export default function StoryDetail() {
             {episodes.map((ep, i) => (
               <EpisodeRow
                 key={ep.id} ep={ep} index={i}
+                locked={epLocked(ep)}
                 isResume={resumeEp && ep.id === resumeEp.id}
                 resumePct={resumePct}
                 onOpen={() => openEpisode(ep)}
@@ -377,6 +402,9 @@ export default function StoryDetail() {
         ) : (
           <CommentSection storyId={story.id} creatorId={story.creator_id} episodes={episodes} />
         )}
+
+        {/* Top Gifters — social proof for the gift economy (spec 4.3) */}
+        <TopGifters storyId={story.id} />
       </div>
 
       {/* report story — portal sheet (Layout's transition filter traps fixed) */}
@@ -386,11 +414,28 @@ export default function StoryDetail() {
         entityType="story"
         entityId={story.id}
       />
+
+      {/* chapter unlock (spec 4.2) — after unlock, straight into the reader */}
+      <UnlockSheet
+        open={!!unlockEp}
+        episode={unlockEp}
+        onClose={() => setUnlockEp(null)}
+        onUnlocked={(ep) => nav(`/read/${story.id}/${ep.id}`)}
+      />
+
+      {/* gift tray (spec 4.3) */}
+      <GiftTray
+        open={giftOpen}
+        onClose={() => setGiftOpen(false)}
+        creatorId={story.creator_id}
+        storyId={story.id}
+        creatorName={story.creator_display_name || story.creator_username}
+      />
     </div>
   );
 }
 
-function EpisodeRow({ ep, index, onOpen, isResume, resumePct }) {
+function EpisodeRow({ ep, index, onOpen, isResume, resumePct, locked }) {
   const { t } = useTranslation();
   return (
     <motion.button
@@ -412,13 +457,18 @@ function EpisodeRow({ ep, index, onOpen, isResume, resumePct }) {
           background: isResume ? "var(--indigo-600)" : "var(--indigo-50)",
           color: isResume ? "#fff" : "var(--indigo-800)",
         }}>
-          {ep.episode_number}
+          {locked ? <Lock size={14} /> : ep.episode_number}
         </div>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div className="clamp-1" style={{ fontWeight: 650, fontSize: 14 }}>{ep.title}</div>
           <div className="row gap-8 tertiary" style={{ fontSize: 11.5, marginTop: 2 }}>
             <span>{Math.max(1, Math.round((ep.estimated_read_time_seconds || 0) / 60))} {t("story.readTime")}</span>
             <span>· {compact(ep.total_views)} {t("common.views")}</span>
+            {locked && (
+              <span className="row gap-4" style={{ color: "var(--gold)", fontWeight: 800 }}>
+                · <Coins size={11} /> {ep.unlock_coin_cost} {t("wallet.coins")}
+              </span>
+            )}
             {isResume && resumePct > 0 && <span style={{ color: "var(--crimson)", fontWeight: 700 }}>· {resumePct}%</span>}
           </div>
           {isResume && resumePct > 0 && (
@@ -431,7 +481,10 @@ function EpisodeRow({ ep, index, onOpen, isResume, resumePct }) {
       <span className="ep-play" style={{
         ...epPlay,
         ...(isResume ? { background: "var(--crimson)", color: "#fff" } : {}),
-      }}><Play size={14} fill="currentColor" /></span>
+        ...(locked ? { background: "var(--indigo-50)", color: "var(--indigo-600)" } : {}),
+      }}>
+        {locked ? <Lock size={14} /> : <Play size={14} fill="currentColor" />}
+      </span>
     </motion.button>
   );
 }

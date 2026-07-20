@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   ArrowLeft, Minus, Plus, Heart, CheckCircle2,
-  Type, Sun, SunDim, MoonStar, Play,
+  Type, Sun, SunDim, MoonStar, Play, Lock, Coins,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
@@ -20,6 +20,10 @@ import Seo from "../components/Seo";
 import { Spook, PageLoader } from "../components/Art";
 import { useAuth } from "../store/auth";
 import { categoryLabel } from "../lib/categories";
+import { reportValidRead, useMonetizationPublicConfig } from "../lib/wallet";
+import UnlockSheet from "../components/UnlockSheet";
+import Img from "../components/Img";
+import { AdInterleavedContent } from "../components/AdSlot";
 
 const THEMES = [
   { key: "parchment", labelKey: "reader.themeParchment", Icon: Sun, bg: "#f4efe4", fg: "#211913" },
@@ -64,6 +68,36 @@ export default function Reader() {
   const [celebrate, setCelebrate] = useState(false);
   const [myRating, setMyRating] = useState(0);
   const lastY = useRef(0);
+  const [unlockOpen, setUnlockOpen] = useState(false);
+
+  // ── valid-read heartbeat (spec 8: ≥30s AND ≥50% scroll, once per day) ──────
+  const moneCfg = useMonetizationPublicConfig();
+  const vrSent = useRef(false);
+  const vrSecs = useRef(0);
+  const vrMaxScroll = useRef(0);
+  useEffect(() => {
+    vrSent.current = false;
+    vrSecs.current = 0;
+    vrMaxScroll.current = 0;
+  }, [episodeId]);
+  useEffect(() => {
+    if (!authed || !ep?.content) return;
+    const minSecs = moneCfg.data?.valid_read_min_seconds ?? 30;
+    const minScroll = moneCfg.data?.valid_read_min_scroll_percent ?? 50;
+    const id = setInterval(() => {
+      if (document.hidden) return;
+      vrSecs.current += 1;
+      // short chapters without a scrollbar count as fully scrolled
+      const doc = document.documentElement;
+      if (doc.scrollHeight - doc.clientHeight <= 10) vrMaxScroll.current = 100;
+      if (!vrSent.current && vrSecs.current >= minSecs && vrMaxScroll.current >= minScroll) {
+        vrSent.current = true;
+        reportValidRead(episodeId, vrSecs.current, vrMaxScroll.current);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authed, ep?.id, episodeId, moneCfg.data]);
 
   useEffect(() => {
     if (!ep) return;
@@ -153,6 +187,7 @@ export default function Reader() {
         const max = doc.scrollHeight - doc.clientHeight;
         const pct = max > 0 ? Math.min(100, Math.round(y / max * 100)) : 0;
         setProgress(pct);
+        if (pct > vrMaxScroll.current) vrMaxScroll.current = pct;
         // hide bar scrolling down (immersion), reveal scrolling up
         if (y > lastY.current + 6 && y > 160) setBarHidden(true);
         else if (y < lastY.current - 6) setBarHidden(false);
@@ -207,6 +242,69 @@ export default function Reader() {
 
   if (isLoading) return <div className="app-shell"><PageLoader minHeight="90dvh" /></div>;
   if (isError || !ep) return <div className="app-shell"><ErrorState onRetry={refetch} /></div>;
+
+  // ── locked premium chapter → unlock gate, never content (spec 4.2) ─────────
+  if (ep.access_type === "premium" && !ep.is_unlocked) {
+    return (
+      <div className="rd-shell" data-rdtheme={theme}>
+        <Seo
+          title={`${story?.title ? `${story.title} — ` : ""}Episode ${ep.episode_number}: ${ep.title}`}
+          robots="noindex, follow"
+        />
+        <header className="rd-bar">
+          <div className="between container" style={{ height: 54, gap: 8 }}>
+            <button className="rd-iconbtn" onClick={() => nav(-1)} aria-label={t("common.back")}>
+              <ArrowLeft size={20} />
+            </button>
+            <div className="clamp-1" style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: 13.5 }}>
+              {t("story.episode")} {ep.episode_number} · {ep.title}
+            </div>
+            <span style={{ width: 38 }} />
+          </div>
+        </header>
+
+        <div style={{ maxWidth: 460, margin: "0 auto", padding: "110px 24px 60px", textAlign: "center" }}>
+          {story?.thumbnail_url && (
+            <Img
+              path={story.thumbnail_url} seed={storyId} alt=""
+              style={{ width: 120, height: 160, objectFit: "cover", borderRadius: 14, margin: "0 auto", boxShadow: "0 18px 44px rgba(0,0,0,.35)" }}
+            />
+          )}
+          <div
+            className="row gap-8"
+            style={{
+              justifyContent: "center", margin: "22px auto 0", width: 52, height: 52,
+              borderRadius: "50%", background: "color-mix(in srgb, var(--rd-accent) 14%, transparent)",
+              color: "var(--rd-accent)", display: "grid", placeItems: "center",
+            }}
+          >
+            <Lock size={22} />
+          </div>
+          <h1 className="serif" style={{ fontSize: 24, fontWeight: 800, marginTop: 14 }}>{t("unlock.gateTitle")}</h1>
+          <p style={{ fontSize: 13.5, color: "var(--rd-faint)", marginTop: 8, lineHeight: 1.6 }}>
+            {t("unlock.gateSub")}
+          </p>
+          <button
+            className="btn btn-primary"
+            style={{ marginTop: 20, minWidth: 220 }}
+            onClick={() => {
+              if (!authed) { toast.error(t("toast.loginRequired")); nav("/login"); return; }
+              setUnlockOpen(true);
+            }}
+          >
+            <Coins size={16} /> {t("unlock.cta", { n: ep.unlock_coin_cost })}
+          </button>
+        </div>
+
+        <UnlockSheet
+          open={unlockOpen}
+          episode={ep}
+          onClose={() => setUnlockOpen(false)}
+          onUnlocked={() => refetch()}
+        />
+      </div>
+    );
+  }
 
   const mins = Math.max(1, Math.round((ep.estimated_read_time_seconds || 0) / 60));
   const minsLeft = Math.max(0, Math.ceil(mins * (1 - progress / 100)));
@@ -333,10 +431,13 @@ export default function Reader() {
 
         <Ornament />
 
-        <div
+        {/* Ads only on FREE chapters (paid chapters stay ad-free — spec 4.4)
+            and never on 18+/graphic stories (AdSense policy — spec 10). */}
+        <AdInterleavedContent
+          html={html || `<p class="muted">${t("common.nothingHere")}</p>`}
+          enabled={ep.access_type === "free" && story?.age_rating !== "18+"}
           className={`reader-body dropcap ${font === "serif" ? "rd-serif" : ""}`}
           style={{ fontSize: fs, lineHeight: 2, color: "var(--rd-text)", transition: "font-size .2s ease" }}
-          dangerouslySetInnerHTML={{ __html: html || `<p class="muted">${t("common.nothingHere")}</p>` }}
         />
 
         {/* ── The End flourish ─────────────────────────────────────────────── */}
