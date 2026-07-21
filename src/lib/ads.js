@@ -16,6 +16,9 @@ let scriptLoaded = false;
 export function loadAdSense() {
   if (scriptLoaded || !adsEnabled()) return;
   scriptLoaded = true;
+  // The loader is already hardcoded in index.html <head> for AdSense site
+  // verification; don't inject a second copy if it's present.
+  if (document.querySelector('script[src*="adsbygoogle.js"]')) return;
   const s = document.createElement("script");
   s.async = true;
   s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
