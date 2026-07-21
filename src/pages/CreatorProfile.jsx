@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, BadgeCheck, Share2, BookOpen, Users, Eye, PenLine } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Share2, BookOpen, Users, Eye, PenLine, MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { useUserProfile, useCreatorStories, useFollow } from "../lib/hooks";
+import { useStartChat } from "../lib/chat";
 import { StoryCard } from "../components/StoryCard";
 import { SkeletonBox } from "../components/Skeleton";
 import EmptyState, { ErrorState } from "../components/EmptyState";
@@ -27,6 +28,7 @@ export default function CreatorProfile() {
   const { data: u, isLoading, isError, refetch } = useUserProfile(username);
   const stories = useCreatorStories(u?.id, !!u?.id);
   const follow = useFollow();
+  const startChat = useStartChat();
 
   const [followSheet, setFollowSheet] = useState(null); // null | "followers" | "following"
   // useFollow flips is_following in the react-query cache optimistically, so
@@ -41,6 +43,14 @@ export default function CreatorProfile() {
     if (!authed) { toast.error(t("toast.loginRequired")); nav("/login"); return; }
     if (follow.isPending) return;
     follow.mutate({ id: u.id, following: isFollowing }, {
+      onError: (e) => toast.error(errMsg(e)),
+    });
+  };
+  const onMessage = () => {
+    if (!authed) { toast.error(t("toast.loginRequired")); nav("/login"); return; }
+    if (startChat.isPending) return;
+    startChat.mutate(u.id, {
+      onSuccess: (room) => nav(`/chat/${room.id}`),
       onError: (e) => toast.error(errMsg(e)),
     });
   };
@@ -100,7 +110,10 @@ export default function CreatorProfile() {
             </motion.div>
             {!isSelf && (
               <div className="row gap-8">
-                <button className={`btn ${isFollowing ? "btn-ghost" : "btn-primary"}`} onClick={toggleFollow} style={{ minWidth: 120 }}>
+                <button className="btn btn-outline" onClick={onMessage} disabled={startChat.isPending} style={{ minWidth: 44 }} aria-label={t("chat.message")}>
+                  <MessageCircle size={16} /> <span className="only-desktop">{t("chat.message")}</span>
+                </button>
+                <button className={`btn ${isFollowing ? "btn-ghost" : "btn-primary"}`} onClick={toggleFollow} style={{ minWidth: 110 }}>
                   {isFollowing ? t("story.following") : t("story.follow")}
                 </button>
               </div>

@@ -1,11 +1,12 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Home, User, Plus } from "lucide-react";
+import { Home, User, Plus, MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-// Mobile tab bar — Home · [Write FAB] · Profile (search lives in the top header)
+// Mobile tab bar — Home · Chats · [Write FAB] · Profile (search lives in the top header)
 const tabs = [
   { to: "/home", icon: Home, id: "home" },
+  { to: "/chat", icon: MessageCircle, id: "messages" },
   { to: "/profile", icon: User, id: "profile" },
 ];
 
@@ -16,6 +17,7 @@ export default function BottomNav() {
     <nav className="only-mobile bnav">
       <div style={{ display: "flex", height: 58 }}>
         <Tab {...tabs[0]} t={t} />
+        <Tab {...tabs[1]} t={t} />
 
         {/* Write FAB — center create-story button. The circle floats above the
             bar and the label is pinned to the bar's bottom edge so it can
@@ -27,7 +29,7 @@ export default function BottomNav() {
           <span style={fabLabel}>{t("nav.write")}</span>
         </button>
 
-        <Tab {...tabs[1]} t={t} />
+        <Tab {...tabs[2]} t={t} />
       </div>
     </nav>
   );

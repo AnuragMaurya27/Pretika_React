@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Search, User, PenSquare, LogOut, ChevronDown, BadgeCheck, MessageSquareText } from "lucide-react";
+import { Home, Search, User, PenSquare, LogOut, ChevronDown, BadgeCheck, MessageSquareText, MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { useAuth } from "../store/auth";
@@ -14,6 +14,7 @@ const links = [
   { to: "/home", icon: Home, key: "home" },
   { to: "/explore", icon: Search, key: "explore" },
   { to: "/chat-stories", icon: MessageSquareText, key: "chat" },
+  { to: "/chat", icon: MessageCircle, key: "messages" },
 ];
 
 // Top navigation bar — shown on tablet/laptop/TV (md+). Hidden on phones.

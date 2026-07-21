@@ -19,6 +19,8 @@ import Reader from "./pages/Reader";
 import ChatStories from "./pages/ChatStories";
 import ChatStoryPlay from "./pages/ChatStoryPlay";
 import CreateChatStory from "./pages/CreateChatStory";
+import ChatInbox from "./pages/ChatInbox";
+import ChatRoom from "./pages/ChatRoom";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import MyStories from "./pages/MyStories";
 import CreateStory from "./pages/CreateStory";
@@ -50,12 +52,15 @@ export default function App() {
       <Route path="/forgot" element={<Forgot />} />
       {/* full-screen phone reader — outside Layout (no nav/footer/transition filter) */}
       <Route path="/chat-stories/:slug" element={<ChatStoryPlay />} />
+      {/* full-screen chat conversation — outside Layout (fixed layout, mobile-only) */}
+      <Route path="/chat/:roomId" element={<ChatRoom />} />
 
       <Route element={<Layout />}>
         <Route path="/home" element={<Home />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/u/:username" element={<CreatorProfile />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/chat" element={<ChatInbox />} />
         <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
         <Route path="/chat-stories" element={<ChatStories />} />
         <Route path="/creator/chat-story/new" element={<ProtectedRoute><CreateChatStory /></ProtectedRoute>} />
