@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { ArrowLeft, Send, BookOpen, Check, CheckCheck, X } from "lucide-react";
+import { ArrowLeft, Send, BookOpen, Check, CheckCheck, X, Clock, RotateCw } from "lucide-react";
 import { get, errMsg } from "../lib/api";
 import {
   useChatMessages, useSendMessage, useChatRoomHub, usePrivateChats,
@@ -144,7 +144,13 @@ export default function ChatRoom() {
     onMessage: (m) => {
       const msg = nm(m);
       if (String(msg.room_id) !== String(roomId)) return;
-      addLive(msg);
+      setLive((prev) => {
+        // My own message echoed back → drop the matching optimistic bubble (no dupe).
+        const rest = msg.sender_id === me?.id
+          ? prev.filter((x) => !(x._optimistic && x.message_type === msg.message_type && (x.content || "") === (msg.content || "")))
+          : prev;
+        return rest.some((x) => x.id === msg.id) ? rest : [...rest, msg];
+      });
       if (!isRequest && msg.sender_id !== me?.id) markRoomRead(roomId);
     },
     onTyping: (p) => {
@@ -175,24 +181,60 @@ export default function ChatRoom() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [msgs.length, typing]);
 
+  // Lock the page behind the full-screen chat so it never drifts (native-app feel).
+  useEffect(() => {
+    if (!isMobile) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [isMobile]);
+
   if (!isMobile) return <div className="page"><Seo title={t("chat.title")} robots="noindex, nofollow" /><ChatMobileGate /></div>;
 
-  const doSend = () => {
-    const text = input.trim();
-    if (!text || send.isPending) return;
-    setInput("");
-    send.mutate(
-      { message_type: "text", content: text, idempotency_key: crypto.randomUUID() },
-      { onSuccess: (m) => addLive(nm(m)), onError: (e) => toast.error(errMsg(e)) }
+  // Optimistic send: the bubble appears instantly (native-chat feel). On a cold
+  // backend the POST may be slow/fail even though the message reached the server
+  // (the live echo reconciles it) — so instead of a scary "network error" toast we
+  // show a tap-to-retry marker only if it truly failed.
+  const sendMsg = (body, optimistic) => {
+    addLive(optimistic);
+    send.mutate(body, {
+      onSuccess: (m) => {
+        const real = nm(m);
+        setLive((prev) => {
+          const rest = prev.filter((x) => x._key !== optimistic._key);
+          return rest.some((x) => x.id === real.id) ? rest : [...rest, real];
+        });
+      },
+      onError: () => {
+        setLive((prev) => prev.map((x) => (x._key === optimistic._key ? { ...x, _pending: false, _failed: true } : x)));
+      },
+    });
+  };
+  const sendText = (text) => {
+    const key = crypto.randomUUID();
+    sendMsg(
+      { message_type: "text", content: text, idempotency_key: key },
+      { id: "tmp-" + key, _key: key, _optimistic: true, _pending: true, room_id: roomId, sender_id: me?.id, message_type: "text", content: text, created_at: new Date().toISOString() }
     );
   };
-
+  const doSend = () => {
+    const text = input.trim();
+    if (!text) return;
+    setInput("");
+    sendText(text);
+  };
   const shareStory = (story) => {
     setPickerOpen(false);
-    send.mutate(
-      { message_type: "story", shared_story_id: story.id, idempotency_key: crypto.randomUUID() },
-      { onSuccess: (m) => addLive(nm(m)), onError: (e) => toast.error(errMsg(e)) }
+    const key = crypto.randomUUID();
+    sendMsg(
+      { message_type: "story", shared_story_id: story.id, idempotency_key: key },
+      { id: "tmp-" + key, _key: key, _optimistic: true, _pending: true, room_id: roomId, sender_id: me?.id, message_type: "story", shared_story_id: story.id, created_at: new Date().toISOString() }
     );
+  };
+  const retry = (m) => {
+    setLive((prev) => prev.filter((x) => x._key !== m._key));
+    if (m.message_type === "story") shareStory({ id: m.shared_story_id });
+    else sendText(m.content);
   };
 
   const onType = (e) => {
@@ -233,8 +275,16 @@ export default function ChatRoom() {
                   <span className="msg-text">{m.content}</span>
                 )}
                 <span className="msg-meta">
-                  {m.created_at && <span className="msg-time">{timeAgo(m.created_at)}</span>}
-                  <Ticks mine={mine} seen={seen} />
+                  {m._pending ? (
+                    <Clock size={12} className="tick" />
+                  ) : m._failed ? (
+                    <button className="msg-retry" onClick={() => retry(m)} aria-label="retry"><RotateCw size={12} /></button>
+                  ) : (
+                    <>
+                      {m.created_at && <span className="msg-time">{timeAgo(m.created_at)}</span>}
+                      <Ticks mine={mine} seen={seen} />
+                    </>
+                  )}
                 </span>
               </div>
             </div>
@@ -284,7 +334,7 @@ export default function ChatRoom() {
             onKeyDown={(e) => e.key === "Enter" && doSend()}
             placeholder={t("chat.messagePlaceholder")}
           />
-          <button className="chat-send" onClick={doSend} disabled={!input.trim() || send.isPending} aria-label={t("chat.send") || "Send"}>
+          <button className="chat-send" onClick={doSend} disabled={!input.trim()} aria-label={t("chat.send")}>
             <Send size={18} />
           </button>
         </div>
