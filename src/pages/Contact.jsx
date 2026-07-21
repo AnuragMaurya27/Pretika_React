@@ -4,7 +4,7 @@ import StaticPage, { Section, Ul } from "../components/StaticPage";
 
 // Public support inbox shown on the site. Change this one constant to move to
 // an official address (e.g. support@pretika.in) later.
-const SUPPORT_EMAIL = "shinchan563200@gmail.com";
+const SUPPORT_EMAIL = "anuragmaurya563200@gmail.com";
 
 /* Copy in both UI languages — picked live by i18n.language. */
 const COPY = {
