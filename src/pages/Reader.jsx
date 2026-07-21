@@ -24,6 +24,7 @@ import { reportValidRead, useMonetizationPublicConfig } from "../lib/wallet";
 import UnlockSheet from "../components/UnlockSheet";
 import Img from "../components/Img";
 import { AdInterleavedContent } from "../components/AdSlot";
+import ReadingGuard from "../components/ReadingGuard";
 
 const THEMES = [
   { key: "parchment", labelKey: "reader.themeParchment", Icon: Sun, bg: "#f4efe4", fg: "#211913" },
@@ -321,6 +322,9 @@ export default function Reader() {
       />
       {/* candle-lit vignette (midnight only) */}
       <div className="rd-vignette" aria-hidden />
+
+      {/* screenshot/copy deterrents + traceable per-reader watermark */}
+      <ReadingGuard theme={theme} />
 
       {/* ── Top chrome — auto-hides while you sink into the story ─────────── */}
       <header className={`rd-bar ${barHidden ? "hidden" : ""}`}>

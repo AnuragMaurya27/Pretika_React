@@ -1839,6 +1839,14 @@ html { scroll-behavior: smooth; }
   background: linear-gradient(135deg, var(--indigo-900), var(--indigo-600) 70%, var(--indigo-400));
 }
 @media (min-width: 768px) { .pf-cover { height: 224px; } }
+/* Designed default cover scene (when the user hasn't uploaded one) */
+.pf-cover-art {
+  position: absolute; inset: 0; overflow: hidden;
+  background: linear-gradient(135deg, var(--indigo-900), var(--indigo-600) 68%, var(--indigo-400));
+}
+.pf-cover-skyline { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; }
+.pf-cover-moon { position: absolute; top: 14px; right: 20px; opacity: .92; }
+@media (min-width: 768px) { .pf-cover-moon { top: 22px; right: 34px; } }
 .pf-cover-shade {
   position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(to top, rgba(23,17,13,.34), transparent 42%);
@@ -2687,4 +2695,55 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
   }
   .reveal { opacity: 1; transform: none; }
   body::before { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Reading guard — best-effort screenshot / copy deterrents (see ReadingGuard.jsx).
+   The web platform CANNOT truly block screenshots or OCR; this only raises
+   friction and stamps a traceable per-reader watermark on the page.
+   ══════════════════════════════════════════════════════════════════════════ */
+.rd-shell .reader-body,
+.rd-shell .reader-body * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.rd-watermark {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background-repeat: repeat;
+}
+.rd-obscure {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 24px;
+  color: #f4efe4;
+  background: rgba(12, 6, 5, 0.9);
+  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(22px);
+}
+.rd-obscure-title { font-weight: 800; font-size: 18px; margin-top: 12px; }
+.rd-obscure-sub { font-size: 13px; opacity: 0.8; margin: 6px auto 0; max-width: 300px; line-height: 1.5; }
+.rd-print-block { display: none; }
+@media print {
+  body * { visibility: hidden !important; }
+  .rd-print-block {
+    display: block !important;
+    visibility: visible !important;
+    position: fixed;
+    inset: 0;
+    padding: 90px 28px;
+    text-align: center;
+    color: #000;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .rd-print-block * { visibility: visible !important; }
 }

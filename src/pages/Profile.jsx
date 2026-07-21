@@ -16,6 +16,7 @@ import { StoryRow } from "../components/StoryCard";
 import FollowListSheet from "../components/FollowListSheet";
 import EmptyState from "../components/EmptyState";
 import Img from "../components/Img";
+import ProfileCover from "../components/ProfileCover";
 import Seo from "../components/Seo";
 import { api, unwrap, errMsg } from "../lib/api";
 import { compact } from "../lib/format";
@@ -83,16 +84,7 @@ export default function Profile() {
 
         {/* ═══ Cover — editable in place ═══ */}
         <div className="pf-cover">
-          {user?.cover_image_url ? (
-            <Img path={user.cover_image_url} seed={user.id} alt="" loading="eager"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            <div style={{ position: "absolute", inset: 0 }}>
-              <div className="aurora" style={{ opacity: 0.5 }} />
-            </div>
-          )}
-          <div className="fog" style={{ opacity: 0.4 }} />
-          <div className="pf-cover-shade" />
+          <ProfileCover coverUrl={user?.cover_image_url} id={user?.id} seed={user?.username} />
           <button
             className="pf-cam glass"
             style={{ position: "absolute", right: 14, bottom: 14 }}

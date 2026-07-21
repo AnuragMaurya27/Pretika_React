@@ -285,6 +285,11 @@ export default {
     timeLeft: "{{n}} मिनट बाकी",
     theEnd: "समाप्त",
     upNext: "आगे",
+    guard: {
+      pausedTitle: "पढ़ना रुका हुआ है",
+      pausedSub: "यह कहानी सुरक्षित है — पढ़ना जारी रखने के लिए Pretika पर वापस आएँ।",
+      printBlocked: "यह कहानी Pretika पर सुरक्षित है — इसे प्रिंट या एक्सपोर्ट नहीं किया जा सकता।",
+    },
   },
   report: {
     title: "कमेंट रिपोर्ट करें",

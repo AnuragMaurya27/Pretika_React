@@ -285,6 +285,11 @@ export default {
     timeLeft: "{{n}} min left",
     theEnd: "The End",
     upNext: "Up next",
+    guard: {
+      pausedTitle: "Reading paused",
+      pausedSub: "This story is protected — come back to Pretika to keep reading.",
+      printBlocked: "This story is protected on Pretika and can’t be printed or exported.",
+    },
   },
   report: {
     title: "Report comment",

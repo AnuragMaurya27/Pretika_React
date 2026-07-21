@@ -10,6 +10,7 @@ import { SkeletonBox } from "../components/Skeleton";
 import EmptyState, { ErrorState } from "../components/EmptyState";
 import FollowListSheet from "../components/FollowListSheet";
 import Img from "../components/Img";
+import ProfileCover from "../components/ProfileCover";
 import Seo from "../components/Seo";
 import { useAuth } from "../store/auth";
 import { compact } from "../lib/format";
@@ -82,9 +83,8 @@ export default function CreatorProfile() {
       />
 
       {/* Cover */}
-      <div style={cover} className="scene-3d">
-        <div className="aurora" style={{ opacity: 0.4 }} />
-        <div className="fog" style={{ opacity: 0.4 }} />
+      <div className="pf-cover scene-3d">
+        <ProfileCover coverUrl={u.cover_image_url} id={u.id} seed={u.username} />
         <button onClick={() => nav(-1)} className="glass" style={floatBtn(12, 12)}><ArrowLeft size={20} /></button>
         <button onClick={share} className="glass" style={floatBtn(12, null, 12)}><Share2 size={18} /></button>
       </div>
@@ -169,10 +169,6 @@ const Stat = ({ icon, n, label, onClick }) => {
 };
 const Sep = () => <div style={{ width: 1, height: 30, background: "var(--border-solid)" }} />;
 
-const cover = {
-  position: "relative", height: 150, overflow: "hidden",
-  background: "linear-gradient(135deg, var(--indigo-900), var(--indigo-600) 70%, var(--indigo-400))",
-};
 const avatar = {
   width: 104, height: 104, borderRadius: "50%", objectFit: "cover",
   border: "4px solid var(--bg)", background: "var(--bg-tertiary)",
