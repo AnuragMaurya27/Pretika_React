@@ -32,30 +32,22 @@ export default function ReadingGuard({ theme = "parchment" }) {
     const onCopyCut = (e) => { if (selInReader()) e.preventDefault(); };
     // Right-click / drag disabled anywhere in the reader shell.
     const onCtxDrag = (e) => { if (e.target?.closest?.(".rd-shell")) e.preventDefault(); };
+    // Obscure ONLY when the tab is genuinely hidden (tab/app switch). We deliberately
+    // do NOT hook window blur/focus — on mobile those fire on ad-iframe focus and
+    // address-bar show/hide during scrolling, which caused the reader to flicker.
     const onVis = () => setObscured(document.hidden);
-    // Ignore focus moving into an in-page iframe (e.g. an ad) — only a real
-    // app/tab switch should obscure the content.
-    const onBlur = () => {
-      if (document.activeElement?.tagName === "IFRAME") return;
-      setObscured(true);
-    };
-    const onFocus = () => setObscured(false);
 
     document.addEventListener("copy", onCopyCut);
     document.addEventListener("cut", onCopyCut);
     document.addEventListener("contextmenu", onCtxDrag);
     document.addEventListener("dragstart", onCtxDrag);
     document.addEventListener("visibilitychange", onVis);
-    window.addEventListener("blur", onBlur);
-    window.addEventListener("focus", onFocus);
     return () => {
       document.removeEventListener("copy", onCopyCut);
       document.removeEventListener("cut", onCopyCut);
       document.removeEventListener("contextmenu", onCtxDrag);
       document.removeEventListener("dragstart", onCtxDrag);
       document.removeEventListener("visibilitychange", onVis);
-      window.removeEventListener("blur", onBlur);
-      window.removeEventListener("focus", onFocus);
     };
   }, []);
 

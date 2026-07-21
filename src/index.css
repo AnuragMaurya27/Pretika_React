@@ -2715,6 +2715,12 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
   z-index: 3;
   pointer-events: none;
   background-repeat: repeat;
+  /* Promote to its own compositor layer so it does NOT repaint on every scroll
+     frame — a fixed full-viewport overlay otherwise causes bad flicker + janky
+     momentum scrolling on mobile. */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 .rd-obscure {
   position: fixed;
