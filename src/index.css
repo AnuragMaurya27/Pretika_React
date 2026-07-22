@@ -1231,7 +1231,6 @@ html { scroll-behavior: smooth; }
   --rd-chrome: rgba(244,239,228,.86);
   background: var(--rd-bg); color: var(--rd-text);
   min-height: 100dvh;
-  position: relative; /* positioning context for the absolute watermark */
   transition: background .5s ease, color .5s ease;
 }
 .rd-shell[data-rdtheme="sepia"] {
@@ -2698,49 +2697,7 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
   body::before { display: none; }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   Reading guard — best-effort screenshot / copy deterrents (see ReadingGuard.jsx).
-   The web platform CANNOT truly block screenshots or OCR; this only raises
-   friction and stamps a traceable per-reader watermark on the page.
-   ══════════════════════════════════════════════════════════════════════════ */
-.rd-shell .reader-body,
-.rd-shell .reader-body * {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
-.rd-obscure {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 24px;
-  color: #f4efe4;
-  background: rgba(12, 6, 5, 0.9);
-  -webkit-backdrop-filter: blur(22px);
-  backdrop-filter: blur(22px);
-}
-.rd-obscure-title { font-weight: 800; font-size: 18px; margin-top: 12px; }
-.rd-obscure-sub { font-size: 13px; opacity: 0.8; margin: 6px auto 0; max-width: 300px; line-height: 1.5; }
-.rd-print-block { display: none; }
-@media print {
-  body * { visibility: hidden !important; }
-  .rd-print-block {
-    display: block !important;
-    visibility: visible !important;
-    position: fixed;
-    inset: 0;
-    padding: 90px 28px;
-    text-align: center;
-    color: #000;
-    font-size: 16px;
-    line-height: 1.6;
-  }
-  .rd-print-block * { visibility: visible !important; }
-}
+/* (reader screenshot-guard removed — it caused mobile scroll flicker) */
 
 /* ══════════════════════════════════════════════════════════════════════════
    Chat (user↔user) — mobile-only inbox + full-screen conversation.
