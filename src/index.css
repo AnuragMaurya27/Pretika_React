@@ -1228,7 +1228,6 @@ html { scroll-behavior: smooth; }
   --rd-faint: var(--text-tertiary);
   --rd-border: var(--border);
   --rd-accent: var(--crimson);
-  --rd-chrome: rgba(244,239,228,.86);
   background: var(--rd-bg); color: var(--rd-text);
   min-height: 100dvh;
   transition: background .5s ease, color .5s ease;
@@ -1240,7 +1239,6 @@ html { scroll-behavior: smooth; }
   --rd-muted: #6b533a;
   --rd-faint: #977f60;
   --rd-border: #dcc9a4;
-  --rd-chrome: rgba(239,226,200,.88);
 }
 .rd-shell[data-rdtheme="midnight"] {
   --rd-bg: #0e0907;
@@ -1250,7 +1248,6 @@ html { scroll-behavior: smooth; }
   --rd-faint: #7d6c55;
   --rd-border: rgba(231,217,196,.14);
   --rd-accent: #e05545;
-  --rd-chrome: rgba(14,9,7,.82);
 }
 /* candle-lit vignette that breathes around midnight pages */
 .rd-vignette { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0; transition: opacity .8s ease; }
@@ -1271,15 +1268,23 @@ html { scroll-behavior: smooth; }
 /* serif body option — pulpier, book-like */
 .rd-serif { font-family: "Noto Serif Devanagari", Georgia, "Times New Roman", serif; }
 
-/* reader chrome (top bar) — auto-hide, glassy, theme-aware */
+/* reader chrome (top bar) — auto-hide, theme-aware.
+   OPAQUE on purpose — NO backdrop-filter. A `position:fixed` element with
+   `backdrop-filter: blur()` forces mobile Safari/Chrome to re-sample and
+   re-blur the content scrolling behind it on EVERY frame; the compositor
+   glitches and flashes the whole viewport white/black on scroll (worst while
+   the bar runs its auto-hide translateY). An opaque bar lives on its own GPU
+   layer and never re-samples → zero scroll flicker. This was the reader
+   flicker. Keep it opaque; do not reintroduce backdrop-filter here. */
 .rd-bar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 30;
-  background: var(--rd-chrome);
-  backdrop-filter: saturate(180%) blur(16px); -webkit-backdrop-filter: saturate(180%) blur(16px);
+  background: var(--rd-bg);
   border-bottom: 1px solid var(--rd-border);
+  box-shadow: 0 6px 18px -12px rgba(10, 4, 2, .5);
+  transform: translateZ(0);           /* own compositing layer → stable on scroll */
   transition: transform .45s var(--ease-out-expo), background .5s ease;
 }
-.rd-bar.hidden { transform: translateY(-110%); }
+.rd-bar.hidden { transform: translateY(-110%) translateZ(0); }
 .rd-iconbtn {
   width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
   color: var(--rd-muted); background: transparent; transition: background .2s, color .2s, transform .15s;
