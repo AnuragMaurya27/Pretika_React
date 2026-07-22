@@ -1431,6 +1431,17 @@ html { scroll-behavior: smooth; }
   position: fixed; top: 76px; bottom: 76px; right: 3px; z-index: 26;
   display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
   width: 14px; opacity: .9;
+  touch-action: pan-y;               /* a swipe on it scrolls the page, never a jump */
+}
+/* THE Darr-Meter "self-scroll / flicker": this strip runs the full right edge —
+   exactly where a scrolling thumb lands — so an incidental tap fires jumpTo()
+   and yanks the reader to a scary paragraph mid-scroll. Only episodes with a
+   Darr Meter render it, which is why those were the ones that misbehaved. On
+   touch, make it a pure visual heat indicator; deliberate jumps still work via
+   the "scariest — para N" pill and the expandable mini map. Mouse users keep
+   click-to-jump (a pointer never grazes the edge by accident). */
+@media (hover: none), (pointer: coarse) {
+  .dm-strip { pointer-events: none; }
 }
 .dm-seg {
   flex: 1; min-height: 2px; padding: 0; display: block; cursor: pointer;
