@@ -1,23 +1,22 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ShieldAlert } from "lucide-react";
-import { useAuth } from "../store/auth";
 
 /**
  * Best-effort reading protection for the story reader.
  *
  * IMPORTANT: the web platform CANNOT truly block screenshots or OCR — no browser
- * API exists for it (only native apps have FLAG_SECURE). This component is a
- * *deterrent*, not a guarantee. It:
+ * API exists for it (only native apps have FLAG_SECURE). This is a *deterrent*:
  *   - disables text selection / copy / right-click / drag on the story body,
- *   - obscures the page when the tab/window loses focus (deters OCR-app swaps &
- *     screen-share), and — most usefully —
- *   - stamps every page with a faint, tiled watermark of the reader's identity,
- *     so any leaked screenshot is traceable back to the account.
+ *   - blanks print, obscures the page only when the tab is genuinely hidden.
+ *
+ * The traceable per-reader WATERMARK is NOT rendered here — it is painted as a CSS
+ * background on the reader itself (see `wmBg` in Reader.jsx). A positioned overlay
+ * (fixed OR absolute) repaints on scroll and flickered badly on mobile; a plain
+ * background scrolls with the text and never repaints separately.
  */
-export default function ReadingGuard({ theme = "parchment" }) {
+export default function ReadingGuard() {
   const { t } = useTranslation();
-  const user = useAuth((s) => s.user);
   const [obscured, setObscured] = useState(false);
 
   useEffect(() => {
@@ -32,9 +31,8 @@ export default function ReadingGuard({ theme = "parchment" }) {
     const onCopyCut = (e) => { if (selInReader()) e.preventDefault(); };
     // Right-click / drag disabled anywhere in the reader shell.
     const onCtxDrag = (e) => { if (e.target?.closest?.(".rd-shell")) e.preventDefault(); };
-    // Obscure ONLY when the tab is genuinely hidden (tab/app switch). We deliberately
-    // do NOT hook window blur/focus — on mobile those fire on ad-iframe focus and
-    // address-bar show/hide during scrolling, which caused the reader to flicker.
+    // Obscure ONLY when the tab is genuinely hidden (tab/app switch) — NOT on
+    // window blur/focus, which fire on mobile ad-iframe focus & address-bar changes.
     const onVis = () => setObscured(document.hidden);
 
     document.addEventListener("copy", onCopyCut);
@@ -51,22 +49,8 @@ export default function ReadingGuard({ theme = "parchment" }) {
     };
   }, []);
 
-  // Diagonal, tiled watermark carrying the reader's identity → traceable leaks.
-  const tag = user?.username ? `@${user.username}` : "pretika.in";
-  const idShort = user?.id ? String(user.id).slice(0, 8) : "guest";
-  const stamp = new Date().toISOString().slice(0, 10);
-  const label = `${tag} · ${idShort} · ${stamp}`.replace(/[<>&]/g, "");
-  const fill = theme === "midnight" ? "rgba(255,255,255,0.07)" : "rgba(20,4,4,0.06)";
-  const svg =
-    `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='188'>` +
-    `<text x='12' y='96' transform='rotate(-28 160 96)' fill='${fill}' ` +
-    `font-family='system-ui,-apple-system,sans-serif' font-size='13' font-weight='600'>` +
-    `${label}</text></svg>`;
-  const bg = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-
   return (
     <>
-      <div className="rd-watermark" aria-hidden="true" style={{ backgroundImage: bg }} />
       {obscured && (
         <div className="rd-obscure" role="status" aria-live="polite">
           <div>

@@ -2710,17 +2710,6 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
   user-select: none;
   -webkit-touch-callout: none;
 }
-.rd-watermark {
-  /* ABSOLUTE (not fixed): the watermark lives inside the scrolling content and
-     tiles over the whole story, so it scrolls naturally with the text. A
-     position:fixed overlay repaints every scroll frame and is repositioned when
-     the mobile address bar shows/hides — that was the reader flicker/jank. */
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background-repeat: repeat;
-}
 .rd-obscure {
   position: fixed;
   inset: 0;

@@ -37,6 +37,7 @@ export default function Reader() {
   const nav = useNavigate();
   const { t } = useTranslation();
   const authed = useAuth((s) => s.isAuthed)();
+  const user = useAuth((s) => s.user);
   const reduce = useReducedMotion();
 
   const { data: ep, isLoading, isError, refetch } = useEpisode(storyId, episodeId);
@@ -129,6 +130,24 @@ export default function Reader() {
   useEffect(() => { localStorage.setItem("reader_font", font); }, [font]);
 
   const { html } = useMemo(() => renderEpisode(ep?.content), [ep?.content]);
+
+  // Traceable per-reader watermark — painted as the shell's CSS background (NOT a
+  // positioned overlay), so it scrolls with the text and never repaints on scroll
+  // (a fixed/absolute overlay flickered badly on mobile).
+  const uname = user?.username || null;
+  const uid = user?.id || null;
+  const wmBg = useMemo(() => {
+    const tag = uname ? `@${uname}` : "pretika.in";
+    const idShort = uid ? String(uid).slice(0, 8) : "guest";
+    const stamp = new Date().toISOString().slice(0, 10);
+    const label = `${tag} · ${idShort} · ${stamp}`.replace(/[<>&]/g, "");
+    const fill = theme === "midnight" ? "rgba(255,255,255,0.07)" : "rgba(20,4,4,0.06)";
+    const svg =
+      `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='188'>` +
+      `<text x='12' y='96' transform='rotate(-28 160 96)' fill='${fill}' ` +
+      `font-family='system-ui,-apple-system,sans-serif' font-size='13' font-weight='600'>${label}</text></svg>`;
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  }, [uname, uid, theme]);
 
   const sorted = useMemo(() => (epList || []).slice().sort((a, b) => a.episode_number - b.episode_number), [epList]);
   const idx = sorted.findIndex((e) => e.id === episodeId);
@@ -311,7 +330,7 @@ export default function Reader() {
   const minsLeft = Math.max(0, Math.ceil(mins * (1 - progress / 100)));
 
   return (
-    <div className="rd-shell" data-rdtheme={theme}>
+    <div className="rd-shell" data-rdtheme={theme} style={{ backgroundImage: wmBg, backgroundRepeat: "repeat" }}>
       <Seo
         title={`${story?.title ? `${story.title} — ` : ""}Episode ${ep.episode_number}: ${ep.title}`}
         description={`Read episode ${ep.episode_number} of ${story?.title || "this Hindi horror story"} on Pretika${story?.summary ? ` — ${story.summary.slice(0, 110)}` : ""}.`}
@@ -323,8 +342,8 @@ export default function Reader() {
       {/* candle-lit vignette (midnight only) */}
       <div className="rd-vignette" aria-hidden />
 
-      {/* screenshot/copy deterrents + traceable per-reader watermark */}
-      <ReadingGuard theme={theme} />
+      {/* screenshot/copy deterrents (the watermark is the rd-shell background — wmBg) */}
+      <ReadingGuard />
 
       {/* ── Top chrome — auto-hides while you sink into the story ─────────── */}
       <header className={`rd-bar ${barHidden ? "hidden" : ""}`}>
