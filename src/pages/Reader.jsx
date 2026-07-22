@@ -15,7 +15,6 @@ import { saveProgress, getProgress } from "../lib/reading";
 import { ErrorState } from "../components/EmptyState";
 import StarRating from "../components/StarRating";
 import CommentSection from "../components/CommentSection";
-import DarrMeter from "../components/DarrMeter";
 import Seo from "../components/Seo";
 import { Spook, PageLoader } from "../components/Art";
 import { useAuth } from "../store/auth";
@@ -523,12 +522,6 @@ export default function Reader() {
           />
         </div>
       </motion.article>
-
-      {/* Darr Meter — paragraph-level fear heatmap (reading stories only).
-          key={episodeId} → fresh per-episode dedup/heatmap state on navigation. */}
-      {ep.content && (
-        <DarrMeter key={episodeId} storyId={storyId} episodeId={episodeId} contentKey={ep.id} />
-      )}
 
       {/* XP celebration */}
       <AnimatePresence>

@@ -11,7 +11,6 @@ export const STORAGE = {
   lang: "pretika_app_language",
   langChosen: "pretika_language_chosen",
   tourDone: "pretika_tour_done",
-  darrCoach: "pretika_darr_coach", // one-time Darr Meter FAB coach mark
 };
 
 /**

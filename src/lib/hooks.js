@@ -370,18 +370,6 @@ export function useFollow() {
   });
 }
 
-/* ---------------------------- Darr Meter --------------------------------- */
-// Paragraph-level fear heatmap (reading stories only, not chat stories).
-export function useFearStats(episodeId) {
-  return useQuery({
-    queryKey: ["darr-meter", episodeId],
-    queryFn: () => get(`/darr-meter/${episodeId}`),
-    enabled: !!episodeId,
-    staleTime: 1000 * 60, // heatmap freshness — a minute is plenty
-    refetchOnWindowFocus: false,
-  });
-}
-
 /* --------------------------- Chat stories -------------------------------- */
 // Found-footage phone-chat horror (Pretika official only can publish).
 export function useChatStories(params = {}) {
