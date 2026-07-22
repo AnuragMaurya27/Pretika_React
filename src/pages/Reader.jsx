@@ -68,6 +68,9 @@ export default function Reader() {
   const [celebrate, setCelebrate] = useState(false);
   const [myRating, setMyRating] = useState(0);
   const lastY = useRef(0);
+  const progressBarRef = useRef(null);
+  const lastPctSet = useRef(0);
+  const lastPersist = useRef(0);
   const [unlockOpen, setUnlockOpen] = useState(false);
 
   // ── valid-read heartbeat (spec 8: ≥30s AND ≥50% scroll, once per day) ──────
@@ -186,14 +189,20 @@ export default function Reader() {
         const y = doc.scrollTop || window.scrollY;
         const max = doc.scrollHeight - doc.clientHeight;
         const pct = max > 0 ? Math.min(100, Math.round(y / max * 100)) : 0;
-        setProgress(pct);
+        // Move the progress bar via direct DOM — NO React re-render every scroll
+        // frame (that per-frame re-render + localStorage write was the scroll jank).
+        if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
         if (pct > vrMaxScroll.current) vrMaxScroll.current = pct;
         // hide bar scrolling down (immersion), reveal scrolling up
         if (y > lastY.current + 6 && y > 160) setBarHidden(true);
         else if (y < lastY.current - 6) setBarHidden(false);
         lastY.current = y;
         if (pct >= 90 && !done) finish(); // auto-complete near the end
-        persist({ scroll_percentage: pct });
+        const now = Date.now();
+        // Throttle the state update (the %-pill) and the localStorage save —
+        // neither needs to run on every frame.
+        if (now - lastPctSet.current > 200) { lastPctSet.current = now; setProgress(pct); }
+        if (now - lastPersist.current > 500) { lastPersist.current = now; persist({ scroll_percentage: pct }); }
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -402,7 +411,7 @@ export default function Reader() {
         </div>
         {/* reading progress */}
         <div style={{ height: 2.5, background: "transparent" }}>
-          <div style={{
+          <div ref={progressBarRef} style={{
             height: "100%", width: `${progress}%`,
             background: "linear-gradient(90deg, var(--crimson-mid), var(--rd-accent))",
             transition: "width .12s linear", boxShadow: "0 0 10px color-mix(in srgb, var(--rd-accent) 60%, transparent)",
