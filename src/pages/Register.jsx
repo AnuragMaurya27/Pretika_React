@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
@@ -19,7 +19,12 @@ export default function Register() {
   const nav = useNavigate();
   const register = useAuth((s) => s.register);
   const lang = useLang((s) => s.lang);
-  const [f, setF] = useState({ username: "", email: "", display_name: "", password: "", referral: "" });
+  // Invite links land as /register?ref=CODE — prefill so the referral actually sticks.
+  const [params] = useSearchParams();
+  const [f, setF] = useState({
+    username: "", email: "", display_name: "", password: "",
+    referral: (params.get("ref") || "").trim().toUpperCase(),
+  });
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const set = (k) => (v) => setF({ ...f, [k]: v });
@@ -71,6 +76,11 @@ export default function Register() {
           placeholder={t("auth.password")} autoComplete="new-password"
           strength={pwScore(f.password)} onChange={set("password")} />
         <Field placeholder={t("auth.referral")} value={f.referral} onChange={set("referral")} />
+        {f.referral.trim() && (
+          <motion.p variants={riseVar} className="muted" style={{ fontSize: 12, margin: "-4px 0 10px", lineHeight: 1.5 }}>
+            {t("auth.referralPerk")}
+          </motion.p>
+        )}
         <GlowButton busy={busy}>{busy ? t("auth.creating") : t("auth.register")}</GlowButton>
       </form>
 

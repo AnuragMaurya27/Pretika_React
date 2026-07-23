@@ -27,6 +27,7 @@ import CreateStory from "./pages/CreateStory";
 import EditStory from "./pages/EditStory";
 import BecomeCreator from "./pages/BecomeCreator";
 import Wallet from "./pages/Wallet";
+import Invite from "./pages/Invite";
 import CreatorMonetization from "./pages/CreatorMonetization";
 import Support from "./pages/Support";
 import SupportTicket from "./pages/SupportTicket";
@@ -69,6 +70,7 @@ export default function App() {
         <Route path="/read/:storyId/:episodeId" element={<Reader />} />
         <Route path="/become-creator" element={<ProtectedRoute><BecomeCreator /></ProtectedRoute>} />
         <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+        <Route path="/invite" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
         <Route path="/creator/monetization" element={<ProtectedRoute><CreatorMonetization /></ProtectedRoute>} />
         <Route path="/creator-dashboard" element={<ProtectedRoute><CreatorDashboard /></ProtectedRoute>} />
         <Route path="/creator/stories" element={<ProtectedRoute><MyStories /></ProtectedRoute>} />

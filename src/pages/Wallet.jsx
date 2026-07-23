@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Coins, Plus, ArrowDownLeft, ArrowUpRight, Lock, Gift, Wallet as WalletIcon } from "lucide-react";
+import { ArrowLeft, Coins, Plus, ArrowDownLeft, ArrowUpRight, Lock, Gift, Wallet as WalletIcon, UserPlus, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useWallet, useWalletTransactions } from "../lib/wallet";
 import CoinPacksSheet from "../components/CoinPacksSheet";
@@ -76,6 +76,19 @@ export default function Wallet() {
         <p className="muted" style={{ fontSize: 12, margin: "0 4px 18px", lineHeight: 1.5 }}>
           {t("wallet.policyNote")}
         </p>
+
+        {/* free-coins route: invite friends (rewards settle as they engage) */}
+        <button
+          className="card row between"
+          onClick={() => nav("/invite")}
+          style={{ width: "100%", padding: "14px 16px", marginBottom: 18, cursor: "pointer", textAlign: "left" }}
+        >
+          <span className="row gap-8">
+            <UserPlus size={17} color="var(--indigo-600)" />
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{t("wallet.inviteCta")}</span>
+          </span>
+          <ChevronRight size={17} color="var(--text-secondary)" />
+        </button>
 
         {/* transactions */}
         <div className="section-title" style={{ fontSize: 16, marginBottom: 10 }}>
