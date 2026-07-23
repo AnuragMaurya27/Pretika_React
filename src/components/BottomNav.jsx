@@ -1,11 +1,16 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Home, User, Plus, MessageCircle } from "lucide-react";
+import { Home, User, Plus, MessageCircle, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-// Mobile tab bar — Home · Chats · [Write FAB] · Profile (search lives in the top header)
-const tabs = [
+// Mobile tab bar — Home · Explore · [Write FAB] · Chats · Profile.
+// Two tabs flank the Write FAB on each side so it always sits dead-center
+// of the bar (an odd 5-slot grid); never let it drift off to one side.
+const leftTabs = [
   { to: "/home", icon: Home, id: "home" },
+  { to: "/explore", icon: Search, id: "explore" },
+];
+const rightTabs = [
   { to: "/chat", icon: MessageCircle, id: "messages" },
   { to: "/profile", icon: User, id: "profile" },
 ];
@@ -16,12 +21,15 @@ export default function BottomNav() {
   return (
     <nav className="only-mobile bnav">
       <div style={{ display: "flex", height: 58 }}>
-        <Tab {...tabs[0]} t={t} />
-        <Tab {...tabs[1]} t={t} />
+        {leftTabs.map((tab) => (
+          <Tab key={tab.id} {...tab} t={t} />
+        ))}
 
-        {/* Write FAB — center create-story button. The circle floats above the
-            bar and the label is pinned to the bar's bottom edge so it can
-            never slip under the safe-area / get clipped by the 58px row. */}
+        {/* Write FAB — the center create-story button. It's the middle slot of
+            a symmetric 5-column row (2 tabs · FAB · 2 tabs), so its circle
+            always lands at the exact horizontal center of the bar. The circle
+            floats above the bar and the label is pinned to the bar's bottom
+            edge so it can never slip under the safe-area / get clipped. */}
         <button onClick={() => nav("/creator/story/new")} style={fabWrap} aria-label={t("nav.write")}>
           <motion.div whileTap={{ scale: 0.88 }} className="pulse-glow" style={fabCircle}>
             <Plus size={22} color="#fff" />
@@ -29,7 +37,9 @@ export default function BottomNav() {
           <span style={fabLabel}>{t("nav.write")}</span>
         </button>
 
-        <Tab {...tabs[2]} t={t} />
+        {rightTabs.map((tab) => (
+          <Tab key={tab.id} {...tab} t={t} />
+        ))}
       </div>
     </nav>
   );
@@ -56,7 +66,7 @@ function Tab({ to, icon: Icon, id, t }) {
               <Icon size={20} strokeWidth={isActive ? 2.5 : 2} color={isActive ? "var(--indigo-600)" : "var(--text-tertiary)"} />
             </motion.span>
           </div>
-          <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, color: isActive ? "var(--indigo-600)" : "var(--text-tertiary)" }}>{t(`nav.${id}`)}</span>
+          <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, whiteSpace: "nowrap", color: isActive ? "var(--indigo-600)" : "var(--text-tertiary)" }}>{t(`nav.${id}`)}</span>
         </div>
       )}
     </NavLink>
