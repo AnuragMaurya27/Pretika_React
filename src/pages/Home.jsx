@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   Flame, Sparkles, Users, ChevronRight, BadgeCheck,
-  BookOpen, Star, Eye, Feather, Search, ArrowRight,
+  BookOpen, Star, Eye, Feather, ArrowRight,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
@@ -82,7 +82,7 @@ export default function Home() {
         image={HERO_IMG}
       />
       <div className="page-scroll">
-        {/* Mobile charcoal header — search lives here now (not the tab bar) */}
+        {/* Mobile charcoal header — search now lives in the bottom tab bar, not here */}
         <header className="only-mobile" style={mHeader}>
           <div className="between" style={{ padding: "12px 16px" }}>
             <div className="row gap-10">
@@ -97,9 +97,6 @@ export default function Home() {
             <div className="row gap-8">
               <LangToggle dark />
               {user && <NotificationBell dark />}
-              <button onClick={() => nav("/explore")} aria-label={t("nav.explore")} style={mSearchBtn}>
-                <Search size={19} />
-              </button>
             </div>
           </div>
         </header>
@@ -604,10 +601,6 @@ const fanBadge = {
 };
 
 const mHeader = { background: "linear-gradient(180deg, #2a0a07, #150605)", position: "sticky", top: 0, zIndex: 20 };
-const mSearchBtn = {
-  width: 40, height: 40, borderRadius: 12, display: "grid", placeItems: "center",
-  background: "rgba(255,255,255,.09)", border: "1px solid rgba(255,255,255,.16)", color: "#fff",
-};
 const annCard = { display: "flex", alignItems: "center", gap: 10, minWidth: 250, maxWidth: 250, padding: 10, background: "var(--indigo-50)", border: "1px solid var(--indigo-100)", borderRadius: 12 };
 const creatorCard = { minWidth: 150, width: 150, textAlign: "center", padding: 16, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16 };
 const contCard = {
