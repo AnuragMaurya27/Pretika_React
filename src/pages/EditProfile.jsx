@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../store/auth";
 import { api, put, post, unwrap, errMsg } from "../lib/api";
 import { thumbFor } from "../lib/constants";
+import ImageUploadPreview from "../components/ImageUploadPreview";
 import Seo from "../components/Seo";
 
 export default function EditProfile() {
@@ -30,17 +31,25 @@ export default function EditProfile() {
   const [avatar, setAvatar] = useState(user?.avatar_url);
   const [busy, setBusy] = useState(false);
   const [busyAvatar, setBusyAvatar] = useState(false);
+  const [pending, setPending] = useState(null); // picked file awaiting preview approval
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
-  const uploadAvatar = async (e) => {
+  // pick → preview the exact circle crop → upload (nothing goes up unconfirmed)
+  const pickAvatar = (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) return toast.error(t("common.maxImage5"));
+    setPending(file);
+  };
+
+  const uploadAvatar = async () => {
+    if (!pending) return;
     setBusyAvatar(true);
     try {
-      const data = await api.put("/users/me/avatar", fd(file), { headers: { "Content-Type": "multipart/form-data" } }).then(unwrap);
+      const data = await api.put("/users/me/avatar", fd(pending), { headers: { "Content-Type": "multipart/form-data" } }).then(unwrap);
       setAvatar(data.avatar_url);
+      setPending(null);
       toast.success(t("profile.photoUpdated"));
       fetchMe().catch(() => {});
     } catch (e2) { toast.error(errMsg(e2)); }
@@ -95,7 +104,7 @@ export default function EditProfile() {
             <button className="ep-cam" onClick={() => !busyAvatar && fileRef.current?.click()} aria-label={t("profile.changePhoto")}>
               <Camera size={16} />
             </button>
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={uploadAvatar} />
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={pickAvatar} />
           </div>
           <div className="ep-name-preview">
             <div className="row gap-6" style={{ justifyContent: "center" }}>
@@ -159,6 +168,16 @@ export default function EditProfile() {
           {busy ? <><Loader2 size={17} className="spin" /> {t("common.saving")}</> : <><Check size={17} /> {t("common.save")}</>}
         </button>
       </div>
+
+      <ImageUploadPreview
+        open={!!pending}
+        kind="avatar"
+        file={pending}
+        busy={busyAvatar}
+        onCancel={() => setPending(null)}
+        onPickAnother={() => fileRef.current?.click()}
+        onConfirm={uploadAvatar}
+      />
     </div>
   );
 }

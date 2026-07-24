@@ -17,6 +17,7 @@ import FollowListSheet from "../components/FollowListSheet";
 import EmptyState from "../components/EmptyState";
 import Img from "../components/Img";
 import ProfileCover from "../components/ProfileCover";
+import ImageUploadPreview from "../components/ImageUploadPreview";
 import Seo from "../components/Seo";
 import { api, unwrap, errMsg } from "../lib/api";
 import { compact } from "../lib/format";
@@ -38,6 +39,7 @@ export default function Profile() {
   const avatarRef = useRef();
   const [busyCover, setBusyCover] = useState(false);
   const [busyAvatar, setBusyAvatar] = useState(false);
+  const [pending, setPending] = useState(null); // { file, kind } awaiting preview approval
 
   // Refresh /users/me each time the profile opens so freshly earned reader XP
   // (comments +5, episode complete +25, daily login +10) shows the up-to-date
@@ -53,12 +55,19 @@ export default function Profile() {
   const score = user?.reader_rank_score ?? 0;
   const progress = rankProgress(score, rankKey);
 
-  // Direct image edit — PUT /users/me/cover & /users/me/avatar (JPG/PNG/WebP ≤5MB)
-  const uploadImage = async (e, kind) => {
+  // Image edit — pick → preview the exact crop → PUT /users/me/{cover|avatar}
+  // (JPG/PNG/WebP ≤5MB). Nothing is uploaded until the preview is confirmed.
+  const pickImage = (e, kind) => {
     const file = e.target.files?.[0];
     e.target.value = ""; // let the same file be re-picked
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) return toast.error(t("common.maxImage5"));
+    setPending({ file, kind });
+  };
+
+  const uploadPending = async () => {
+    if (!pending) return;
+    const { file, kind } = pending;
     const setBusy = kind === "cover" ? setBusyCover : setBusyAvatar;
     setBusy(true);
     try {
@@ -66,6 +75,7 @@ export default function Profile() {
       fd.append("file", file);
       await api.put(`/users/me/${kind}`, fd, { headers: { "Content-Type": "multipart/form-data" } }).then(unwrap);
       await fetchMe();
+      setPending(null);
       toast.success(t(kind === "cover" ? "profile.coverUpdated" : "profile.photoUpdated"));
     } catch (err) { toast.error(errMsg(err)); }
     finally { setBusy(false); }
@@ -94,7 +104,7 @@ export default function Profile() {
             {busyCover ? <Loader2 size={16} className="spin" /> : <Camera size={16} />}
             <span className="only-desktop">{t("profile.changeCover")}</span>
           </button>
-          <input ref={coverRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(e) => uploadImage(e, "cover")} />
+          <input ref={coverRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(e) => pickImage(e, "cover")} />
         </div>
 
         <div className="container" style={{ maxWidth: 920 }}>
@@ -121,7 +131,7 @@ export default function Profile() {
               >
                 <Pencil size={14} />
               </button>
-              <input ref={avatarRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(e) => uploadImage(e, "avatar")} />
+              <input ref={avatarRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(e) => pickImage(e, "avatar")} />
             </motion.div>
 
             <div className="row gap-8" style={{ flexWrap: "wrap", justifyContent: "flex-end" }}>
@@ -232,6 +242,15 @@ export default function Profile() {
         type={followSheet || "followers"}
         userId={user?.id}
         onClose={() => setFollowSheet(null)}
+      />
+      <ImageUploadPreview
+        open={!!pending}
+        kind={pending?.kind}
+        file={pending?.file}
+        busy={pending?.kind === "cover" ? busyCover : busyAvatar}
+        onCancel={() => setPending(null)}
+        onPickAnother={() => (pending?.kind === "cover" ? coverRef : avatarRef).current?.click()}
+        onConfirm={uploadPending}
       />
     </div>
   );
