@@ -4,18 +4,23 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { ArrowLeft, Send, BookOpen, Check, CheckCheck, X, Clock, RotateCw } from "lucide-react";
+import { ArrowLeft, Send, BookOpen, Check, CheckCheck, X, Clock, RotateCw, ImagePlus } from "lucide-react";
 import { get, errMsg } from "../lib/api";
 import {
-  useChatMessages, useSendMessage, useChatRoomHub, usePrivateChats,
+  useChatMessages, useSendMessage, useUploadChatImage, useChatRoomHub, usePrivateChats,
   useAcceptRequest, useDeclineRequest, markRoomRead, useIsMobile,
 } from "../lib/chat";
 import { useBookmarked } from "../lib/hooks";
 import { useAuth } from "../store/auth";
 import Img from "../components/Img";
+import ImageLightbox from "../components/ImageLightbox";
 import Seo from "../components/Seo";
 import ChatMobileGate from "../components/ChatMobileGate";
+import { mediaUrl } from "../lib/constants";
 import { timeAgo } from "../lib/format";
+
+// Max chat image size mirrors the backend (5MB).
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 // SignalR serialises camelCase; REST is snake_case — fold both into one shape.
 function nm(m) {
@@ -104,6 +109,7 @@ export default function ChatRoom() {
   );
 
   const send = useSendMessage(roomId);
+  const upload = useUploadChatImage();
   const accept = useAcceptRequest();
   const decline = useDeclineRequest();
 
@@ -114,7 +120,9 @@ export default function ChatRoom() {
   const [live, setLive] = useState([]);              // realtime + optimistic messages
   const [deletedIds, setDeletedIds] = useState(() => new Set());
   const [liveSeenAt, setLiveSeenAt] = useState(null);
+  const [lightbox, setLightbox] = useState(null);    // { src, filename } for full-screen view
   const scrollRef = useRef(null);
+  const fileRef = useRef(null);
   const typingTimer = useRef(null);
   const lastTypingSent = useRef(0);
 
@@ -231,9 +239,48 @@ export default function ChatRoom() {
       { id: "tmp-" + key, _key: key, _optimistic: true, _pending: true, room_id: roomId, sender_id: me?.id, message_type: "story", shared_story_id: story.id, created_at: new Date().toISOString() }
     );
   };
+  // Two-step: upload the file, then send an image message carrying its URL. The
+  // bubble appears instantly with a local blob preview (native-chat feel); once
+  // the send echoes back we swap in the stored URL. The File is kept on the
+  // optimistic bubble so a failed send can be retried without re-picking.
+  const sendImage = (file) => {
+    const key = crypto.randomUUID();
+    const localUrl = URL.createObjectURL(file);
+    addLive({
+      id: "tmp-" + key, _key: key, _optimistic: true, _pending: true, _localSrc: localUrl, _file: file,
+      room_id: roomId, sender_id: me?.id, message_type: "image", image_url: localUrl, created_at: new Date().toISOString(),
+    });
+    upload.mutate(file, {
+      onSuccess: (url) => {
+        send.mutate({ message_type: "image", image_url: url, idempotency_key: key }, {
+          onSuccess: (m) => {
+            const real = nm(m);
+            setLive((prev) => {
+              const rest = prev.filter((x) => x._key !== key);
+              return rest.some((x) => x.id === real.id) ? rest : [...rest, real];
+            });
+            URL.revokeObjectURL(localUrl);
+          },
+          onError: () => setLive((prev) => prev.map((x) => (x._key === key ? { ...x, _pending: false, _failed: true } : x))),
+        });
+      },
+      onError: (e) => {
+        toast.error(errMsg(e) || t("chat.photoError"));
+        setLive((prev) => prev.map((x) => (x._key === key ? { ...x, _pending: false, _failed: true } : x)));
+      },
+    });
+  };
+  const onPickImage = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";          // allow re-picking the same file
+    if (!file) return;
+    if (file.size > MAX_IMAGE_BYTES) return toast.error(t("chat.photoTooLarge"));
+    sendImage(file);
+  };
   const retry = (m) => {
     setLive((prev) => prev.filter((x) => x._key !== m._key));
     if (m.message_type === "story") shareStory({ id: m.shared_story_id });
+    else if (m.message_type === "image" && m._file) sendImage(m._file);
     else sendText(m.content);
   };
 
@@ -270,7 +317,18 @@ export default function ChatRoom() {
                 ) : m.message_type === "story" && m.shared_story_id ? (
                   <SharedStoryCard storyId={m.shared_story_id} />
                 ) : m.message_type === "image" && m.image_url ? (
-                  <Img path={m.image_url} seed={m.id} alt="" className="msg-image" />
+                  <button
+                    type="button"
+                    className="msg-image-btn"
+                    onClick={() => setLightbox({
+                      src: m._localSrc || mediaUrl(m.image_url),
+                      filename: (m.image_url || "").split("/").pop(),
+                    })}
+                  >
+                    {m._localSrc
+                      ? <img src={m._localSrc} alt="" className="msg-image" />
+                      : <Img path={m.image_url} seed={m.id} alt="" className="msg-image" />}
+                  </button>
                 ) : (
                   <span className="msg-text">{m.content}</span>
                 )}
@@ -324,6 +382,16 @@ export default function ChatRoom() {
         </div>
       ) : (
         <div className="chat-composer">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            hidden
+            onChange={onPickImage}
+          />
+          <button className="chat-share-btn" onClick={() => fileRef.current?.click()} aria-label={t("chat.sendPhoto")}>
+            <ImagePlus size={20} />
+          </button>
           <button className="chat-share-btn" onClick={() => setPickerOpen(true)} aria-label={t("chat.shareStory")}>
             <BookOpen size={20} />
           </button>
@@ -341,6 +409,10 @@ export default function ChatRoom() {
       )}
 
       <StorySharePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onPick={shareStory} />
+
+      {lightbox && (
+        <ImageLightbox src={lightbox.src} filename={lightbox.filename} onClose={() => setLightbox(null)} />
+      )}
     </div>
   );
 }

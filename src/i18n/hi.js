@@ -319,6 +319,11 @@ export default {
     mobileOnlyTitle: "चैट सिर्फ़ मोबाइल पर",
     mobileOnlySub: "चैट के लिए Pretika अपने फ़ोन में खोलें — बड़ी स्क्रीन पर यह उपलब्ध नहीं है।",
     loginToChat: "चैट शुरू करने के लिए लॉग इन करें।",
+    sendPhoto: "फ़ोटो भेजें",
+    photoTooLarge: "इमेज 5MB से छोटी होनी चाहिए",
+    photoError: "फ़ोटो नहीं भेजी जा सकी",
+    saveImage: "इमेज सेव करें",
+    saved: "सेव हो गई",
   },
   report: {
     title: "कमेंट रिपोर्ट करें",

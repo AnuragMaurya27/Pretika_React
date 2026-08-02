@@ -47,6 +47,21 @@ export function useSendMessage(roomId) {
   });
 }
 
+// Upload one image (JPG/PNG/WebP/GIF ≤5MB) to the chat store; resolves to the
+// stored relative path ("/chat-images/…") which then rides on an image message.
+export function useUploadChatImage() {
+  return useMutation({
+    mutationFn: async (file) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await post("/chat/upload-image", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res?.url;
+    },
+  });
+}
+
 export function useAcceptRequest() {
   const qc = useQueryClient();
   return useMutation({

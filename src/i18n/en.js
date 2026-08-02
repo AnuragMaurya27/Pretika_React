@@ -319,6 +319,11 @@ export default {
     mobileOnlyTitle: "Chat is mobile-only",
     mobileOnlySub: "Open Pretika on your phone to chat — on a bigger screen it isn't available.",
     loginToChat: "Log in to start chatting.",
+    sendPhoto: "Send a photo",
+    photoTooLarge: "Image must be under 5MB",
+    photoError: "Couldn't send the photo",
+    saveImage: "Save image",
+    saved: "Saved",
   },
   report: {
     title: "Report comment",
