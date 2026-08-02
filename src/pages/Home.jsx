@@ -47,29 +47,17 @@ export default function Home() {
     for (const s of [...(mostViewed.data?.items || []), ...(fresh.data?.items || [])]) {
       if (s && !byId.has(s.id)) byId.set(s.id, s);
     }
-    return rankTrending([...byId.values()], 12);
+    return rankTrending([...byId.values()], 10);
   }, [mostViewed.data, fresh.data]);
   const trendingLoading = mostViewed.isLoading && fresh.isLoading;
 
-  // Category rails: only for the categories of the 5 most-viewed ("reading
-  // viewer") stories — and only if that category actually has a story. We sort
-  // client-side since the API doesn't reliably order /stories by views.
+  // Category rails: one section for every category that has at least one story.
+  // Richest categories lead (sorted by story count) so the page opens strong.
   const topCategories = useMemo(() => {
-    const catById = new Map((cats.data || []).map((c) => [c.id, c]));
-    const top5 = (mostViewed.data?.items || [])
-      .slice()
-      .sort((a, b) => (b.total_views ?? 0) - (a.total_views ?? 0))
-      .slice(0, 5);
-    const seen = new Set();
-    const out = [];
-    for (const s of top5) {
-      const c = s.category_id && catById.get(s.category_id);
-      if (!c || seen.has(c.id) || (c.total_stories ?? 0) < 1) continue;
-      seen.add(c.id);
-      out.push(c);
-    }
-    return out;
-  }, [mostViewed.data, cats.data]);
+    return (cats.data || [])
+      .filter((c) => (c.total_stories ?? 0) >= 1)
+      .sort((a, b) => (b.total_stories ?? 0) - (a.total_stories ?? 0));
+  }, [cats.data]);
 
   const name = user?.display_name || user?.username || "";
 
@@ -162,7 +150,7 @@ export default function Home() {
           )}
         </Section>
 
-        {/* Category rails — one per category among the top-5 most-viewed stories */}
+        {/* Category rails — one per category that has at least one story */}
         {topCategories.map((c) => <CategorySection key={c.id} category={c} />)}
 
         {/* New creators */}
