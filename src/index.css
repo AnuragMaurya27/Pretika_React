@@ -2755,3 +2755,50 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
 .story-pick { display: flex; gap: 12px; align-items: center; padding: 8px; border-radius: 12px; text-align: left; }
 .story-pick:active { background: var(--bg-tertiary); }
 .story-pick-thumb { width: 40px; height: 54px; border-radius: 7px; object-fit: cover; flex-shrink: 0; background: var(--bg-tertiary); }
+
+/* attach menu (photo · story · super chat) */
+.attach-list { display: flex; flex-direction: column; gap: 2px; }
+.attach-row { display: flex; align-items: center; gap: 14px; padding: 13px 8px; border-radius: 12px; text-align: left; }
+.attach-row:active { background: var(--bg-tertiary); }
+.attach-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--bg-tertiary); flex-shrink: 0; }
+
+/* emoji picker panel (sits above the composer) */
+.chat-emoji-btn.on { color: var(--crimson); background: color-mix(in srgb, var(--crimson) 12%, transparent); }
+.emoji-panel {
+  border-top: 1px solid var(--border-solid); background: var(--bg-card);
+  max-height: 46dvh; overflow-y: auto; overscroll-behavior: contain;
+  padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
+}
+.emoji-group { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
+.emoji-cell { font-size: 25px; line-height: 1; height: 42px; border-radius: 10px; display: grid; place-items: center; }
+.emoji-cell:active { background: var(--bg-tertiary); transform: scale(.9); }
+
+/* super chat: highlighted bubble + coin badge */
+.msg-super { max-width: 88%; }
+.msg-bubble.super {
+  border: 1.5px solid var(--sc);
+  background: color-mix(in srgb, var(--sc) 12%, var(--bg-card)) !important;
+  border-radius: 16px !important; box-shadow: 0 3px 12px -4px var(--sc);
+  padding-top: 0; overflow: hidden;
+}
+.msg-sc-badge {
+  display: flex; align-items: center; gap: 5px; margin: 0 -11px 6px; padding: 6px 11px;
+  background: var(--sc); color: #fff; font-weight: 800; font-size: 12px; letter-spacing: .3px;
+}
+.msg.mine .msg-bubble.super { color: var(--text-primary); }
+
+/* super chat sheet */
+.sc-preview {
+  border-radius: 12px; overflow: hidden; border: 1.5px solid var(--sc);
+  background: color-mix(in srgb, var(--sc) 10%, var(--bg-card)); margin-bottom: 14px;
+}
+.sc-preview-badge { display: flex; align-items: center; gap: 5px; padding: 6px 11px; background: var(--sc); color: #fff; font-weight: 800; font-size: 12px; }
+.sc-preview-text { display: block; padding: 9px 11px; font-size: 14px; color: var(--text-secondary); }
+.sc-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sc-tier {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 11px 6px; border-radius: 12px; font-weight: 800; font-size: 14px;
+  background: var(--bg-tertiary); border: 1.5px solid transparent; color: var(--text-primary);
+}
+.sc-tier:disabled { opacity: .38; }
+.sc-tier.on { background: var(--bg-card); }

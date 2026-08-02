@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { ArrowLeft, Send, BookOpen, Check, CheckCheck, X, Clock, RotateCw, ImagePlus } from "lucide-react";
+import { ArrowLeft, Send, BookOpen, Check, CheckCheck, X, Clock, RotateCw, ImagePlus, Smile, Sparkles, Coins, Plus } from "lucide-react";
 import { get, errMsg } from "../lib/api";
 import {
   useChatMessages, useSendMessage, useUploadChatImage, useChatRoomHub, usePrivateChats,
@@ -14,6 +14,9 @@ import { useBookmarked } from "../lib/hooks";
 import { useAuth } from "../store/auth";
 import Img from "../components/Img";
 import ImageLightbox from "../components/ImageLightbox";
+import EmojiPicker from "../components/EmojiPicker";
+import SuperChatSheet from "../components/SuperChatSheet";
+import { tierColor } from "../lib/superchat";
 import Seo from "../components/Seo";
 import ChatMobileGate from "../components/ChatMobileGate";
 import { mediaUrl } from "../lib/constants";
@@ -31,7 +34,11 @@ function nm(m) {
     message_type: m.message_type ?? m.messageType,
     content: m.content ?? null,
     image_url: m.image_url ?? m.imageUrl ?? null,
+    sticker_id: m.sticker_id ?? m.stickerId ?? null,
     shared_story_id: m.shared_story_id ?? m.sharedStoryId ?? null,
+    is_super_chat: m.is_super_chat ?? m.isSuperChat ?? false,
+    super_chat_coins: m.super_chat_coins ?? m.superChatCoins ?? 0,
+    super_chat_highlight_color: m.super_chat_highlight_color ?? m.superChatHighlightColor ?? null,
     is_deleted: m.is_deleted ?? m.isDeleted ?? false,
     created_at: m.created_at ?? m.createdAt,
   };
@@ -94,6 +101,36 @@ function StorySharePicker({ open, onClose, onPick }) {
   );
 }
 
+// Attachment menu: photo · story · super chat.
+function AttachSheet({ open, onClose, onPhoto, onStory, onSuper }) {
+  const { t } = useTranslation();
+  if (!open) return null;
+  const rows = [
+    { key: "photo", Icon: ImagePlus, label: t("chat.sendPhoto"), onClick: onPhoto, tint: "var(--indigo-600)" },
+    { key: "story", Icon: BookOpen, label: t("chat.shareStory"), onClick: onStory, tint: "var(--indigo-600)" },
+    { key: "super", Icon: Sparkles, label: t("chat.superChat"), onClick: onSuper, tint: "var(--gold)" },
+  ];
+  return createPortal(
+    <div className="chat-sheet-backdrop" onClick={onClose}>
+      <div className="chat-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="chat-sheet-head">
+          <span>{t("chat.attach")}</span>
+          <button className="chat-sheet-x" onClick={onClose} aria-label={t("common.close")}><X size={18} /></button>
+        </div>
+        <div className="attach-list">
+          {rows.map(({ key, Icon, label, onClick, tint }) => (
+            <button key={key} className="attach-row" onClick={onClick}>
+              <span className="attach-ic" style={{ color: tint }}><Icon size={20} /></span>
+              <span style={{ fontWeight: 600, fontSize: 14.5 }}>{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 export default function ChatRoom() {
   const { roomId } = useParams();
   const { t } = useTranslation();
@@ -108,6 +145,7 @@ export default function ChatRoom() {
     [rooms, roomId]
   );
 
+  const qc = useQueryClient();
   const send = useSendMessage(roomId);
   const upload = useUploadChatImage();
   const accept = useAcceptRequest();
@@ -117,6 +155,9 @@ export default function ChatRoom() {
   const [typing, setTyping] = useState(false);
   const [locallyAccepted, setLocallyAccepted] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [superOpen, setSuperOpen] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
   const [live, setLive] = useState([]);              // realtime + optimistic messages
   const [deletedIds, setDeletedIds] = useState(() => new Set());
   const [liveSeenAt, setLiveSeenAt] = useState(null);
@@ -212,9 +253,12 @@ export default function ChatRoom() {
           const rest = prev.filter((x) => x._key !== optimistic._key);
           return rest.some((x) => x.id === real.id) ? rest : [...rest, real];
         });
+        // Super Chat debited the coin wallet — pull the fresh balance.
+        if (body.message_type === "super_chat") qc.invalidateQueries({ queryKey: ["wallet"] });
       },
-      onError: () => {
+      onError: (e) => {
         setLive((prev) => prev.map((x) => (x._key === optimistic._key ? { ...x, _pending: false, _failed: true } : x)));
+        if (body.message_type === "super_chat") toast.error(errMsg(e) || t("chat.superChatFailed"));
       },
     });
   };
@@ -239,6 +283,19 @@ export default function ChatRoom() {
       { id: "tmp-" + key, _key: key, _optimistic: true, _pending: true, room_id: roomId, sender_id: me?.id, message_type: "story", shared_story_id: story.id, created_at: new Date().toISOString() }
     );
   };
+  // Super Chat: highlighted, coin-paid message. Carries whatever's typed as its
+  // content; the backend deducts coins and credits the recipient's earnings.
+  const sendSuperChat = (coins, color) => {
+    setSuperOpen(false);
+    const text = input.trim();
+    setInput("");
+    const key = crypto.randomUUID();
+    sendMsg(
+      { message_type: "super_chat", content: text || null, super_chat_coins: coins, super_chat_highlight_color: color, idempotency_key: key },
+      { id: "tmp-" + key, _key: key, _optimistic: true, _pending: true, room_id: roomId, sender_id: me?.id, message_type: "super_chat", content: text, is_super_chat: true, super_chat_coins: coins, super_chat_highlight_color: color, created_at: new Date().toISOString() }
+    );
+  };
+  const insertEmoji = (e) => setInput((v) => v + e);
   // Two-step: upload the file, then send an image message carrying its URL. The
   // bubble appears instantly with a local blob preview (native-chat feel); once
   // the send echoes back we swap in the stored URL. The File is kept on the
@@ -281,6 +338,13 @@ export default function ChatRoom() {
     setLive((prev) => prev.filter((x) => x._key !== m._key));
     if (m.message_type === "story") shareStory({ id: m.shared_story_id });
     else if (m.message_type === "image" && m._file) sendImage(m._file);
+    else if (m.message_type === "super_chat") {
+      const key = crypto.randomUUID();
+      sendMsg(
+        { message_type: "super_chat", content: m.content || null, super_chat_coins: m.super_chat_coins, super_chat_highlight_color: m.super_chat_highlight_color, idempotency_key: key },
+        { ...m, id: "tmp-" + key, _key: key, _optimistic: true, _pending: true, _failed: false, created_at: new Date().toISOString() }
+      );
+    }
     else sendText(m.content);
   };
 
@@ -309,9 +373,14 @@ export default function ChatRoom() {
         {msgs.map((m) => {
           const mine = m.sender_id === me?.id;
           const seen = mine && otherReadAt && new Date(m.created_at) <= new Date(otherReadAt);
+          const isSuper = m.is_super_chat && !m.is_deleted;
+          const scColor = isSuper ? (m.super_chat_highlight_color || tierColor(m.super_chat_coins)) : null;
           return (
-            <div key={m.id} className={`msg ${mine ? "mine" : "theirs"}`}>
-              <div className="msg-bubble">
+            <div key={m.id} className={`msg ${mine ? "mine" : "theirs"} ${isSuper ? "msg-super" : ""}`}>
+              <div className={`msg-bubble ${isSuper ? "super" : ""}`} style={isSuper ? { "--sc": scColor } : undefined}>
+                {isSuper && (
+                  <span className="msg-sc-badge"><Coins size={12} /> {m.super_chat_coins} · {t("chat.superChat")}</span>
+                )}
                 {m.is_deleted ? (
                   <span className="msg-deleted">—</span>
                 ) : m.message_type === "story" && m.shared_story_id ? (
@@ -381,34 +450,46 @@ export default function ChatRoom() {
           </div>
         </div>
       ) : (
-        <div className="chat-composer">
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            hidden
-            onChange={onPickImage}
-          />
-          <button className="chat-share-btn" onClick={() => fileRef.current?.click()} aria-label={t("chat.sendPhoto")}>
-            <ImagePlus size={20} />
-          </button>
-          <button className="chat-share-btn" onClick={() => setPickerOpen(true)} aria-label={t("chat.shareStory")}>
-            <BookOpen size={20} />
-          </button>
-          <input
-            className="chat-input"
-            value={input}
-            onChange={onType}
-            onKeyDown={(e) => e.key === "Enter" && doSend()}
-            placeholder={t("chat.messagePlaceholder")}
-          />
-          <button className="chat-send" onClick={doSend} disabled={!input.trim()} aria-label={t("chat.send")}>
-            <Send size={18} />
-          </button>
-        </div>
+        <>
+          {emojiOpen && <EmojiPicker onPick={insertEmoji} onClose={() => setEmojiOpen(false)} />}
+          <div className="chat-composer">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              hidden
+              onChange={onPickImage}
+            />
+            <button className={`chat-share-btn chat-emoji-btn ${emojiOpen ? "on" : ""}`} onClick={() => setEmojiOpen((v) => !v)} aria-label={t("chat.emoji")}>
+              <Smile size={20} />
+            </button>
+            <button className="chat-share-btn" onClick={() => setAttachOpen(true)} aria-label={t("chat.attach")}>
+              <Plus size={20} />
+            </button>
+            <input
+              className="chat-input"
+              value={input}
+              onChange={onType}
+              onKeyDown={(e) => e.key === "Enter" && doSend()}
+              onFocus={() => setEmojiOpen(false)}
+              placeholder={t("chat.messagePlaceholder")}
+            />
+            <button className="chat-send" onClick={doSend} disabled={!input.trim()} aria-label={t("chat.send")}>
+              <Send size={18} />
+            </button>
+          </div>
+        </>
       )}
 
+      <AttachSheet
+        open={attachOpen}
+        onClose={() => setAttachOpen(false)}
+        onPhoto={() => { setAttachOpen(false); fileRef.current?.click(); }}
+        onStory={() => { setAttachOpen(false); setPickerOpen(true); }}
+        onSuper={() => { setAttachOpen(false); setSuperOpen(true); }}
+      />
       <StorySharePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onPick={shareStory} />
+      <SuperChatSheet open={superOpen} onClose={() => setSuperOpen(false)} onSend={sendSuperChat} sending={send.isPending} />
 
       {lightbox && (
         <ImageLightbox src={lightbox.src} filename={lightbox.filename} onClose={() => setLightbox(null)} />
