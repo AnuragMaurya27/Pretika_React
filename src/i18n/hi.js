@@ -328,7 +328,7 @@ export default {
     attach: "जोड़ें",
     superChat: "सुपर चैट",
     superChatSub: "हाइलाइट किए मैसेज के साथ कॉइन भेजें — नज़र से नहीं छूटेगा।",
-    superChatPreview: "आपका हाइलाइट मैसेज",
+    superChatPreview: "अपना हाइलाइट मैसेज लिखें…",
     balance: "बैलेंस",
     notEnoughCoins: "कॉइन कम हैं",
     sendSuperChat: "{{coins}} कॉइन भेजें",

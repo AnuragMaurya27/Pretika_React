@@ -2793,7 +2793,12 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
   background: color-mix(in srgb, var(--sc) 10%, var(--bg-card)); margin-bottom: 14px;
 }
 .sc-preview-badge { display: flex; align-items: center; gap: 5px; padding: 6px 11px; background: var(--sc); color: #fff; font-weight: 800; font-size: 12px; }
-.sc-preview-text { display: block; padding: 9px 11px; font-size: 14px; color: var(--text-secondary); }
+.sc-preview-input {
+  display: block; width: 100%; padding: 11px; font-size: 14px; line-height: 1.4;
+  background: transparent; border: 0; color: var(--text-primary);
+}
+.sc-preview-input:focus { outline: none; }
+.sc-preview-input::placeholder { color: var(--text-tertiary); }
 .sc-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .sc-tier {
   display: inline-flex; align-items: center; justify-content: center; gap: 5px;

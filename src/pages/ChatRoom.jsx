@@ -283,12 +283,12 @@ export default function ChatRoom() {
       { id: "tmp-" + key, _key: key, _optimistic: true, _pending: true, room_id: roomId, sender_id: me?.id, message_type: "story", shared_story_id: story.id, created_at: new Date().toISOString() }
     );
   };
-  // Super Chat: highlighted, coin-paid message. Carries whatever's typed as its
-  // content; the backend deducts coins and credits the recipient's earnings.
-  const sendSuperChat = (coins, color) => {
+  // Super Chat: highlighted, coin-paid message. The message is written inside the
+  // Super Chat sheet itself and arrives here as `text`; the backend deducts coins
+  // and credits the recipient's earnings.
+  const sendSuperChat = (coins, color, msg) => {
     setSuperOpen(false);
-    const text = input.trim();
-    setInput("");
+    const text = (msg || "").trim();
     const key = crypto.randomUUID();
     sendMsg(
       { message_type: "super_chat", content: text || null, super_chat_coins: coins, super_chat_highlight_color: color, idempotency_key: key },

@@ -328,7 +328,7 @@ export default {
     attach: "Attach",
     superChat: "Super Chat",
     superChatSub: "Send coins with a highlighted message — it can't be missed.",
-    superChatPreview: "Your highlighted message",
+    superChatPreview: "Write your highlighted message…",
     balance: "Balance",
     notEnoughCoins: "Not enough coins",
     sendSuperChat: "Send {{coins}} coins",

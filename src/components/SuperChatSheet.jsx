@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { X, Coins, Sparkles, Plus } from "lucide-react";
@@ -11,10 +11,21 @@ export default function SuperChatSheet({ open, onClose, onSend, sending }) {
   const { data: wallet } = useWallet();
   const balance = wallet?.coin_balance ?? 0;
   const [coins, setCoins] = useState(50);
+  const [message, setMessage] = useState("");
+  const inputRef = useRef(null);
+
+  // Drop focus into the message field each time the sheet opens — the whole
+  // point is that you write the message right here, inside Super Chat.
+  useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
 
   if (!open) return null;
   const notEnough = coins > balance;
   const color = tierColor(coins);
+  const submit = () => {
+    if (notEnough || sending) return;
+    onSend(coins, color, message.trim());
+    setMessage("");
+  };
 
   return createPortal(
     <div className="chat-sheet-backdrop" onClick={onClose}>
@@ -26,10 +37,18 @@ export default function SuperChatSheet({ open, onClose, onSend, sending }) {
 
         <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>{t("chat.superChatSub")}</p>
 
-        {/* live preview of the highlighted bubble */}
+        {/* the highlighted bubble doubles as the message field — type right here */}
         <div className="sc-preview" style={{ "--sc": color }}>
-          <span className="sc-preview-badge"><Coins size={13} /> {coins}</span>
-          <span className="sc-preview-text">{t("chat.superChatPreview")}</span>
+          <span className="sc-preview-badge"><Coins size={13} /> {coins} · {t("chat.superChat")}</span>
+          <input
+            ref={inputRef}
+            className="sc-preview-input"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submit()}
+            placeholder={t("chat.superChatPreview")}
+            maxLength={300}
+          />
         </div>
 
         {/* amount chips (multiples of 10) */}
@@ -64,7 +83,7 @@ export default function SuperChatSheet({ open, onClose, onSend, sending }) {
           className="btn btn-primary"
           style={{ width: "100%", marginTop: 14, background: notEnough ? undefined : `linear-gradient(180deg, ${color}, ${color})` }}
           disabled={notEnough || sending}
-          onClick={() => onSend(coins, color)}
+          onClick={submit}
         >
           {sending ? "…" : notEnough ? t("chat.notEnoughCoins") : t("chat.sendSuperChat", { coins })}
         </button>
