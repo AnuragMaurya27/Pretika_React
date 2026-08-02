@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as signalR from "@microsoft/signalr";
-import { get, post, getToken } from "./api";
+import { get, post, put, getToken } from "./api";
 import { BASE_URL } from "./constants";
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -36,8 +36,49 @@ export function useChatMessages(roomId) {
 export function useStartChat() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (targetUserId) => post("/chat/rooms/private", { target_user_id: targetUserId }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["chat", "private"] }),
+    // targetUserId, or { targetUserId, payCoins } to authorise a paid-inbox charge.
+    mutationFn: (arg) => {
+      const { targetUserId, payCoins } =
+        typeof arg === "object" && arg !== null ? arg : { targetUserId: arg };
+      return post("/chat/rooms/private", {
+        target_user_id: targetUserId,
+        ...(payCoins ? { pay_coins: payCoins } : {}),
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["chat", "private"] });
+      qc.invalidateQueries({ queryKey: ["wallet"] });
+    },
+  });
+}
+
+/* ---- Paid Inbox -------------------------------------------------------- */
+
+// My paid-inbox settings + eligibility (needs >= min followers).
+export function useDmSettings(enabled = true) {
+  return useQuery({
+    queryKey: ["chat", "dm-settings"],
+    queryFn: () => get("/chat/dm-settings"),
+    enabled,
+    staleTime: 1000 * 30,
+  });
+}
+
+export function useUpdateDmSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body) => put("/chat/dm-settings", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["chat", "dm-settings"] }),
+  });
+}
+
+// Does messaging this user cost coins? (drives the pay-to-message prompt)
+export function useDmInfo(targetUserId, enabled = true) {
+  return useQuery({
+    queryKey: ["chat", "dm-info", targetUserId],
+    queryFn: () => get(`/chat/dm-info/${targetUserId}`),
+    enabled: !!targetUserId && enabled,
+    staleTime: 1000 * 20,
   });
 }
 

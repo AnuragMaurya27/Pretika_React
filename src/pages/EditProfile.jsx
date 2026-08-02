@@ -10,6 +10,7 @@ import { useAuth } from "../store/auth";
 import { api, put, post, unwrap, errMsg } from "../lib/api";
 import { thumbFor } from "../lib/constants";
 import ImageUploadPreview from "../components/ImageUploadPreview";
+import PaidInboxSettings from "../components/PaidInboxSettings";
 import Seo from "../components/Seo";
 
 export default function EditProfile() {
@@ -152,6 +153,9 @@ export default function EditProfile() {
             <Field label={t("profile.state")} style={{ flex: 1 }}><input className="input" value={f.state} onChange={set("state")} /></Field>
           </div>
         </section>
+
+        {/* ═══ Paid Inbox (unlocks at the follower threshold) ═══ */}
+        <PaidInboxSettings />
 
         {/* ═══ Become creator ═══ */}
         {!user?.is_creator && (

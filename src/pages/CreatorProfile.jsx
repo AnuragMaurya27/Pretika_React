@@ -5,7 +5,8 @@ import { ArrowLeft, BadgeCheck, Share2, BookOpen, Users, Eye, PenLine, MessageCi
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { useUserProfile, useCreatorStories, useFollow } from "../lib/hooks";
-import { useStartChat } from "../lib/chat";
+import { useStartChat, useDmInfo } from "../lib/chat";
+import PayToMessageSheet from "../components/PayToMessageSheet";
 import { StoryCard } from "../components/StoryCard";
 import { SkeletonBox } from "../components/Skeleton";
 import EmptyState, { ErrorState } from "../components/EmptyState";
@@ -31,10 +32,13 @@ export default function CreatorProfile() {
   const startChat = useStartChat();
 
   const [followSheet, setFollowSheet] = useState(null); // null | "followers" | "following"
+  const [payPrompt, setPayPrompt] = useState(false);
   // useFollow flips is_following in the react-query cache optimistically, so
   // read it straight from the profile — no local override to fall out of sync.
   const isFollowing = u?.is_following ?? false;
   const isSelf = !!me && (me.id === u?.id || me.username === u?.username);
+  // Paid Inbox: does messaging this creator cost coins? (non-followers only)
+  const dmInfo = useDmInfo(u?.id, authed && !isSelf);
 
   if (isLoading) return <ProfileSkeleton />;
   if (isError || !u) return <div className="app-shell"><ErrorState onRetry={refetch} /></div>;
@@ -46,13 +50,18 @@ export default function CreatorProfile() {
       onError: (e) => toast.error(errMsg(e)),
     });
   };
+  const doStartChat = (payCoins) => {
+    startChat.mutate(payCoins ? { targetUserId: u.id, payCoins } : u.id, {
+      onSuccess: (room) => { setPayPrompt(false); nav(`/chat/${room.id}`); },
+      onError: (e) => toast.error(errMsg(e)),
+    });
+  };
   const onMessage = () => {
     if (!authed) { toast.error(t("toast.loginRequired")); nav("/login"); return; }
     if (startChat.isPending) return;
-    startChat.mutate(u.id, {
-      onSuccess: (room) => nav(`/chat/${room.id}`),
-      onError: (e) => toast.error(errMsg(e)),
-    });
+    // A paid creator charges non-followers — confirm the coin cost first.
+    if (dmInfo.data?.paid_required) { setPayPrompt(true); return; }
+    doStartChat();
   };
   const share = async () => {
     const url = window.location.href;
@@ -163,6 +172,16 @@ export default function CreatorProfile() {
         type={followSheet || "followers"}
         userId={u.id}
         onClose={() => setFollowSheet(null)}
+      />
+
+      <PayToMessageSheet
+        open={payPrompt}
+        name={name}
+        price={dmInfo.data?.price_coins || 0}
+        balance={dmInfo.data?.my_coin_balance ?? 0}
+        sending={startChat.isPending}
+        onConfirm={() => doStartChat(dmInfo.data?.price_coins)}
+        onClose={() => setPayPrompt(false)}
       />
     </div>
   );

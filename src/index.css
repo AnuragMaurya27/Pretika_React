@@ -2802,3 +2802,21 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
 }
 .sc-tier:disabled { opacity: .38; }
 .sc-tier.on { background: var(--bg-card); }
+
+/* paid inbox: pay-to-message assurance + creator settings */
+.pay-assure { display: flex; gap: 9px; align-items: flex-start; padding: 11px 12px; border-radius: 12px;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100); font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); }
+.pi-locked { display: flex; flex-direction: column; gap: 7px; padding: 12px; border-radius: 12px; background: var(--bg-tertiary); font-size: 13px; }
+.pi-bar { height: 6px; border-radius: 6px; background: var(--border-solid); overflow: hidden; }
+.pi-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--indigo-400, var(--indigo-600)), var(--indigo-600)); border-radius: 6px; }
+.pi-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.pi-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.pi-toggle span:first-child { flex: 1; }
+.pi-switch { width: 44px; height: 26px; border-radius: 20px; background: var(--border-solid); position: relative; transition: background .18s ease; flex-shrink: 0; }
+.pi-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .18s ease; }
+.pi-toggle input:checked ~ .pi-switch { background: var(--indigo-600); }
+.pi-toggle input:checked ~ .pi-switch::after { transform: translateX(18px); }
+.pi-price { display: inline-flex; align-items: center; gap: 4px; }
+.pi-price button { width: 40px; height: 40px; border-radius: 12px; background: var(--bg-tertiary); font-size: 22px; font-weight: 700; display: grid; place-items: center; color: var(--text-primary); }
+.pi-price button:active { transform: scale(.92); }
+.pi-price-val { min-width: 96px; text-align: center; font-weight: 800; font-size: 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
