@@ -813,6 +813,23 @@ html { scroll-behavior: smooth; }
 }
 .deed-switch a:hover { border-bottom-color: var(--crimson); }
 
+/* --- "or" divider above the Google button on auth pages --------------------- */
+.deed-or {
+  display: flex; align-items: center; gap: 12px;
+  margin: 16px 0 12px; color: #7a6a52; font-size: 12px;
+}
+.deed-or::before, .deed-or::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(122,106,82,.4), transparent);
+}
+
+/* --- phone (+91) + OTP inputs on auth pages --------------------------------- */
+.ink-phone { display: flex; align-items: baseline; gap: 8px; }
+.ink-cc { color: var(--crimson); font-weight: 800; font-size: 15px; }
+.ink-phone .ink-input { flex: 1; }
+.otp-input { text-align: center; letter-spacing: 10px; font-size: 20px; font-weight: 700; }
+.deed-otp-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+
 /* --- deed footer: witness line + thumb impression ---------------------------- */
 .deed-foot {
   margin-top: 16px; padding-top: 10px;

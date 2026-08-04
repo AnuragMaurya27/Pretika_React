@@ -59,8 +59,11 @@ export const useAuth = create((set, get) => ({
     return unwrap(res);
   },
 
-  googleLogin: async (id_token) => {
-    const res = await api.post("/auth/google", { id_token });
+  googleLogin: async (id_token, referral_code) => {
+    const res = await api.post("/auth/google", {
+      id_token,
+      referral_code: referral_code || undefined,
+    });
     const data = unwrap(res);
     setTokens(data);
     saveUser(data.user);

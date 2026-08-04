@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { useAuth } from "../store/auth";
 import { errMsg } from "../lib/api";
@@ -30,11 +31,21 @@ function loadGis() {
  * This is more reliable than One Tap / FedCM across browsers.
  * NOTE: the OAuth client must list this site's origin under
  *       "Authorized JavaScript origins" in Google Cloud Console.
+ *
+ * @param {string} [referral]   referral code to attach on a first-time (register) sign-in
+ * @param {string} [redirectTo] path to navigate to after a successful sign-in
  */
-export default function GoogleButton() {
+export default function GoogleButton({ referral, redirectTo = "/home" }) {
   const nav = useNavigate();
+  const { t } = useTranslation();
   const googleLogin = useAuth((s) => s.googleLogin);
   const holder = useRef(null);
+
+  // Latest referral/redirect without re-initialising the GIS button on every keystroke.
+  const referralRef = useRef(referral);
+  referralRef.current = referral;
+  const redirectRef = useRef(redirectTo);
+  redirectRef.current = redirectTo;
 
   useEffect(() => {
     let cancelled = false;
@@ -46,11 +57,11 @@ export default function GoogleButton() {
           ux_mode: "popup",
           callback: async (resp) => {
             try {
-              await googleLogin(resp.credential);
-              toast.success("Signed in");
-              nav("/home", { replace: true });
+              await googleLogin(resp.credential, referralRef.current);
+              toast.success(t("auth.signedIn"));
+              nav(redirectRef.current, { replace: true });
             } catch (e) {
-              toast.error(errMsg(e, "Google sign-in failed"));
+              toast.error(errMsg(e, t("auth.googleFailed")));
             }
           },
         });

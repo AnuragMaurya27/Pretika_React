@@ -12,6 +12,7 @@ import { errMsg } from "../lib/api";
 import { EASE, riseVar, linkStyle } from "../lib/authUi";
 import { EyeLogo } from "../components/Art";
 import Seo from "../components/Seo";
+import GoogleButton from "../components/GoogleButton";
 
 /* Hard quotes — Pretika ki awaaz. Whispered in the dark under the register. */
 const QUOTES = {
@@ -78,6 +79,9 @@ export default function Login() {
         </motion.div>
         <GlowButton busy={busy}>{busy ? t("auth.loggingIn") : t("auth.login")}</GlowButton>
       </form>
+
+      <motion.div variants={riseVar} className="deed-or">{t("auth.or")}</motion.div>
+      <GoogleButton redirectTo={loc.state?.from || "/home"} />
 
       <motion.p variants={riseVar} className="deed-switch">
         {t("auth.noAccount")}{" "}
@@ -337,5 +341,74 @@ export function GlowButton({ busy, children }) {
         {children}
       </motion.button>
     </motion.div>
+  );
+}
+
+const linkBtnStyle = {
+  background: "none", border: "none", padding: 0, cursor: "pointer",
+  color: "var(--crimson)", fontWeight: 800, fontSize: 13,
+};
+
+/* Phone line with a fixed +91 prefix — India SMS OTP. Digits only, max 10. */
+export function PhoneField({ value, onChange, label, autoFocus }) {
+  const { t } = useTranslation();
+  return (
+    <motion.label className="ink-field" variants={riseVar}>
+      <span className="ink-label">{label ?? t("auth.phone")}</span>
+      <span className="ink-phone">
+        <span className="ink-cc">+91</span>
+        <input className="ink-input" type="tel" inputMode="numeric" autoComplete="tel-national"
+          maxLength={10} value={value} autoFocus={autoFocus} placeholder="98765 43210"
+          onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 10))} />
+      </span>
+      <span className="ink-line" aria-hidden />
+    </motion.label>
+  );
+}
+
+/* Shared OTP step — 6-digit code, resend countdown, change-number. The parent
+   supplies onSubmit (verify + whatever follows), onResend, the CTA label, and
+   optional extra fields as children (e.g. a new-password field for reset). */
+export function OtpStep({ phone, code, setCode, busy, onSubmit, onBack, onResend, submitLabel, children }) {
+  const { t } = useTranslation();
+  const [left, setLeft] = useState(60);
+  const [resending, setResending] = useState(false);
+  useEffect(() => {
+    if (left <= 0) return;
+    const id = setTimeout(() => setLeft((n) => n - 1), 1000);
+    return () => clearTimeout(id);
+  }, [left]);
+
+  const resend = async () => {
+    setResending(true);
+    try { await onResend(); setCode(""); setLeft(60); toast.success(t("auth.otpSent")); }
+    catch (e) { toast.error(errMsg(e)); }
+    finally { setResending(false); }
+  };
+
+  return (
+    <form onSubmit={onSubmit}>
+      <motion.p variants={riseVar} className="deed-sub" style={{ marginBottom: 4 }}>
+        {t("auth.otpSentTo", { phone })}
+      </motion.p>
+      <motion.p variants={riseVar} className="muted" style={{ fontSize: 12, margin: "0 0 14px", lineHeight: 1.5 }}>
+        {t("auth.otpExpiryHint")}
+      </motion.p>
+      <motion.label className="ink-field" variants={riseVar}>
+        <span className="ink-label">{t("auth.otpLabel")}</span>
+        <input className="ink-input otp-input" inputMode="numeric" autoComplete="one-time-code"
+          maxLength={6} value={code} autoFocus
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} />
+        <span className="ink-line" aria-hidden />
+      </motion.label>
+      {children}
+      <GlowButton busy={busy}>{busy ? t("auth.verifying") : submitLabel}</GlowButton>
+      <motion.div variants={riseVar} className="deed-otp-actions">
+        <button type="button" onClick={onBack} style={linkBtnStyle}>{t("auth.changeNumber")}</button>
+        {left > 0
+          ? <span className="muted" style={{ fontSize: 13 }}>{t("auth.resendIn", { s: left })}</span>
+          : <button type="button" onClick={resend} disabled={resending} style={linkBtnStyle}>{t("auth.resend")}</button>}
+      </motion.div>
+    </form>
   );
 }
