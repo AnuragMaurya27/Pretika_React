@@ -16,6 +16,7 @@ const TX_META = {
   premium_unlock: { icon: Lock, color: "var(--indigo-600)", key: "unlock" },
   appreciation: { icon: Gift, color: "var(--indigo-600)", key: "gift" },
   signup_bonus: { icon: Gift, color: "var(--gold)", key: "signupBonus", in: true },
+  creator_bonus: { icon: Plus, color: "var(--gold)", key: "creatorBonus", in: true },
   daily_login_bonus: { icon: Plus, color: "var(--gold)", key: "dailyBonus", in: true },
   referral_bonus: { icon: UserPlus, color: "var(--gold)", key: "referralBonus", in: true },
   admin_credit: { icon: Plus, color: "var(--gold)", key: "adminCredit", in: true },

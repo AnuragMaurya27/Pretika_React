@@ -680,6 +680,7 @@ export default {
       unlock: "Chapter unlocked",
       gift: "Gift sent",
       signupBonus: "Welcome bonus",
+      creatorBonus: "Creator welcome bonus",
       dailyBonus: "Daily login bonus",
       referralBonus: "Referral bonus",
       adminCredit: "Bonus from Pretika",

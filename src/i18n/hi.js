@@ -680,6 +680,7 @@ export default {
       unlock: "चैप्टर अनलॉक हुआ",
       gift: "गिफ्ट भेजा",
       signupBonus: "स्वागत बोनस",
+      creatorBonus: "क्रिएटर वेलकम बोनस",
       dailyBonus: "डेली लॉगिन बोनस",
       referralBonus: "रेफ़रल बोनस",
       adminCredit: "प्रीटिका की तरफ़ से बोनस",
