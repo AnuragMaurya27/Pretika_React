@@ -8,6 +8,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch: {} # lets you trigger a deploy manually from the Actions tab
+  schedule:
+    # Daily rebuild so newly published stories get their prerendered (crawlable)
+    # HTML + sitemap entry without waiting for a code push. 02:30 UTC ≈ 08:00 IST.
+    - cron: "30 2 * * *"
 
 concurrency:
   group: deploy-web

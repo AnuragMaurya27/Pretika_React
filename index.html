@@ -91,6 +91,9 @@
       @media (prefers-reduced-motion: reduce) { #pk-boot .pkb-lid { animation: none; } }
     </style>
     <div id="root">
+      <!--PRERENDER_CONTENT--><!-- prerender.mjs swaps this boot loader for real
+           story/creator content in the per-route static HTML it bakes into dist/.
+           React clears #root on mount, so live users still get the full SPA. -->
       <div id="pk-boot" aria-label="Loading Pretika">
         <svg width="110" height="110" viewBox="0 0 512 512" aria-hidden="true">
           <defs>
@@ -115,6 +118,7 @@
           <path d="M258 428 C 242 456 240 474 257 485 C 274 474 272 455 258 428 Z" fill="#c01008"/>
         </svg>
       </div>
+      <!--/PRERENDER_CONTENT-->
     </div>
     <!-- Pre-paint content for users / crawlers before JS hydrates -->
     <noscript>
