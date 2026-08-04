@@ -8,7 +8,7 @@ import { errMsg } from "../lib/api";
 // Web OAuth client ID. Override with VITE_GOOGLE_CLIENT_ID for your own web origin.
 const CLIENT_ID =
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-  "625195614058-9tikf68htdqhdpd3hk4ranq2kp3tuu30.apps.googleusercontent.com";
+  "974529058856-9b201npkcilql6grnqds6l7tbsqai9ap.apps.googleusercontent.com";
 
 let gisPromise = null;
 function loadGis() {
