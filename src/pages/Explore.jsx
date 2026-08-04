@@ -162,7 +162,9 @@ function SearchResults({ state, q }) {
       {stories.length > 0 && (
         <>
           <div className="section-title container" style={{ fontSize: 14, marginBottom: 4 }}>{t("explore.stories")}</div>
-          {stories.map((s, i) => <StoryRow key={s.id} story={s} index={i} />)}
+          <div className="container">
+            {stories.map((s, i) => <StoryRow key={s.id} story={s} index={i} />)}
+          </div>
         </>
       )}
     </div>
