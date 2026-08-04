@@ -15,10 +15,10 @@ const TX_META = {
   recharge: { icon: ArrowDownLeft, color: "var(--green, #1a7f37)", key: "recharge", in: true },
   premium_unlock: { icon: Lock, color: "var(--indigo-600)", key: "unlock" },
   appreciation: { icon: Gift, color: "var(--indigo-600)", key: "gift" },
-  signup_bonus: { icon: Plus, color: "var(--gold)", key: "bonus", in: true },
-  daily_login_bonus: { icon: Plus, color: "var(--gold)", key: "bonus", in: true },
-  referral_bonus: { icon: Plus, color: "var(--gold)", key: "bonus", in: true },
-  admin_credit: { icon: Plus, color: "var(--gold)", key: "bonus", in: true },
+  signup_bonus: { icon: Gift, color: "var(--gold)", key: "signupBonus", in: true },
+  daily_login_bonus: { icon: Plus, color: "var(--gold)", key: "dailyBonus", in: true },
+  referral_bonus: { icon: UserPlus, color: "var(--gold)", key: "referralBonus", in: true },
+  admin_credit: { icon: Plus, color: "var(--gold)", key: "adminCredit", in: true },
 };
 
 export default function Wallet() {

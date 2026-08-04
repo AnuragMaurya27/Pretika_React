@@ -679,7 +679,10 @@ export default {
       recharge: "कॉइन्स खरीदे",
       unlock: "चैप्टर अनलॉक हुआ",
       gift: "गिफ्ट भेजा",
-      bonus: "बोनस कॉइन्स",
+      signupBonus: "स्वागत बोनस",
+      dailyBonus: "डेली लॉगिन बोनस",
+      referralBonus: "रेफ़रल बोनस",
+      adminCredit: "प्रीटिका की तरफ़ से बोनस",
       other: "ट्रांज़ैक्शन",
     },
     txStatus: {

@@ -679,7 +679,10 @@ export default {
       recharge: "Coins purchased",
       unlock: "Chapter unlocked",
       gift: "Gift sent",
-      bonus: "Bonus coins",
+      signupBonus: "Welcome bonus",
+      dailyBonus: "Daily login bonus",
+      referralBonus: "Referral bonus",
+      adminCredit: "Bonus from Pretika",
       other: "Transaction",
     },
     txStatus: {
