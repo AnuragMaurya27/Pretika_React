@@ -1,6 +1,9 @@
 // Central config — same backend the Flutter app uses.
+// "" is a valid value → relative same-origin URLs (/api, /uploads, /hubs) when the
+// web app and API share one origin (VPS: nginx fronts both) — no CORS. Only an
+// undefined var falls back to the hosted API. (Was `||`, which treated "" as unset.)
 export const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://pretika-api-1.onrender.com";
+  import.meta.env.VITE_API_BASE_URL ?? "https://pretika-api-1.onrender.com";
 
 // SharedPreferences-equivalent keys (kept identical to the Flutter app)
 export const STORAGE = {

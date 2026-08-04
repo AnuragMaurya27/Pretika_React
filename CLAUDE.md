@@ -21,7 +21,13 @@ npm run lint
 `VITE_API_BASE_URL` sets the backend. In dev, Vite proxies `/api`, `/uploads`, etc. to it
 (the API has no CORS, so we stay same‑origin via the proxy — see `vite.config.js`).
 - **Local API (default):** `http://localhost:5182`
-- **Hosted API:** `https://pretika-api-1.onrender.com` (render free‑tier, cold‑starts)
+- **Hosted API (production):** `https://pretika.in` — **self‑hosted on a Hostinger VPS**
+  (`200.141.11.48`, Ubuntu 24.04). Docker Compose runs Postgres 18 + the .NET API; nginx on
+  the host reverse‑proxies. The prod web app is served **same‑origin**, so `/api`, `/uploads`,
+  `/thumbnail`, `/hubs` proxy to the API (no CORS in prod). Deploy lives in `/opt/pretika`
+  (`docker-compose.yml` + `.env`); Let's Encrypt SSL via certbot (auto‑renew). Nightly
+  `pg_dump` backups in `/opt/pretika/backups`. _Migrated off Render + Vercel, Aug 2026._
+- **Old hosted API (retiring):** `https://pretika-api-1.onrender.com` (Render free‑tier)
 
 ### Running the local .NET API
 The backend lives at `../HauntedVoiceUniverse` (.NET 8 target). This machine has .NET 10

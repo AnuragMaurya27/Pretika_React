@@ -31,6 +31,11 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://pretika.in/explore?category=ghost-stories</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://pretika.in/explore?category=haunted-places</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
@@ -61,7 +66,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://pretika.in/explore?category=fruits</loc>
+    <loc>https://pretika.in/explore?category=tantrik-black-magic</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://pretika.in/explore?category=psychological-horror</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -71,8 +81,98 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://pretika.in/story/-4c3ba0</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/2985a0e9-a73e-4cd8-93f7-110b295b5e5e.jpg</image:loc>
+      <image:title>रजिस्टर</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://pretika.in/story/-6b62ba</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/5fc3d3b9-da35-43a1-be29-a9a7208f359a.jpg</image:loc>
+      <image:title>ग्यारह मिनट</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://pretika.in/story/-104b06</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/da68562d-4ed5-4f43-8d91-215b701582b5.jpg</image:loc>
+      <image:title>रात वाली सिस्टर</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://pretika.in/story/-655694</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/76fb6f2d-7024-41d9-9510-d07d29ff584c.jpg</image:loc>
+      <image:title>आगे वाली सीट</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://pretika.in/story/-20</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/d6390394-2758-452c-8e8d-4057f02d4c88.jpg</image:loc>
+      <image:title>अधजला</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://pretika.in/story/-19</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/a7997734-2760-471d-98d6-a5c88586a276.jpg</image:loc>
+      <image:title>फ़रमाइश</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://pretika.in/story/-17</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/201fb085-6fdc-472f-94ea-9109faa5b254.jpg</image:loc>
+      <image:title>रक्तवन</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://pretika.in/story/-16</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/a92d1762-6182-4772-832b-db2fa1b56d80.jpg</image:loc>
+      <image:title>अधूरी कहानी</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://pretika.in/story/-15</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pretika-api-1.onrender.com/thumbnail/b1925883-90d5-45cc-b6f1-032733b77e15.jpg</image:loc>
+      <image:title>अघोरी</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://pretika.in/story/-14</loc>
-    <lastmod>2026-07-13</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -82,7 +182,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-13</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -92,7 +192,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-12</loc>
-    <lastmod>2026-07-13</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -102,7 +202,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-11</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -112,7 +212,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-10</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -122,7 +222,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-9</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -132,7 +232,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-8</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -142,7 +242,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-7</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -152,7 +252,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-6</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -162,7 +262,7 @@
   </url>
   <url>
     <loc>https://pretika.in/story/-5</loc>
-    <lastmod>2026-07-13</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -171,18 +271,8 @@
     </image:image>
   </url>
   <url>
-    <loc>https://pretika.in/story/-4</loc>
-    <lastmod>2026-07-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://pretika-api-1.onrender.com/thumbnail/a245e04e-fe25-4595-87d0-bbed6d5dce98.jpg</image:loc>
-      <image:title>पुरानी हवेली</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://pretika.in/story/khasra-number-zero</loc>
-    <lastmod>2026-07-13</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -191,48 +281,8 @@
     </image:image>
   </url>
   <url>
-    <loc>https://pretika.in/story/jinn-3</loc>
-    <lastmod>2026-07-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://pretika-api-1.onrender.com/thumbnail/f86a4877-5202-4226-834e-0df91a161022.png</image:loc>
-      <image:title>jinn</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://pretika.in/story/pav-bhaji</loc>
-    <lastmod>2026-07-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://pretika-api-1.onrender.com/thumbnail/84a52a9b-8239-400f-970f-acd99bfeca80.png</image:loc>
-      <image:title>Pav bhaji</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://pretika.in/story/testing-jinn-1</loc>
-    <lastmod>2026-07-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://pretika-api-1.onrender.com/thumbnail/c998a9a6-0aa8-49b3-9c23-6825e4094097.png</image:loc>
-      <image:title>testing Jinn 1</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://pretika.in/story/fruits</loc>
-    <lastmod>2026-07-13</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://pretika-api-1.onrender.com/thumbnail/4f666fee-3bc9-4a6c-b2de-e70f33087e77.png</image:loc>
-      <image:title>Fruits</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://pretika.in/story/-3</loc>
-    <lastmod>2026-07-11</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -242,25 +292,13 @@
   </url>
   <url>
     <loc>https://pretika.in/u/Pretika</loc>
-    <lastmod>2026-07-13</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pretika.in/u/claudetest2</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pretika.in/u/nikhil27</loc>
-    <lastmod>2026-07-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pretika.in/u/Anurag27</loc>
-    <lastmod>2026-07-06</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
