@@ -4,9 +4,26 @@ import { motion } from "framer-motion";
 import { ArrowLeft, PenSquare, Users, TrendingUp, Award, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { post, errMsg } from "../lib/api";
+import { post, errMsg, writeLikelySucceeded } from "../lib/api";
 import { useAuth } from "../store/auth";
 import Seo from "../components/Seo";
+
+// The become-creator endpoint is idempotent (already-a-creator ⇒ success, no
+// double coins — see BecomeCreatorAsync), so a transient first-hit failure is
+// safe to retry. On the VPS the very first DB connection after idle can surface
+// as a 5xx / dropped response / timeout — which is why the *first* click showed
+// "something went wrong" while an identical second click worked. Retry once,
+// automatically, so the user never has to click twice.
+async function becomeCreator() {
+  try {
+    return await post("/users/me/become-creator");
+  } catch (e) {
+    const transient = writeLikelySucceeded(e) || e?.code === "ECONNABORTED";
+    if (!transient) throw e;                         // real 4xx (auth/validation) — don't mask it
+    await new Promise((r) => setTimeout(r, 500));    // give the cold connection a moment
+    return post("/users/me/become-creator");
+  }
+}
 
 export default function BecomeCreator() {
   const { t } = useTranslation();
@@ -23,7 +40,7 @@ export default function BecomeCreator() {
   const go = async () => {
     setBusy(true);
     try {
-      await post("/users/me/become-creator");
+      await becomeCreator();
       promoteToCreator();          // flip UI immediately (survives a failed refetch)
       fetchMe().catch(() => {});   // reconcile fuller profile in the background
       toast.success(t("creator.becomeTitle"));
