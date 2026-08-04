@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, PenSquare, Users, TrendingUp, Award, Check } from "lucide-react";
@@ -15,6 +15,10 @@ export default function BecomeCreator() {
   const fetchMe = useAuth((s) => s.fetchMe);
   const promoteToCreator = useAuth((s) => s.promoteToCreator);
   const [busy, setBusy] = useState(false);
+
+  // Refresh creator state on mount so a stale local is_creator doesn't show the
+  // "Become a creator" button to someone who already is one.
+  useEffect(() => { fetchMe().catch(() => {}); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const go = async () => {
     setBusy(true);
