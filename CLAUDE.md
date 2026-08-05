@@ -72,7 +72,17 @@ disabled in the UI). Login does **not** require email verification.
 Story pages emit Article + BreadcrumbList JSON‑LD; creator pages ProfilePage/Person.
 - **Sitemap**: `npm run sitemap` (auto‑runs in `npm run build`) — `scripts/generate-sitemap.mjs`
   fetches stories/categories/creators from the hosted API and writes `public/sitemap.xml`.
-  Never fails the build; override API with `SITEMAP_API_BASE`.
+  Never fails the build; override API with `PRETIKA_API_BASE` (`SITEMAP_API_BASE` still works).
+- **Prerender (SEO — the reason stories get indexed)**: `npm run prerender` (auto‑runs *after*
+  `vite build` in `npm run build`) — `scripts/prerender.mjs` bakes the real `<title>`,
+  description, canonical, OG + Article/BreadcrumbList JSON‑LD **and** a visible `<h1>`+summary
+  into `dist/story/<slug>/index.html` and `dist/u/<username>/index.html`. Without it the SPA
+  serves every route the generic shell, so Googlebot saw all story pages as identical/empty and
+  indexed none. No headless browser — live API + string templating (shared helpers in
+  `scripts/lib/pretika-api.mjs`). `index.html` has `<!--PRERENDER_CONTENT-->` markers; React
+  clears `#root` on mount so live users are unaffected. **Needs nginx `try_files $uri $uri/
+  /index.html;`** to serve the per‑route files (so `/story/x` → `/story/x/` → its index.html).
+  `deploy.yml` has a nightly `schedule` so new stories get prerendered without a code push.
 - **AdSense pages**: `/about`, `/contact`, `/privacy`, `/terms` (StaticPage shell,
   linked from the footer). Contact email lives in `src/pages/Contact.jsx` (`SUPPORT_EMAIL`).
 - `public/og-cover.jpg` is the default share image; `public/_redirects` + `vercel.json`
