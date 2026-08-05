@@ -267,7 +267,7 @@ const FAN_POSES = [
 ];
 
 const FAN_COUNT = 4;
-const FAN_SHUFFLE_MS = 5500;
+const FAN_SHUFFLE_MS = 30 * 60 * 1000;   // reshuffle every 30 minutes
 
 // Fisher–Yates pick of `count` distinct stories from the pool.
 function pickCovers(pool, count) {
