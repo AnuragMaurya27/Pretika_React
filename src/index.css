@@ -2668,6 +2668,12 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
   -webkit-overflow-scrolling: touch;
   padding: 16px 12px 10px; display: flex; flex-direction: column; gap: 4px;
 }
+/* Bottom-anchor the thread (native-chat feel): when the messages don't fill the
+   viewport they hug the composer and grow upward instead of stacking from the
+   top. margin-top:auto on the first bubble absorbs the free space — and safely
+   collapses to 0 once messages overflow, so the top never gets clipped the way
+   justify-content:flex-end would on some mobile webviews. */
+.chat-scroll > :first-child { margin-top: auto; }
 .msg { display: flex; max-width: 82%; }
 .msg.mine { align-self: flex-end; }
 .msg.theirs { align-self: flex-start; }
