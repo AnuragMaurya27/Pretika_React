@@ -191,14 +191,9 @@ function Hero({ name, covers, loading }) {
       <div className="hero-grid">
         {/* ── left: ink copy ── */}
         <div>
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            style={heroEyebrow}
-          >
+          <span style={heroEyebrow}>
             <EyeLogo size={20} /> {name ? `${t("home.welcomeBack")}, ${name}` : t("home.brandTag")}
-          </motion.span>
+          </span>
 
           <h1
             key={isHi ? "hi" : "en"}
@@ -227,27 +222,21 @@ function Hero({ name, covers, loading }) {
             </span>
           </h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.6 }}
+          <p
             className="muted"
             style={{ marginTop: 30, maxWidth: 480, fontSize: "clamp(14.5px, 1.6vw, 16.5px)", lineHeight: 1.65 }}
           >
             {t("home.heroSub")}
-          </motion.p>
+          </p>
 
-          <motion.div
+          <div
             className="row"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.15 }}
             style={{ gap: 8, marginTop: 24, flexWrap: "wrap" }}
           >
             <span className="chip" style={heroStat}><Flame size={14} color="var(--crimson)" /> {t("home.chipDaily")}</span>
             <span className="chip" style={heroStat}><BookOpen size={14} color="var(--crimson)" /> {t("home.chipStories")}</span>
             <span className="chip" style={heroStat}><Users size={14} color="var(--crimson)" /> {t("home.chipWriters")}</span>
-          </motion.div>
+          </div>
         </div>
 
         {/* ── right: floating fan of live trending covers ── */}
