@@ -128,9 +128,6 @@ export default function Home() {
         {/* Continue reading — local progress, resumes exactly where you left */}
         <ContinueRail />
 
-        {/* Pretika Chats — found-footage phone-chat horror (hides itself when empty) */}
-        <ChatStoriesRail />
-
         {/* Trending — with Netflix-style rank numbers */}
         <Section title={t("home.trending")} icon={<Flame size={18} color="var(--indigo-600)" />} to="/explore?sort=trending">
           {trendingLoading ? <HRailSkeleton /> : (
@@ -142,6 +139,9 @@ export default function Home() {
         {!trendingLoading && trendingItems[0] && (
           <Spotlight story={trendingItems[0]} />
         )}
+
+        {/* Pretika Chats — found-footage phone-chat horror (hides itself when empty) */}
+        <ChatStoriesRail />
 
         {/* New stories */}
         <Section title={t("home.newStories")} icon={<Sparkles size={18} color="var(--gold)" />} to="/explore?sort=latest">
