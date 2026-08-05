@@ -167,19 +167,6 @@ export default function Home() {
 
 /* ═══════════════════════════════ HERO ═══════════════════════════════ */
 
-// staggered word-reveal for the Devanagari headline
-const lineVar = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.09, delayChildren: 0.2 } },
-};
-// No filter/blur here: an animated filter promotes each word to its own
-// rasterized layer whose box clips Devanagari overshoot (chandrabindu, matras)
-// and leaves stale text-shadow rectangles. Opacity + y keeps the reveal clean.
-const wordVar = {
-  hidden: { opacity: 0, y: 26 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] } },
-};
-
 // drips per word of the crimson line — positions are % of THAT word's width,
 // so blood always beads off the glyphs themselves at every viewport size.
 const WORD_DRIPS = [
@@ -213,23 +200,20 @@ function Hero({ name, covers, loading }) {
             <EyeLogo size={20} /> {name ? `${t("home.welcomeBack")}, ${name}` : t("home.brandTag")}
           </motion.span>
 
-          <motion.h1
+          <h1
             key={isHi ? "hi" : "en"}
             className={`hero-title ${isHi ? "display-hi" : "display"}`}
-            variants={lineVar}
-            initial="hidden"
-            animate="show"
             style={heroTitle}
             lang={isHi ? "hi" : "en"}
           >
             <span style={{ display: "block" }}>
               {lines.l1.map((w) => (
-                <motion.span key={w} variants={wordVar} style={heroWord}>{w}</motion.span>
+                <span key={w} style={heroWord}>{w}</span>
               ))}
             </span>
             <span style={{ display: "block" }}>
               {lines.l2.map((w, wi) => (
-                <motion.span key={w} variants={wordVar} className="gradient-text bleed-word" style={heroWord}>
+                <span key={w} className="gradient-text bleed-word" style={heroWord}>
                   {w}
                   {!reduce && (WORD_DRIPS[wi] || []).map((d, i) => (
                     <span key={i} className="drip" aria-hidden style={{
@@ -238,10 +222,10 @@ function Hero({ name, covers, loading }) {
                       <i className="drip-bead" /><i className="drip-fall" />
                     </span>
                   ))}
-                </motion.span>
+                </span>
               ))}
             </span>
-          </motion.h1>
+          </h1>
 
           <motion.p
             initial={{ opacity: 0, y: 12 }}
