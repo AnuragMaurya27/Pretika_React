@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Flame, Sparkles, Users, ChevronRight, BadgeCheck,
   BookOpen, Star, Eye, Feather, ArrowRight,
@@ -51,6 +51,16 @@ export default function Home() {
   }, [mostViewed.data, fresh.data]);
   const trendingLoading = mostViewed.isLoading && fresh.isLoading;
 
+  // Hero cover-fan pool = every published story we've fetched (most-viewed + latest),
+  // deduped. The fan shuffles a random handful out of this on a timer — see CoverFan.
+  const coverPool = useMemo(() => {
+    const byId = new Map();
+    for (const s of [...(mostViewed.data?.items || []), ...(fresh.data?.items || [])]) {
+      if (s && s.id != null && !byId.has(s.id)) byId.set(s.id, s);
+    }
+    return [...byId.values()];
+  }, [mostViewed.data, fresh.data]);
+
   // Category rails: one section for every category that has at least one story.
   // Richest categories lead (sorted by story count) so the page opens strong.
   const topCategories = useMemo(() => {
@@ -89,8 +99,8 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Editorial hero — ink headline + floating fan of real trending covers */}
-        <Hero name={name} covers={trendingItems} loading={trendingLoading} />
+        {/* Editorial hero — ink headline + floating fan that shuffles random covers */}
+        <Hero name={name} covers={coverPool} loading={trendingLoading} />
 
         {/* Announcements */}
         {announcements.data?.length > 0 && (
@@ -256,10 +266,37 @@ const FAN_POSES = [
   { r: 13, x: 0, y: 22, spread: 24 },
 ];
 
+const FAN_COUNT = 4;
+const FAN_SHUFFLE_MS = 5500;
+
+// Fisher–Yates pick of `count` distinct stories from the pool.
+function pickCovers(pool, count) {
+  const a = [...pool];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a.slice(0, count);
+}
+
 function CoverFan({ covers = [], loading }) {
-  const { t } = useTranslation();
   const reduce = useReducedMotion();
-  const items = covers.slice(0, 4);
+
+  // The fan draws a random handful from the WHOLE catalogue and reshuffles on a
+  // timer, so the hero keeps cycling through the site's stories (not a fixed top-N).
+  // A ticking counter (not React state written in render) drives each reshuffle;
+  // the visible set is derived from (covers + tick).
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (reduce || covers.length <= FAN_COUNT) return;   // nothing worth cycling
+    const id = setInterval(() => setTick((v) => v + 1), FAN_SHUFFLE_MS);
+    return () => clearInterval(id);
+  }, [reduce, covers.length]);
+
+  const items = useMemo(() => {
+    void tick;                              // tick is the reshuffle trigger
+    return pickCovers(covers, FAN_COUNT);
+  }, [covers, tick]);
   const n = items.length || 3;
 
   return (
@@ -277,10 +314,9 @@ function CoverFan({ covers = [], loading }) {
       >
         {(items.length ? items : Array.from({ length: n })).map((s, i) => {
           const pose = FAN_POSES[i + Math.floor((FAN_POSES.length - n) / 2)] || FAN_POSES[i];
-          const isTop = s && i === 0;
           return (
             <motion.div
-              key={s?.id || i}
+              key={i}
               variants={{
                 rest: { rotate: pose.r, y: pose.y, x: 0 },
                 spread: { rotate: pose.r * 1.2, y: pose.y - 10, x: pose.spread },
@@ -295,11 +331,19 @@ function CoverFan({ covers = [], loading }) {
             >
               {s ? (
                 <Link to={`/story/${s.slug}`} className="fan-card" title={s.title}>
-                  <Img path={s.thumbnail_url} seed={s.id} alt={s.title}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  {isTop && (
-                    <span style={fanBadge}><Flame size={11} /> {t("home.topTrending")}</span>
-                  )}
+                  <AnimatePresence initial={false}>
+                    <motion.div
+                      key={s.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.6, ease: "easeInOut" }}
+                      style={{ position: "absolute", inset: 0 }}
+                    >
+                      <Img path={s.thumbnail_url} seed={s.id} alt={s.title}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </motion.div>
+                  </AnimatePresence>
                 </Link>
               ) : (
                 <div className={`fan-card ${loading ? "shimmer" : ""}`} />
@@ -555,12 +599,6 @@ const heroWord = {
   willChange: "transform",
 };
 const heroStat = { height: 32, fontSize: 12, pointerEvents: "none" };
-const fanBadge = {
-  position: "absolute", top: 10, left: 10, display: "inline-flex", alignItems: "center", gap: 5,
-  padding: "5px 10px", borderRadius: 999, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4,
-  background: "rgba(156,28,20,.94)", color: "#fff", boxShadow: "0 4px 14px rgba(70,9,7,.45)",
-};
-
 const mHeader = { background: "linear-gradient(180deg, #2a0a07, #150605)", position: "sticky", top: 0, zIndex: 20 };
 const annCard = { display: "flex", alignItems: "center", gap: 10, minWidth: 250, maxWidth: 250, padding: 10, background: "var(--indigo-50)", border: "1px solid var(--indigo-100)", borderRadius: 12 };
 const creatorCard = { minWidth: 150, width: 150, textAlign: "center", padding: 16, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16 };
