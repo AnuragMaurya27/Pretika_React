@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Home, Plus, MessageCircle, Search, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../store/auth";
-import { useChatUnreadTotal } from "../lib/chat";
+import { useChatUnreadTotal, useIsMobile } from "../lib/chat";
 
 // Mobile tab bar — Home · Feed · [Write FAB] · Explore · Chats.
 // Profile lives in the top-right header now (next to notifications), not here.
@@ -23,7 +23,9 @@ export default function BottomNav() {
   const { t } = useTranslation();
   const nav = useNavigate();
   const authed = useAuth((s) => s.isAuthed)();
-  const unread = useChatUnreadTotal(authed);
+  const isMobile = useIsMobile();
+  // Chat is mobile-only; skip the unread poll on desktop (bar is CSS-hidden there).
+  const unread = useChatUnreadTotal(authed && isMobile);
   return (
     <nav className="only-mobile bnav">
       <div style={{ display: "flex", height: 58 }}>
