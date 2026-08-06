@@ -1475,6 +1475,15 @@ html { scroll-behavior: smooth; }
   padding-bottom: env(safe-area-inset-bottom);
   box-shadow: 0 -8px 30px rgba(40,20,12,.06);
 }
+/* Unread-count badge on the Chats tab (Instagram-style) — pinned to the icon's
+   top-right, tabular numerals, ringed so it reads clearly over the bar. */
+.bnav-badge {
+  position: absolute; top: -4px; right: 0; min-width: 17px; height: 17px;
+  padding: 0 4.5px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--crimson); color: #fff; font-size: 10px; font-weight: 800; line-height: 1;
+  font-variant-numeric: tabular-nums; border: 2px solid rgba(255,253,247,.97);
+  box-shadow: 0 2px 6px rgba(156,28,20,.45); pointer-events: none;
+}
 
 /* ---- Pretika Chats — light "haunted messenger" band + chat cards -----------
    A blush-parchment band (chat-wallpaper doodles, crimson hairlines) that
@@ -2674,6 +2683,15 @@ a:hover > .pf-menu-row, button:hover > .pf-menu-row { background: var(--bg); }
    collapses to 0 once messages overflow, so the top never gets clipped the way
    justify-content:flex-end would on some mobile webviews. */
 .chat-scroll > :first-child { margin-top: auto; }
+/* WhatsApp-style date separator — a centred pill ("Today" / "Yesterday" / date)
+   that breaks the thread by day. self-center so it ignores the msg L/R alignment. */
+.chat-day { align-self: center; display: flex; justify-content: center; margin: 8px 0 4px; }
+.chat-day span {
+  font-size: 11.5px; font-weight: 700; color: var(--text-secondary);
+  background: color-mix(in srgb, var(--crimson) 6%, var(--bg-card));
+  border: 1px solid var(--border-solid); border-radius: 999px;
+  padding: 4px 12px; box-shadow: 0 1px 2px rgba(40,20,12,.06);
+}
 .msg { display: flex; max-width: 82%; }
 .msg.mine { align-self: flex-end; }
 .msg.theirs { align-self: flex-start; }

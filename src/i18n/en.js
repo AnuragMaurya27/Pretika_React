@@ -326,6 +326,9 @@ export default {
   },
   chat: {
     title: "Chats",
+    today: "Today",
+    yesterday: "Yesterday",
+    unreadN: "{{n}} unread messages",
     general: "Chats",
     requests: "Requests",
     empty: "No chats yet",

@@ -2,6 +2,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home, Plus, MessageCircle, Search, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../store/auth";
+import { useChatUnreadTotal } from "../lib/chat";
 
 // Mobile tab bar — Home · Feed · [Write FAB] · Explore · Chats.
 // Profile lives in the top-right header now (next to notifications), not here.
@@ -20,6 +22,8 @@ const rightTabs = [
 export default function BottomNav() {
   const { t } = useTranslation();
   const nav = useNavigate();
+  const authed = useAuth((s) => s.isAuthed)();
+  const unread = useChatUnreadTotal(authed);
   return (
     <nav className="only-mobile bnav">
       <div style={{ display: "flex", height: 58 }}>
@@ -43,7 +47,7 @@ export default function BottomNav() {
 
         <div style={{ flex: 1, display: "flex" }}>
           {rightTabs.map((tab) => (
-            <Tab key={tab.id} {...tab} t={t} />
+            <Tab key={tab.id} {...tab} t={t} badge={tab.id === "messages" ? unread : 0} />
           ))}
         </div>
       </div>
@@ -51,7 +55,7 @@ export default function BottomNav() {
   );
 }
 
-function Tab({ to, icon: Icon, id, t }) {
+function Tab({ to, icon: Icon, id, t, badge = 0 }) {
   return (
     <NavLink to={to} style={{ flex: 1 }}>
       {({ isActive }) => (
@@ -71,6 +75,11 @@ function Tab({ to, icon: Icon, id, t }) {
             >
               <Icon size={20} strokeWidth={isActive ? 2.5 : 2} color={isActive ? "var(--indigo-600)" : "var(--text-tertiary)"} />
             </motion.span>
+            {badge > 0 && (
+              <span className="bnav-badge" aria-label={t("chat.unreadN", { n: badge })}>
+                {badge > 9 ? "9+" : badge}
+              </span>
+            )}
           </div>
           <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, whiteSpace: "nowrap", color: isActive ? "var(--indigo-600)" : "var(--text-tertiary)" }}>{t(`nav.${id}`)}</span>
         </div>

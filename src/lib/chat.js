@@ -17,12 +17,26 @@ const HUB_URL = import.meta.env.DEV ? "/hubs/chat" : `${BASE_URL}/hubs/chat`;
 
 // All my private rooms — each carries accepted / is_request / unread_count /
 // other_last_read_at so the UI can split General vs Requests and draw ticks.
-export function usePrivateChats() {
+// Polls in the foreground (and refetches on app-foreground) so the unread badge
+// on the Chats tab stays live app-wide without a manual refresh.
+export function usePrivateChats(enabled = true) {
   return useQuery({
     queryKey: ["chat", "private"],
     queryFn: () => get("/chat/rooms/private"),
+    enabled,
     staleTime: 1000 * 15,
+    refetchInterval: 20000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   });
+}
+
+// Total unread across accepted (non-request) rooms — drives the tab-bar badge.
+// Requests are surfaced separately by the "Requests" tab, so they don't count here.
+export function useChatUnreadTotal(enabled = true) {
+  const { data } = usePrivateChats(enabled);
+  const rooms = Array.isArray(data) ? data : [];
+  return rooms.reduce((n, r) => n + (r.is_request ? 0 : r.unread_count || 0), 0);
 }
 
 export function useChatMessages(roomId) {
@@ -30,6 +44,13 @@ export function useChatMessages(roomId) {
     queryKey: ["chat", "messages", roomId],
     queryFn: () => get(`/chat/rooms/${roomId}/messages?page=1&page_size=50`),
     enabled: !!roomId,
+    // Realtime writes land in this cache directly, but keep a light poll +
+    // refetch-on-foreground as a safety net so a missed SignalR event still
+    // heals on its own (no more "refresh karke dikhta hai").
+    staleTime: 0,
+    refetchInterval: 10000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   });
 }
 

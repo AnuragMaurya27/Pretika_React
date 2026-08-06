@@ -326,6 +326,9 @@ export default {
   },
   chat: {
     title: "चैट्स",
+    today: "आज",
+    yesterday: "कल",
+    unreadN: "{{n}} अनपढ़े मैसेज",
     general: "चैट्स",
     requests: "रिक्वेस्ट",
     empty: "अभी कोई चैट नहीं",

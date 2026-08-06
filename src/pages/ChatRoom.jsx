@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -42,6 +42,25 @@ function nm(m) {
     is_deleted: m.is_deleted ?? m.isDeleted ?? false,
     created_at: m.created_at ?? m.createdAt,
   };
+}
+
+// Same calendar day? — drives the WhatsApp-style date separators in the thread.
+function sameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+// "Today" / "Yesterday" / "6 August 2026" — localised to the current UI language.
+function dayLabel(iso, t, lang) {
+  const d = new Date(iso);
+  const now = new Date();
+  const yest = new Date(now);
+  yest.setDate(now.getDate() - 1);
+  if (sameDay(d, now)) return t("chat.today");
+  if (sameDay(d, yest)) return t("chat.yesterday");
+  return d.toLocaleDateString(lang === "hi" ? "hi-IN" : "en-IN", {
+    day: "numeric",
+    month: "long",
+    ...(d.getFullYear() === now.getFullYear() ? {} : { year: "numeric" }),
+  });
 }
 
 function Ticks({ mine, seen }) {
@@ -133,7 +152,7 @@ function AttachSheet({ open, onClose, onPhoto, onStory, onSuper }) {
 
 export default function ChatRoom() {
   const { roomId } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const isMobile = useIsMobile();
   const me = useAuth((s) => s.user);
@@ -158,7 +177,7 @@ export default function ChatRoom() {
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [superOpen, setSuperOpen] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
-  const [live, setLive] = useState([]);              // realtime + optimistic messages
+  const [live, setLive] = useState([]);              // optimistic (unsent) bubbles only
   const [deletedIds, setDeletedIds] = useState(() => new Set());
   const [liveSeenAt, setLiveSeenAt] = useState(null);
   const [lightbox, setLightbox] = useState(null);    // { src, filename } for full-screen view
@@ -169,14 +188,33 @@ export default function ChatRoom() {
 
   const isRequest = !!room?.is_request && !locallyAccepted;
 
-  // Base history (REST) + realtime/optimistic tail, de-duped, deletions applied.
+  // Upsert one message into the react-query cache for this room. Realtime and
+  // freshly-sent messages are written here (not just local state) so they SURVIVE
+  // a remount / navigate-away-and-back — the root cause of messages vanishing
+  // until a manual refresh. Stored in the same snake_case shape REST returns, so
+  // nm() reads both uniformly.
+  const putMessage = useCallback((raw) => {
+    const msg = nm(raw);
+    qc.setQueryData(["chat", "messages", roomId], (old) => {
+      const items = old?.items || [];
+      const i = items.findIndex((x) => String(x.id ?? x.ID) === String(msg.id));
+      if (i === -1) return { ...(old || {}), items: [...items, msg] };
+      const next = items.slice();
+      next[i] = { ...items[i], ...msg };
+      return { ...(old || {}), items: next };
+    });
+  }, [qc, roomId]);
+
+  // Cached history + still-pending optimistic bubbles, de-duped (string-safe ids),
+  // deletions applied, sorted oldest→newest so date separators & order are stable.
   const msgs = useMemo(() => {
     const base = (page?.items || []).map(nm);
-    const ids = new Set(base.map((m) => m.id));
-    const all = [...base, ...live.filter((m) => !ids.has(m.id))];
-    return deletedIds.size
+    const ids = new Set(base.map((m) => String(m.id)));
+    const all = [...base, ...live.filter((m) => !ids.has(String(m.id)))];
+    const shaped = deletedIds.size
       ? all.map((m) => (deletedIds.has(m.id) ? { ...m, is_deleted: true, content: null } : m))
       : all;
+    return shaped.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   }, [page, live, deletedIds]);
 
   // Other party's read cursor (max of REST snapshot and live "seen" events).
@@ -193,14 +231,13 @@ export default function ChatRoom() {
     onMessage: (m) => {
       const msg = nm(m);
       if (String(msg.room_id) !== String(roomId)) return;
-      setLive((prev) => {
+      putMessage(m);                      // persist into the cache (survives remount)
+      if (msg.sender_id === me?.id) {
         // My own message echoed back → drop the matching optimistic bubble (no dupe).
-        const rest = msg.sender_id === me?.id
-          ? prev.filter((x) => !(x._optimistic && x.message_type === msg.message_type && (x.content || "") === (msg.content || "")))
-          : prev;
-        return rest.some((x) => x.id === msg.id) ? rest : [...rest, msg];
-      });
-      if (!isRequest && msg.sender_id !== me?.id) markRoomRead(roomId);
+        setLive((prev) => prev.filter((x) => !(x._optimistic && x.message_type === msg.message_type && (x.content || "") === (msg.content || ""))));
+      } else if (!isRequest) {
+        markRoomRead(roomId);
+      }
     },
     onTyping: (p) => {
       if ((p.user_id ?? p.userId) === me?.id) return;
@@ -225,6 +262,14 @@ export default function ChatRoom() {
     markRoomRead(roomId);
   }, [roomId, isRequest, msgs.length]);
 
+  // Opening & reading a room clears its unread — refresh the rooms list shortly
+  // after so the Chats-tab badge drops right away (not on the next 20s poll).
+  useEffect(() => {
+    if (!roomId || isRequest) return;
+    const id = setTimeout(() => qc.invalidateQueries({ queryKey: ["chat", "private"] }), 500);
+    return () => clearTimeout(id);
+  }, [roomId, isRequest, qc]);
+
   // Keep pinned to the newest message.
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -248,11 +293,8 @@ export default function ChatRoom() {
     addLive(optimistic);
     send.mutate(body, {
       onSuccess: (m) => {
-        const real = nm(m);
-        setLive((prev) => {
-          const rest = prev.filter((x) => x._key !== optimistic._key);
-          return rest.some((x) => x.id === real.id) ? rest : [...rest, real];
-        });
+        putMessage(m);                                          // → cache (persists across remounts)
+        setLive((prev) => prev.filter((x) => x._key !== optimistic._key));
         // Super Chat debited the coin wallet — pull the fresh balance.
         if (body.message_type === "super_chat") qc.invalidateQueries({ queryKey: ["wallet"] });
       },
@@ -311,11 +353,8 @@ export default function ChatRoom() {
       onSuccess: (url) => {
         send.mutate({ message_type: "image", image_url: url, idempotency_key: key }, {
           onSuccess: (m) => {
-            const real = nm(m);
-            setLive((prev) => {
-              const rest = prev.filter((x) => x._key !== key);
-              return rest.some((x) => x.id === real.id) ? rest : [...rest, real];
-            });
+            putMessage(m);
+            setLive((prev) => prev.filter((x) => x._key !== key));
             URL.revokeObjectURL(localUrl);
           },
           onError: () => setLive((prev) => prev.map((x) => (x._key === key ? { ...x, _pending: false, _failed: true } : x))),
@@ -370,13 +409,19 @@ export default function ChatRoom() {
       </header>
 
       <div className="chat-scroll" ref={scrollRef}>
-        {msgs.map((m) => {
+        {msgs.map((m, idx) => {
           const mine = m.sender_id === me?.id;
           const seen = mine && otherReadAt && new Date(m.created_at) <= new Date(otherReadAt);
           const isSuper = m.is_super_chat && !m.is_deleted;
           const scColor = isSuper ? (m.super_chat_highlight_color || tierColor(m.super_chat_coins)) : null;
+          const prev = msgs[idx - 1];
+          const showDay = m.created_at && (!prev?.created_at || !sameDay(new Date(prev.created_at), new Date(m.created_at)));
           return (
-            <div key={m.id} className={`msg ${mine ? "mine" : "theirs"} ${isSuper ? "msg-super" : ""}`}>
+            <Fragment key={m.id}>
+              {showDay && (
+                <div className="chat-day"><span>{dayLabel(m.created_at, t, i18n.language)}</span></div>
+              )}
+            <div className={`msg ${mine ? "mine" : "theirs"} ${isSuper ? "msg-super" : ""}`}>
               <div className={`msg-bubble ${isSuper ? "super" : ""}`} style={isSuper ? { "--sc": scColor } : undefined}>
                 {isSuper && (
                   <span className="msg-sc-badge"><Coins size={12} /> {m.super_chat_coins} · {t("chat.superChat")}</span>
@@ -415,6 +460,7 @@ export default function ChatRoom() {
                 </span>
               </div>
             </div>
+            </Fragment>
           );
         })}
         {typing && (
