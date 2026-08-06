@@ -97,3 +97,101 @@ export async function fetchAllStories() {
   }
   return out;
 }
+
+// ── episode prose (for the prerenderer) ───────────────────────────────────────
+// Faithful Node port of src/lib/content.js#renderEpisode so the text baked into
+// the crawlable /story/<slug> shell matches, character-for-character, what a real
+// reader sees in the app. Handles the three stored formats: Quill delta (JSON),
+// already-HTML, and plain text.
+const escText = (s = "") =>
+  String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+function deltaToHtml(ops) {
+  let html = "";
+  let line = "";
+  const flush = (block = "p", attrs = {}) => {
+    if (!line.trim() && block === "p") { html += "<br/>"; line = ""; return; }
+    let tag = block;
+    if (attrs.header) tag = `h${attrs.header}`;
+    if (attrs.blockquote) tag = "blockquote";
+    html += `<${tag}>${line}</${tag}>`;
+    line = "";
+  };
+  for (const op of ops) {
+    if (op && typeof op.insert === "object" && op.insert.image) {
+      html += `<img src="${mediaUrl(op.insert.image, ORIGIN)}" alt="" />`;
+      continue;
+    }
+    const text = String(op?.insert ?? "");
+    const a = op?.attributes || {};
+    const parts = text.split("\n");
+    parts.forEach((part, idx) => {
+      let chunk = escText(part);
+      if (a.bold) chunk = `<strong>${chunk}</strong>`;
+      if (a.italic) chunk = `<em>${chunk}</em>`;
+      if (a.underline) chunk = `<u>${chunk}</u>`;
+      line += chunk;
+      if (idx < parts.length - 1) flush("p", op?.attributes || {});
+    });
+  }
+  if (line) html += `<p>${line}</p>`;
+  return html;
+}
+
+export function renderProse(content) {
+  if (!content) return "";
+  const trimmed = String(content).trim();
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      const ops = Array.isArray(parsed) ? parsed : parsed.ops;
+      if (Array.isArray(ops)) return deltaToHtml(ops);
+    } catch { /* not delta */ }
+  }
+  if (/<\/?[a-z][\s\S]*>/i.test(trimmed)) return trimmed; // already HTML
+  return trimmed
+    .split(/\n{2,}/)
+    .map((p) => `<p>${escText(p).replace(/\n/g, "<br/>")}</p>`)
+    .join("");
+}
+
+// Plain-text extraction for JSON-LD articleBody (tags stripped, entities decoded).
+export function htmlToText(html) {
+  return String(html || "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|h[1-6]|blockquote|div|li)>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&nbsp;/g, " ")
+    .replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+// Fetches the first FREE, published episode's rendered prose for a story so the
+// prerenderer can bake a real, substantial article into /story/<slug> — instead
+// of just the 160-char summary (the AdSense "low value content" fix). Two calls:
+// the episode list, then that episode's content. Never throws — SEO must not
+// break the build; on any failure we return null and the page keeps its summary.
+export async function fetchFirstFreeEpisode(storyId) {
+  if (!storyId) return null;
+  try {
+    const data = await getJson(`/api/stories/${storyId}/episodes`);
+    const eps = Array.isArray(data) ? data : data?.items || [];
+    const first = eps
+      .filter((e) => e && e.status === "published" && (e.access_type === "free" || e.is_unlocked))
+      .sort((a, b) => (a.episode_number || 0) - (b.episode_number || 0))[0];
+    if (!first?.id) return null;
+    const full = await getJson(`/api/stories/${storyId}/episodes/${first.id}`);
+    const html = renderProse(full?.content);
+    if (!html) return null;
+    return {
+      title: first.title || "",
+      episodeNumber: first.episode_number || 1,
+      wordCount: first.word_count || 0,
+      totalEpisodes: eps.length,
+      html,
+    };
+  } catch (e) {
+    console.log(`  ⚠ prose fetch failed for story ${storyId}: ${e.message}`);
+    return null;
+  }
+}

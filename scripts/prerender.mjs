@@ -23,7 +23,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { ORIGIN, esc, mediaUrl, fetchAllStories } from "./lib/pretika-api.mjs";
+import { ORIGIN, esc, mediaUrl, fetchAllStories, fetchFirstFreeEpisode, htmlToText } from "./lib/pretika-api.mjs";
 
 const DIST = join(dirname(fileURLToPath(import.meta.url)), "..", "dist");
 const TEMPLATE = join(DIST, "index.html");
@@ -73,7 +73,10 @@ function write(routePath, html) {
 }
 
 // ── page builders ─────────────────────────────────────────────────────────────
-function storyHtml(template, s) {
+// `prose` (optional) = { title, episodeNumber, wordCount, totalEpisodes, html }
+// for the first free episode. When present, the real chapter text is baked into
+// the crawlable shell so /story/<slug> is a substantial article, not a stub.
+function storyHtml(template, s, prose) {
   const slug = s.slug;
   const url = `${ORIGIN}/story/${slug}`;
   const title = s.title || "Hindi Horror Story";
@@ -117,6 +120,12 @@ function storyHtml(template, s) {
     genre: category,
     ...(tags.length ? { keywords: tags.join(", ") } : {}),
     isAccessibleForFree: true,
+    ...(prose
+      ? {
+          articleBody: htmlToText(prose.html).slice(0, 5000),
+          ...(prose.wordCount ? { wordCount: prose.wordCount } : {}),
+        }
+      : {}),
     ...(published ? { datePublished: published } : {}),
     ...(modified ? { dateModified: modified } : {}),
     author: { "@type": "Person", name: author, url: `${ORIGIN}/u/${s.creator_username}` },
@@ -153,6 +162,29 @@ function storyHtml(template, s) {
   headExtra += ldScript(article) + "\n" + ldScript(breadcrumb);
   html = injectHead(html, headExtra);
 
+  // The actual first free chapter, baked in as readable prose (the whole point:
+  // /story/<slug> becomes a real article for crawlers, not a summary stub).
+  const multi = prose && prose.totalEpisodes > 1;
+  // Chapter heading only for multi-part stories — and don't double-prefix a title
+  // that already leads with "भाग 2" / "Episode 2" / "Part 2".
+  const epTitle = (prose?.title || "").trim();
+  const heading = multi
+    ? (/^(भाग|एपिसोड|part|episode|ep\.?)\s*\d+/i.test(epTitle)
+        ? epTitle
+        : `भाग ${prose.episodeNumber}: ${epTitle}`)
+    : "";
+  const proseBlock = prose
+    ? `
+      <div aria-hidden style="width:64px;height:2px;background:#a91607;opacity:.5;margin:30px auto 18px"></div>
+      ${heading ? `<h2 style="font-size:21px;line-height:1.3;color:#1e0a0c;margin:0 0 16px">${esc(heading)}</h2>` : ""}
+      <div class="pk-prose" style="font-size:17px;line-height:1.95;color:#2a1410">${prose.html}</div>`
+    : "";
+  const ctaLabel = prose
+    ? (multi
+        ? `पूरी सीरीज़ पढ़ें · Read all ${prose.totalEpisodes} episodes on Pretika &rarr;`
+        : `Pretika पर और डरावनी कहानियाँ &rarr;`)
+    : `पूरी कहानी पढ़ें · Read the full story on Pretika &rarr;`;
+
   const body = `
     <main id="pk-prerender" style="max-width:760px;margin:0 auto;padding:40px 22px;background:#f4efe4;color:#2a1410;font-family:'Noto Serif Devanagari',Georgia,'Times New Roman',serif;line-height:1.85;min-height:100vh">
       <p style="font-size:13px;margin:0 0 6px"><a href="/home" style="color:#a91607;text-decoration:none">Pretika</a> &rsaquo; <a href="/explore" style="color:#a91607;text-decoration:none">${esc(category)}</a></p>
@@ -161,7 +193,8 @@ function storyHtml(template, s) {
       ${img ? `<img src="${esc(img)}" alt="${esc(title)}" width="560" style="max-width:100%;height:auto;border-radius:14px;margin-bottom:22px" />` : ""}
       <p style="font-size:17px;margin:0 0 20px">${esc(desc)}</p>
       ${tags.length ? `<p style="font-size:13px;color:#8a6a5a;margin:0 0 22px">${tags.map((t) => esc("#" + t)).join(" &nbsp; ")}</p>` : ""}
-      <p><a href="/story/${esc(slug)}" style="color:#fff;background:#a91607;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block">पूरी कहानी पढ़ें · Read the full story on Pretika &rarr;</a></p>
+      ${proseBlock}
+      <p style="margin:30px 0 0"><a href="/story/${esc(slug)}" style="color:#fff;background:#a91607;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block">${ctaLabel}</a></p>
     </main>`;
   html = setBody(html, body);
 
@@ -237,17 +270,23 @@ async function main() {
   const stories = await fetchAllStories();
   console.log(`Prerendering ${stories.length} stories …`);
   let n = 0;
+  let withProse = 0;
   const byCreator = new Map();
   for (const s of stories) {
     if (!s.slug) continue;
-    write(`story/${s.slug}`, storyHtml(template, s));
+    // Pull the first free chapter's real text so the page is a full article, not
+    // a stub. Sequential (2 calls/story) keeps the live API un-hammered; failures
+    // return null and the page falls back to its summary — the build never breaks.
+    const prose = await fetchFirstFreeEpisode(s.id);
+    if (prose) withProse++;
+    write(`story/${s.slug}`, storyHtml(template, s, prose));
     n++;
     if (s.creator_username) {
       if (!byCreator.has(s.creator_username)) byCreator.set(s.creator_username, []);
       byCreator.get(s.creator_username).push(s);
     }
   }
-  console.log(`  ✓ ${n} story pages`);
+  console.log(`  ✓ ${n} story pages (${withProse} with full first-chapter prose)`);
 
   let c = 0;
   for (const [username, list] of byCreator) {
