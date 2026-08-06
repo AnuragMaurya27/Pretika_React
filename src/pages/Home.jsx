@@ -15,8 +15,7 @@ import Tilt from "../components/Tilt";
 import { HRailSkeleton, SkeletonBox } from "../components/Skeleton";
 import EmptyState from "../components/EmptyState";
 import ChatStoriesRail from "../components/ChatStoriesRail";
-import LangToggle from "../components/LangToggle";
-import NotificationBell from "../components/NotificationBell";
+import MobileHeaderActions from "../components/MobileHeaderActions";
 import { useAuth } from "../store/auth";
 import { mediaUrl } from "../lib/constants";
 import { compact } from "../lib/format";
@@ -92,10 +91,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="row gap-8">
-              <LangToggle dark />
-              {user && <NotificationBell dark />}
-            </div>
+            <MobileHeaderActions dark />
           </div>
         </header>
 

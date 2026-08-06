@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Forgot from "./pages/Forgot";
 import Home from "./pages/Home";
+import Feed from "./pages/Feed";
 import Explore from "./pages/Explore";
 import CreatorProfile from "./pages/CreatorProfile";
 import Profile from "./pages/Profile";
@@ -58,6 +59,7 @@ export default function App() {
 
       <Route element={<Layout />}>
         <Route path="/home" element={<Home />} />
+        <Route path="/feed" element={<Feed />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/u/:username" element={<CreatorProfile />} />
         <Route path="/profile" element={<Profile />} />

@@ -1,18 +1,20 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Home, User, Plus, MessageCircle, Search } from "lucide-react";
+import { Home, Plus, MessageCircle, Search, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-// Mobile tab bar — Home · Explore · [Write FAB] · Chats · Profile.
-// Two tabs flank the Write FAB on each side so it always sits dead-center
-// of the bar (an odd 5-slot grid); never let it drift off to one side.
+// Mobile tab bar — Home · Feed · [Write FAB] · Explore · Chats.
+// Profile lives in the top-right header now (next to notifications), not here.
+// The left and right tab groups are each flex:1 (equal width) with the Write
+// FAB pinned as a fixed-width centre column between them, so the FAB always
+// stays dead-centre regardless of how many tabs each side holds.
 const leftTabs = [
   { to: "/home", icon: Home, id: "home" },
-  { to: "/explore", icon: Search, id: "explore" },
+  { to: "/feed", icon: Sparkles, id: "feed" },
 ];
 const rightTabs = [
+  { to: "/explore", icon: Search, id: "explore" },
   { to: "/chat", icon: MessageCircle, id: "messages" },
-  { to: "/profile", icon: User, id: "profile" },
 ];
 
 export default function BottomNav() {
@@ -21,15 +23,17 @@ export default function BottomNav() {
   return (
     <nav className="only-mobile bnav">
       <div style={{ display: "flex", height: 58 }}>
-        {leftTabs.map((tab) => (
-          <Tab key={tab.id} {...tab} t={t} />
-        ))}
+        <div style={{ flex: 1, display: "flex" }}>
+          {leftTabs.map((tab) => (
+            <Tab key={tab.id} {...tab} t={t} />
+          ))}
+        </div>
 
-        {/* Write FAB — the center create-story button. It's the middle slot of
-            a symmetric 5-column row (2 tabs · FAB · 2 tabs), so its circle
-            always lands at the exact horizontal center of the bar. The circle
-            floats above the bar and the label is pinned to the bar's bottom
-            edge so it can never slip under the safe-area / get clipped. */}
+        {/* Write FAB — the create-story button, a fixed-width centre column
+            between two equal (flex:1) tab groups so its circle always lands at
+            the exact horizontal centre of the bar. The circle floats above the
+            bar and the label is pinned to the bar's bottom edge so it can never
+            slip under the safe-area / get clipped. */}
         <button onClick={() => nav("/creator/story/new")} style={fabWrap} aria-label={t("nav.write")}>
           <motion.div whileTap={{ scale: 0.88 }} className="pulse-glow" style={fabCircle}>
             <Plus size={22} color="#fff" />
@@ -37,9 +41,11 @@ export default function BottomNav() {
           <span style={fabLabel}>{t("nav.write")}</span>
         </button>
 
-        {rightTabs.map((tab) => (
-          <Tab key={tab.id} {...tab} t={t} />
-        ))}
+        <div style={{ flex: 1, display: "flex" }}>
+          {rightTabs.map((tab) => (
+            <Tab key={tab.id} {...tab} t={t} />
+          ))}
+        </div>
       </div>
     </nav>
   );
@@ -75,7 +81,7 @@ function Tab({ to, icon: Icon, id, t }) {
 
 const item = { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 3 };
 const pill = { position: "absolute", inset: 0, borderRadius: 13, background: "var(--indigo-50)", border: "1px solid var(--indigo-100)" };
-const fabWrap = { flex: 1, position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" };
+const fabWrap = { width: 68, flexShrink: 0, position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" };
 const fabCircle = {
   position: "absolute", top: -16, width: 50, height: 50, borderRadius: "50%",
   background: "linear-gradient(180deg, var(--crimson-mid), var(--crimson))",

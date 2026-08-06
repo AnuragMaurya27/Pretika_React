@@ -48,7 +48,7 @@ export default {
     archived: "Archived",
     removed: "Removed",
   },
-  nav: { home: "Home", explore: "Search", chat: "Chats", messages: "Messages", profile: "Profile", write: "Write" },
+  nav: { home: "Home", feed: "Feed", explore: "Search", chat: "Chats", messages: "Messages", profile: "Profile", write: "Write" },
   card: { part: "1 part", episodes: "{{n}} episodes", reads: "Read {{n}} times" },
   creator: {
     dashboard: "Creator Dashboard",
@@ -236,6 +236,18 @@ export default {
     writeTitle: "A story haunting you?",
     writeSub: "Write it down before it writes you. Publish on Pretika and haunt thousands of readers tonight.",
     writeBtn: "Start writing",
+  },
+  feed: {
+    forYou: "For You",
+    following: "Following",
+    reasonFollowing: "You follow them",
+    reasonNew: "New creator",
+    emptyForYouTitle: "Nothing here yet",
+    emptyForYouSub: "New stories will appear here as creators publish.",
+    emptyFollowingTitle: "Your following feed is empty",
+    emptyFollowingSub: "Follow creators and their new stories show up here.",
+    exploreCreators: "Discover creators",
+    end: "You're all caught up",
   },
   story: {
     episodes: "Episodes",

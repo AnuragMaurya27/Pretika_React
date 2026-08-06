@@ -48,7 +48,7 @@ export default {
     archived: "आर्काइव्ड",
     removed: "हटा दी गई",
   },
-  nav: { home: "होम", explore: "खोजो", chat: "चैट", messages: "मैसेज", profile: "प्रोफ़ाइल", write: "लिखो" },
+  nav: { home: "होम", feed: "फ़ीड", explore: "खोजो", chat: "चैट", messages: "मैसेज", profile: "प्रोफ़ाइल", write: "लिखो" },
   card: { part: "1 भाग", episodes: "{{n}} एपिसोड", reads: "{{n}} बार पढ़ा गया" },
   creator: {
     dashboard: "क्रिएटर डैशबोर्ड",
@@ -236,6 +236,18 @@ export default {
     writeTitle: "कोई कहानी सता रही है?",
     writeSub: "उसे लिख डालो, इससे पहले कि वो तुम्हें लिख दे। Pretika पर पब्लिश करो और हज़ारों पाठकों को डराओ।",
     writeBtn: "लिखना शुरू करें",
+  },
+  feed: {
+    forYou: "आपके लिए",
+    following: "फ़ॉलोइंग",
+    reasonFollowing: "आप इन्हें फ़ॉलो करते हैं",
+    reasonNew: "नया क्रिएटर",
+    emptyForYouTitle: "अभी यहाँ कुछ नहीं",
+    emptyForYouSub: "जैसे-जैसे क्रिएटर कहानियाँ पब्लिश करेंगे, यहाँ दिखेंगी।",
+    emptyFollowingTitle: "आपका फ़ॉलोइंग फ़ीड खाली है",
+    emptyFollowingSub: "क्रिएटर्स को फ़ॉलो करें, उनकी नई कहानियाँ यहाँ दिखेंगी।",
+    exploreCreators: "क्रिएटर खोजें",
+    end: "बस, आज के लिए इतना ही",
   },
   story: {
     episodes: "एपिसोड",

@@ -12,6 +12,7 @@ import { compact } from "../lib/format";
 import { CategoryIcon } from "../components/Art";
 import { categoryLabel } from "../lib/categories";
 import AdSlot from "../components/AdSlot";
+import MobileHeaderActions from "../components/MobileHeaderActions";
 
 const SORTS = [
   { key: "trending", tKey: "explore.sortTrending", Icon: Flame },
@@ -70,6 +71,10 @@ export default function Explore() {
       />
       <div className="page-scroll">
         <header style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(244,239,228,.88)", backdropFilter: "saturate(180%) blur(12px)", WebkitBackdropFilter: "saturate(180%) blur(12px)", paddingTop: 12 }}>
+          {/* Mobile: profile/notification (or log in / sign up) — moved up from the tab bar */}
+          <div className="only-mobile container" style={{ display: "flex", justifyContent: "flex-end", paddingBottom: 10 }}>
+            <MobileHeaderActions />
+          </div>
           <div className="container">
             <div className="input-wrap">
               <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-tertiary)" }}><Search size={18} /></span>

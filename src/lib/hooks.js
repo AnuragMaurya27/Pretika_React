@@ -29,6 +29,32 @@ export function useStories(params = {}) {
   });
 }
 
+/* --------------------------------- Feed --------------------------------- */
+// Personalized "For You" feed — GET /api/feed. Ranked + paginated on the
+// server (followed + discovery + fresh/new-creator, blended). Works logged-out
+// too (falls back to hotness + freshness). Infinite-scrolled on Home.
+export function useFeed(pageSize = 12) {
+  return useInfiniteQuery({
+    queryKey: ["feed", "for_you", pageSize],
+    queryFn: ({ pageParam }) =>
+      get("/feed", { params: { page: pageParam, page_size: pageSize } }),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last?.has_next_page ? (last.page || 1) + 1 : undefined),
+  });
+}
+
+// Chronological feed of creators you follow — GET /api/feed/following (auth).
+export function useFollowingFeed(pageSize = 12, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: ["feed", "following", pageSize],
+    queryFn: ({ pageParam }) =>
+      get("/feed/following", { params: { page: pageParam, page_size: pageSize } }),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last?.has_next_page ? (last.page || 1) + 1 : undefined),
+    enabled,
+  });
+}
+
 export function useUserProfile(username, enabled = true) {
   return useQuery({
     queryKey: ["user", username],
