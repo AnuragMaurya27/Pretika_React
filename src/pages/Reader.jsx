@@ -323,6 +323,9 @@ export default function Reader() {
         title={`${story?.title ? `${story.title} — ` : ""}Episode ${ep.episode_number}: ${ep.title}`}
         description={`Read episode ${ep.episode_number} of ${story?.title || "this Hindi horror story"} on Pretika${story?.summary ? ` — ${story.summary.slice(0, 110)}` : ""}.`}
         path={`/read/${storyId}/${episodeId}`}
+        // The full story is prerendered at the clean /story/<slug> URL — point the
+        // reader's canonical there so the two don't compete as duplicate content.
+        canonical={story?.slug ? `/story/${story.slug}` : undefined}
         type="article"
         // premium/locked episodes have no readable content — keep them out of the index
         robots={ep.content ? undefined : "noindex, follow"}

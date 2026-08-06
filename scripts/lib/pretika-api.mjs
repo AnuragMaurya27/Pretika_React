@@ -166,30 +166,41 @@ export function htmlToText(html) {
     .replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-// Fetches the first FREE, published episode's rendered prose for a story so the
-// prerenderer can bake a real, substantial article into /story/<slug> — instead
-// of just the 160-char summary (the AdSense "low value content" fix). Two calls:
-// the episode list, then that episode's content. Never throws — SEO must not
-// break the build; on any failure we return null and the page keeps its summary.
-export async function fetchFirstFreeEpisode(storyId) {
+// Fetches EVERY free, published episode's rendered prose for a story so the
+// prerenderer can bake the whole multi-chapter story into /story/<slug> — a
+// genuinely substantial article, not the 160-char summary (the AdSense "low
+// value content" fix). One call for the episode list + one per episode for its
+// content, stopping once `maxChars` of prose is gathered (guards a pathological
+// 20-chapter monster). Never throws — SEO must not break the build; on any
+// failure we return null and the page falls back to its summary.
+export async function fetchFreeEpisodesProse(storyId, maxChars = 60000) {
   if (!storyId) return null;
   try {
     const data = await getJson(`/api/stories/${storyId}/episodes`);
-    const eps = Array.isArray(data) ? data : data?.items || [];
-    const first = eps
+    const eps = (Array.isArray(data) ? data : data?.items || [])
       .filter((e) => e && e.status === "published" && (e.access_type === "free" || e.is_unlocked))
-      .sort((a, b) => (a.episode_number || 0) - (b.episode_number || 0))[0];
-    if (!first?.id) return null;
-    const full = await getJson(`/api/stories/${storyId}/episodes/${first.id}`);
-    const html = renderProse(full?.content);
-    if (!html) return null;
-    return {
-      title: first.title || "",
-      episodeNumber: first.episode_number || 1,
-      wordCount: first.word_count || 0,
-      totalEpisodes: eps.length,
-      html,
-    };
+      .sort((a, b) => (a.episode_number || 0) - (b.episode_number || 0));
+    if (!eps.length) return null;
+
+    const chapters = [];
+    let chars = 0;
+    let wordCount = 0;
+    let truncated = false;
+    for (const e of eps) {
+      if (chars >= maxChars) { truncated = true; break; }
+      const full = await getJson(`/api/stories/${storyId}/episodes/${e.id}`);
+      const html = renderProse(full?.content);
+      if (!html) continue;
+      chapters.push({
+        title: e.title || "",
+        episodeNumber: e.episode_number || chapters.length + 1,
+        html,
+      });
+      chars += html.length;
+      wordCount += e.word_count || 0;
+    }
+    if (!chapters.length) return null;
+    return { chapters, totalEpisodes: eps.length, wordCount, truncated };
   } catch (e) {
     console.log(`  ⚠ prose fetch failed for story ${storyId}: ${e.message}`);
     return null;

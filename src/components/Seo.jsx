@@ -53,6 +53,7 @@ export default function Seo({
   description,
   image,
   path = "",
+  canonical,
   type = "website",
   robots = DEFAULT_ROBOTS,
   keywords,
@@ -62,6 +63,9 @@ export default function Seo({
 }) {
   const fullTitle = title ? `${title} · ${SITE}` : `${SITE} · Hindi Horror Stories`;
   const url = `${ORIGIN}${path}`;
+  // canonical/og:url may point elsewhere than the live path — e.g. a reader page
+  // (/read/<guid>) canonicalises to the clean, prerendered story page it mirrors.
+  const canonUrl = canonical ? `${ORIGIN}${canonical}` : url;
   const desc = description || DEFAULT_DESC;
   const img = image || DEFAULT_IMAGE;
 
@@ -70,11 +74,11 @@ export default function Seo({
     setMeta("name", "description", desc);
     setMeta("name", "robots", robots);
     setMeta("name", "keywords", keywords || DEFAULT_KEYWORDS);
-    setLink("canonical", url);
+    setLink("canonical", canonUrl);
 
     setMeta("property", "og:title", fullTitle);
     setMeta("property", "og:type", type);
-    setMeta("property", "og:url", url);
+    setMeta("property", "og:url", canonUrl);
     setMeta("property", "og:description", desc);
     setMeta("property", "og:image", img);
     setMeta("property", "og:image:alt", title || `${SITE} — Hindi horror stories`);
@@ -98,7 +102,7 @@ export default function Seo({
     return () => {
       if (script) script.remove();
     };
-  }, [fullTitle, desc, img, url, type, robots, keywords, publishedTime, modifiedTime, jsonLd, title]);
+  }, [fullTitle, desc, img, canonUrl, type, robots, keywords, publishedTime, modifiedTime, jsonLd, title]);
 
   return null;
 }

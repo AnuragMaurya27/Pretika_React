@@ -23,7 +23,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { ORIGIN, esc, mediaUrl, fetchAllStories, fetchFirstFreeEpisode, htmlToText } from "./lib/pretika-api.mjs";
+import { ORIGIN, esc, mediaUrl, fetchAllStories, fetchFreeEpisodesProse, htmlToText } from "./lib/pretika-api.mjs";
 
 const DIST = join(dirname(fileURLToPath(import.meta.url)), "..", "dist");
 const TEMPLATE = join(DIST, "index.html");
@@ -122,7 +122,7 @@ function storyHtml(template, s, prose) {
     isAccessibleForFree: true,
     ...(prose
       ? {
-          articleBody: htmlToText(prose.html).slice(0, 5000),
+          articleBody: htmlToText(prose.chapters.map((c) => c.html).join("\n\n")).slice(0, 5000),
           ...(prose.wordCount ? { wordCount: prose.wordCount } : {}),
         }
       : {}),
@@ -165,24 +165,28 @@ function storyHtml(template, s, prose) {
   // The actual first free chapter, baked in as readable prose (the whole point:
   // /story/<slug> becomes a real article for crawlers, not a summary stub).
   const multi = prose && prose.totalEpisodes > 1;
-  // Chapter heading only for multi-part stories — and don't double-prefix a title
+  // Per-chapter heading for multi-part stories — but don't double-prefix a title
   // that already leads with "भाग 2" / "Episode 2" / "Part 2".
-  const epTitle = (prose?.title || "").trim();
-  const heading = multi
-    ? (/^(भाग|एपिसोड|part|episode|ep\.?)\s*\d+/i.test(epTitle)
-        ? epTitle
-        : `भाग ${prose.episodeNumber}: ${epTitle}`)
-    : "";
+  const chapterHeading = (ch) => {
+    const t = (ch.title || "").trim();
+    if (!multi) return "";
+    if (/^(भाग|एपिसोड|part|episode|ep\.?)\s*\d+/i.test(t)) return t;
+    return `भाग ${ch.episodeNumber}: ${t}`;
+  };
   const proseBlock = prose
     ? `
       <div aria-hidden style="width:64px;height:2px;background:#a91607;opacity:.5;margin:30px auto 18px"></div>
-      ${heading ? `<h2 style="font-size:21px;line-height:1.3;color:#1e0a0c;margin:0 0 16px">${esc(heading)}</h2>` : ""}
-      <div class="pk-prose" style="font-size:17px;line-height:1.95;color:#2a1410">${prose.html}</div>`
+      ${prose.chapters
+        .map((ch) => {
+          const h = chapterHeading(ch);
+          return `${h ? `<h2 style="font-size:21px;line-height:1.3;color:#1e0a0c;margin:34px 0 16px">${esc(h)}</h2>` : ""}
+      <div class="pk-prose" style="font-size:17px;line-height:1.95;color:#2a1410">${ch.html}</div>`;
+        })
+        .join("\n")}
+      ${prose.truncated ? `<p style="font-size:13.5px;color:#8a6a5a;margin:22px 0 0">…आगे के भाग Pretika पर पढ़ें।</p>` : ""}`
     : "";
   const ctaLabel = prose
-    ? (multi
-        ? `पूरी सीरीज़ पढ़ें · Read all ${prose.totalEpisodes} episodes on Pretika &rarr;`
-        : `Pretika पर और डरावनी कहानियाँ &rarr;`)
+    ? `Pretika पर और डरावनी कहानियाँ &rarr;`
     : `पूरी कहानी पढ़ें · Read the full story on Pretika &rarr;`;
 
   const body = `
@@ -257,6 +261,32 @@ function creatorHtml(template, username, stories) {
   return html;
 }
 
+// The home / default SPA shell is empty for a non-JS crawler. Bake a linked list
+// of the latest stories into it so the site's entry point (and every route that
+// falls back to index.html) presents real, crawlable content. React clears #root
+// on boot, so this is crawler-only — the live home page is unchanged.
+function homeHtml(template, stories) {
+  let html = setCanonical(template, `${ORIGIN}/home`);
+  const items = stories
+    .slice(0, 48)
+    .map((s) => {
+      const cat = esc(s.category_name || "Horror");
+      const brief = esc((s.summary || "").slice(0, 120));
+      return `<li style="margin:0 0 15px"><a href="/story/${esc(s.slug)}" style="color:#a91607;text-decoration:none;font-weight:700;font-size:17px">${esc(
+        s.title || "Hindi Horror Story"
+      )}</a><div style="font-size:13px;color:#6b4a3a;margin-top:2px">${cat}${brief ? ` — ${brief}` : ""}</div></li>`;
+    })
+    .join("");
+  const body = `
+    <main id="pk-prerender" style="max-width:760px;margin:0 auto;padding:40px 22px;background:#f4efe4;color:#2a1410;font-family:'Noto Serif Devanagari',Georgia,serif;line-height:1.8;min-height:100vh">
+      <h1 style="font-size:30px;margin:0 0 8px;color:#1e0a0c">Pretika — हिंदी हॉरर कहानियाँ · Hindi Horror Stories</h1>
+      <p style="font-size:16px;color:#4a2c22;margin:0 0 26px">डरावनी भूतिया कहानियाँ पढ़ें, सुनें और लिखें। Read, listen to and write spine-chilling Hindi horror stories (डरावनी कहानियाँ) on Pretika.</p>
+      <h2 style="font-size:20px;color:#1e0a0c;margin:0 0 16px">नई कहानियाँ · Latest stories</h2>
+      <ul style="list-style:none;padding:0;margin:0">${items}</ul>
+    </main>`;
+  return setBody(html, body);
+}
+
 async function main() {
   if (!existsSync(TEMPLATE)) {
     console.warn(`⚠ prerender skipped: ${TEMPLATE} not found (run after \`vite build\`).`);
@@ -274,10 +304,10 @@ async function main() {
   const byCreator = new Map();
   for (const s of stories) {
     if (!s.slug) continue;
-    // Pull the first free chapter's real text so the page is a full article, not
-    // a stub. Sequential (2 calls/story) keeps the live API un-hammered; failures
-    // return null and the page falls back to its summary — the build never breaks.
-    const prose = await fetchFirstFreeEpisode(s.id);
+    // Pull every free chapter's real text so the page is the full story, not a
+    // stub. Sequential calls keep the live API un-hammered; failures return null
+    // and the page falls back to its summary — the build never breaks.
+    const prose = await fetchFreeEpisodesProse(s.id);
     if (prose) withProse++;
     write(`story/${s.slug}`, storyHtml(template, s, prose));
     n++;
@@ -286,7 +316,7 @@ async function main() {
       byCreator.get(s.creator_username).push(s);
     }
   }
-  console.log(`  ✓ ${n} story pages (${withProse} with full first-chapter prose)`);
+  console.log(`  ✓ ${n} story pages (${withProse} with full story prose)`);
 
   let c = 0;
   for (const [username, list] of byCreator) {
@@ -295,6 +325,13 @@ async function main() {
     c++;
   }
   console.log(`  ✓ ${c} creator pages`);
+
+  // Enrich the home / fallback shell last (story pages were already written from
+  // the in-memory template, so overwriting dist/index.html doesn't affect them).
+  if (stories.length) {
+    writeFileSync(TEMPLATE, homeHtml(template, stories));
+    console.log(`  ✓ home shell enriched with ${Math.min(stories.length, 48)} latest stories`);
+  }
   console.log(`✓ Prerender done — ${n + c} static HTML files under dist/`);
 }
 
