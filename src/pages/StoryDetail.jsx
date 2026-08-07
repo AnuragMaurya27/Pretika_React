@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -51,6 +51,15 @@ export default function StoryDetail() {
   const isOwn = !!me && me.id === story?.creator_id;
   const creatorProfile = useUserProfile(story?.creator_username, authed && !!story && !isOwn);
   const isFollowing = creatorProfile.data?.is_following ?? false;
+
+  // Landed via an old/aliased slug (the backend resolved it from previous_slugs)?
+  // Swap the URL to the canonical slug so users and crawlers settle on the clean
+  // /story/<current-slug> that the sitemap and prerender emit.
+  useEffect(() => {
+    if (story?.slug && story.slug !== slug) {
+      nav(`/story/${story.slug}`, { replace: true });
+    }
+  }, [story?.slug, slug, nav]);
 
   if (isLoading) return <div className="app-shell"><PageLoader minHeight="80dvh" /></div>;
   if (isError || !story) return <div className="app-shell"><ErrorState onRetry={refetch} /></div>;
