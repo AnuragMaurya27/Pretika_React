@@ -79,21 +79,27 @@
       href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=IM+Fell+English:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@500;600;700;800&family=Yatra+One&display=swap"
       rel="stylesheet"
     />
+    <!-- Mark JS-enabled agents before the body paints, so CSS can hide the
+         prerendered (crawler-only) content and show the boot loader instead —
+         no flash of the pre-render on real page loads. -->
+    <script>document.documentElement.classList.add('pk-js')</script>
   </head>
   <body>
     <!-- Boot loader — blinking brand eye shown until the JS bundle mounts.
          React's createRoot().render() replaces #root's children, so this
          disappears automatically the moment the app is ready. -->
     <style>
-      #pk-boot { position: fixed; inset: 0; display: grid; place-items: center; background: #f4efe4; }
+      /* No-JS crawlers (no .pk-js class) see the prerendered #pk-prerender content
+         and NOT the loader. JS users get the loader, and the prerender stays hidden
+         until React clears #root — so the pre-render never flashes on screen. */
+      #pk-boot { display: none; }
+      .pk-js #pk-prerender { display: none !important; }
+      .pk-js #pk-boot { position: fixed; inset: 0; display: grid; place-items: center; background: #f4efe4; }
       #pk-boot .pkb-lid { transform-box: fill-box; transform-origin: 50% 0%; animation: pkBootBlink 2.2s cubic-bezier(.4,0,.2,1) infinite; }
       @keyframes pkBootBlink { 0%, 66% { transform: scaleY(.08); } 76%, 82% { transform: scaleY(1); } 94%, 100% { transform: scaleY(.08); } }
       @media (prefers-reduced-motion: reduce) { #pk-boot .pkb-lid { animation: none; } }
     </style>
     <div id="root">
-      <!--PRERENDER_CONTENT--><!-- prerender.mjs swaps this boot loader for real
-           story/creator content in the per-route static HTML it bakes into dist/.
-           React clears #root on mount, so live users still get the full SPA. -->
       <div id="pk-boot" aria-label="Loading Pretika">
         <svg width="110" height="110" viewBox="0 0 512 512" aria-hidden="true">
           <defs>
@@ -118,6 +124,9 @@
           <path d="M258 428 C 242 456 240 474 257 485 C 274 474 272 455 258 428 Z" fill="#c01008"/>
         </svg>
       </div>
+      <!--PRERENDER_CONTENT--><!-- prerender.mjs injects per-route crawler content
+           (story prose / latest-stories list) here; CSS hides it from JS users and
+           React clears #root on mount, so the live SPA is unaffected. -->
       <!--/PRERENDER_CONTENT-->
     </div>
     <!-- Pre-paint content for users / crawlers before JS hydrates -->
