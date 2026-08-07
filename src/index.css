@@ -414,6 +414,14 @@ textarea.input { height: auto; padding: 12px 14px; resize: vertical; line-height
 .hscroll { display:flex; gap:16px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity; }
 .hscroll::-webkit-scrollbar { display:none; }
 .hscroll > * { scroll-snap-align: start; }
+/* When .hscroll carries the container's own inline padding, scroll-snap ignores that
+   padding for the first item (scroll-padding defaults to auto) and yanks the first chip
+   flush under the left edge — e.g. the "All"/"Trending" chips get clipped once the row
+   overflows. Match scroll-padding to the container inset so snap honors it. */
+.hscroll.container { scroll-padding-inline: 16px; }
+@media (min-width: 768px)  { .hscroll.container { scroll-padding-inline: 32px; } }
+@media (min-width: 1280px) { .hscroll.container { scroll-padding-inline: 48px; } }
+@media (min-width: 1700px) { .hscroll.container { scroll-padding-inline: 64px; } }
 .divider { height:1px; background: var(--border); }
 
 /* Responsive grid for story posters (See-all / explore / creator) */
