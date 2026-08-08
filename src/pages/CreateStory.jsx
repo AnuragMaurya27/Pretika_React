@@ -72,8 +72,9 @@ export default function CreateStory() {
         access_type: "free",
       });
       if (publish) {
-        await post(`/stories/${story.id}/episodes/${ep.id}/publish`).catch(() => {});
-        await post(`/stories/${story.id}/publish`).catch(() => {});
+        // Publishing the episode publishes the story too (server-side). Don't swallow a
+        // real failure here — let the outer catch surface it instead of faking "Published 🎉".
+        await post(`/stories/${story.id}/episodes/${ep.id}/publish`);
       }
       toast.success(publish ? t("creator.published") : t("creator.storyCreated"));
       nav(`/story/${story.slug}`);
