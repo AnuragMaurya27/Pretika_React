@@ -29,7 +29,7 @@ export default function StaticPage({ title, subtitle, path, description, seoTitl
           <nav aria-label="Site pages" style={{ marginTop: 44, paddingTop: 18, borderTop: "1px solid var(--border-solid)" }}>
             <div className="eyebrow" style={{ marginBottom: 10 }}>Pretika</div>
             <div className="row" style={{ gap: 14, flexWrap: "wrap", fontSize: 13.5, fontWeight: 600 }}>
-              <Link to="/home">{t("nav.home")}</Link>
+              <Link to="/">{t("nav.home")}</Link>
               <Link to="/explore">{t("footer.stories")}</Link>
               <Link to="/about">{t("footer.aboutUs")}</Link>
               <Link to="/contact">{t("footer.contact")}</Link>

@@ -31,7 +31,7 @@ export default function NotFound() {
           {t("notfound.sub")}
         </p>
         <div className="row gap-10" style={{ justifyContent: "center", marginTop: 26, flexWrap: "wrap" }}>
-          <Link to="/home" className="btn btn-primary"><Home size={17} /> {t("notfound.backHome")}</Link>
+          <Link to="/" className="btn btn-primary"><Home size={17} /> {t("notfound.backHome")}</Link>
           <Link to="/explore" className="btn btn-outline" style={{ color: "#fff", borderColor: "rgba(255,255,255,.5)", background: "rgba(255,255,255,.06)" }}>
             <Search size={16} /> {t("notfound.searchStories")}
           </Link>

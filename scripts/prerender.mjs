@@ -150,7 +150,7 @@ function storyHtml(template, s, prose) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: `${ORIGIN}/home` },
+      { "@type": "ListItem", position: 1, name: "Home", item: `${ORIGIN}/` },
       { "@type": "ListItem", position: 2, name: category, item: `${ORIGIN}/explore` },
       { "@type": "ListItem", position: 3, name: title, item: url },
     ],
@@ -191,7 +191,7 @@ function storyHtml(template, s, prose) {
 
   const body = `
     <main id="pk-prerender" style="max-width:760px;margin:0 auto;padding:40px 22px;background:#f4efe4;color:#2a1410;font-family:'Noto Serif Devanagari',Georgia,'Times New Roman',serif;line-height:1.85;min-height:100vh">
-      <p style="font-size:13px;margin:0 0 6px"><a href="/home" style="color:#a91607;text-decoration:none">Pretika</a> &rsaquo; <a href="/explore" style="color:#a91607;text-decoration:none">${esc(category)}</a></p>
+      <p style="font-size:13px;margin:0 0 6px"><a href="/" style="color:#a91607;text-decoration:none">Pretika</a> &rsaquo; <a href="/explore" style="color:#a91607;text-decoration:none">${esc(category)}</a></p>
       <h1 style="font-size:30px;line-height:1.25;margin:.2em 0 .3em;color:#1e0a0c">${esc(title)}</h1>
       <p style="font-size:14px;color:#6b4a3a;margin:0 0 20px">${esc(author)} &middot; ${esc(category)} &middot; Hindi Horror Story (डरावनी कहानी)</p>
       ${img ? `<img src="${esc(img)}" alt="${esc(title)}" width="560" style="max-width:100%;height:auto;border-radius:14px;margin-bottom:22px" />` : ""}
@@ -266,7 +266,7 @@ function creatorHtml(template, username, stories) {
 // falls back to index.html) presents real, crawlable content. React clears #root
 // on boot, so this is crawler-only — the live home page is unchanged.
 function homeHtml(template, stories) {
-  let html = setCanonical(template, `${ORIGIN}/home`);
+  let html = setCanonical(template, `${ORIGIN}/`);
   const items = stories
     .slice(0, 48)
     .map((s) => {

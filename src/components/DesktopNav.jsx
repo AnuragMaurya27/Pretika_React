@@ -11,7 +11,7 @@ import NotificationBell from "./NotificationBell";
 import { EyeLogo } from "./Art";
 
 const links = [
-  { to: "/home", icon: Home, key: "home" },
+  { to: "/", icon: Home, key: "home" },
   { to: "/feed", icon: Sparkles, key: "feed" },
   { to: "/explore", icon: Search, key: "explore" },
   { to: "/chat-stories", icon: MessageSquareText, key: "chat" },
@@ -36,14 +36,14 @@ export default function DesktopNav() {
   return (
     <header className="only-desktop" style={bar}>
       <div className="container" style={{ display: "flex", alignItems: "center", gap: 18, height: 64 }}>
-        <Link to="/home" className="row gap-10">
+        <Link to="/" className="row gap-10">
           <EyeLogo size={34} />
           <span className="display" style={{ fontSize: 23, fontWeight: 800, color: "#fff", letterSpacing: 0.5 }}>Pretika</span>
         </Link>
 
         <nav style={{ display: "flex", gap: 4, marginLeft: 10 }}>
           {links.map(({ to, icon: Icon, key }) => (
-            <NavLink key={to} to={to}>
+            <NavLink key={to} to={to} end={to === "/"}>
               {({ isActive }) => (
                 <span style={{ ...navItem, position: "relative", color: isActive ? "#fff" : "rgba(255,255,255,.7)" }}>
                   {isActive && (

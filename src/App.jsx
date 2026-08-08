@@ -48,7 +48,10 @@ export default function App() {
     <>
     <LanguageGate />
     <Routes>
-      <Route path="/" element={<Navigate to="/home" replace />} />
+      {/* Home now lives at the root "/"; keep the legacy /home path as a redirect
+          so old links, bookmarks and any stale search-index entries land on the
+          canonical root (brand searches surface the root, not a /home subpath). */}
+      <Route path="/home" element={<Navigate to="/" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot" element={<Forgot />} />
@@ -58,7 +61,7 @@ export default function App() {
       <Route path="/chat/:roomId" element={<ChatRoom />} />
 
       <Route element={<Layout />}>
-        <Route path="/home" element={<Home />} />
+        <Route index element={<Home />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/u/:username" element={<CreatorProfile />} />

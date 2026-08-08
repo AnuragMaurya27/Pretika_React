@@ -11,7 +11,7 @@ import { useChatUnreadTotal, useIsMobile } from "../lib/chat";
 // FAB pinned as a fixed-width centre column between them, so the FAB always
 // stays dead-centre regardless of how many tabs each side holds.
 const leftTabs = [
-  { to: "/home", icon: Home, id: "home" },
+  { to: "/", icon: Home, id: "home" },
   { to: "/feed", icon: Sparkles, id: "feed" },
 ];
 const rightTabs = [
@@ -59,7 +59,7 @@ export default function BottomNav() {
 
 function Tab({ to, icon: Icon, id, t, badge = 0 }) {
   return (
-    <NavLink to={to} style={{ flex: 1 }}>
+    <NavLink to={to} end={to === "/"} style={{ flex: 1 }}>
       {({ isActive }) => (
         <div style={item}>
           <div style={{ position: "relative", width: 46, height: 30, display: "grid", placeItems: "center" }}>

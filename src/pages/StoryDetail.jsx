@@ -179,7 +179,7 @@ export default function StoryDetail() {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Home", item: "https://pretika.in/home" },
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://pretika.in/" },
               { "@type": "ListItem", position: 2, name: story.category_name || "Stories", item: "https://pretika.in/explore" },
               { "@type": "ListItem", position: 3, name: story.title, item: `https://pretika.in/story/${slug}` },
             ],

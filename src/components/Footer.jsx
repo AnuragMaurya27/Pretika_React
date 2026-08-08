@@ -14,7 +14,7 @@ export default function Footer() {
   // Account column adapts to auth state — no Login/Sign-up once signed in.
   const accountLinks = authed
     ? [
-        { to: "/home", label: t("nav.home") },
+        { to: "/", label: t("nav.home") },
         { to: "/creator/story/new", label: t("nav.write") },
         {
           to: isCreator ? "/creator-dashboard" : "/become-creator",
@@ -23,7 +23,7 @@ export default function Footer() {
         { to: "/profile", label: t("nav.profile") },
       ]
     : [
-        { to: "/home", label: t("nav.home") },
+        { to: "/", label: t("nav.home") },
         { to: "/creator/story/new", label: t("nav.write") },
         { to: "/login", label: t("auth.login") },
         { to: "/register", label: t("auth.register") },

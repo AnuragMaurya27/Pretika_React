@@ -6,7 +6,7 @@ import Footer from "./Footer";
 import ScrollManager from "./ScrollManager";
 
 // Tab routes get the mobile bottom nav; detail/reader/creator screens don't.
-const TAB_ROUTES = ["/home", "/feed", "/explore", "/profile"];
+const TAB_ROUTES = ["/", "/feed", "/explore", "/profile"];
 
 export default function Layout() {
   const location = useLocation();

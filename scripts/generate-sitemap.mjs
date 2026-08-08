@@ -21,7 +21,7 @@ import { API, ORIGIN, esc, isoDate, mediaUrl, fetchCategories, fetchAllStories }
 const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "sitemap.xml");
 
 const STATIC_ROUTES = [
-  { loc: "/home", changefreq: "daily", priority: "1.0" },
+  { loc: "/", changefreq: "daily", priority: "1.0" },
   { loc: "/explore", changefreq: "daily", priority: "0.9" },
   { loc: "/about", changefreq: "monthly", priority: "0.5" },
   { loc: "/contact", changefreq: "monthly", priority: "0.4" },

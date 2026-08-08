@@ -59,7 +59,7 @@ export default function Login() {
     try {
       await login(form.id.trim(), form.pw);
       toast.success(t("toast.welcome"));
-      nav(loc.state?.from || "/home", { replace: true });
+      nav(loc.state?.from || "/", { replace: true });
     } catch (err) {
       toast.error(errMsg(err, t("auth.loginFailed")));
     } finally {
@@ -81,7 +81,7 @@ export default function Login() {
       </form>
 
       <motion.div variants={riseVar} className="deed-or">{t("auth.or")}</motion.div>
-      <GoogleButton redirectTo={loc.state?.from || "/home"} />
+      <GoogleButton redirectTo={loc.state?.from || "/"} />
 
       <motion.p variants={riseVar} className="deed-switch">
         {t("auth.noAccount")}{" "}

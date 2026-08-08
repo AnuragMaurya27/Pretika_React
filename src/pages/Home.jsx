@@ -75,7 +75,7 @@ export default function Home() {
       <Seo
         title="Hindi Horror Stories — डरावनी भूतिया कहानियाँ"
         description="Read spine-chilling Hindi horror stories (डरावनी भूतिया कहानियाँ) free on Pretika — bhoot, chudail & jinn kahaniyan, haunted tales, trending series & top creators. Read & write horror that follows you home."
-        path="/home"
+        path="/"
         image={HERO_IMG}
       />
       <div className="page-scroll">

@@ -35,7 +35,7 @@ function loadGis() {
  * @param {string} [referral]   referral code to attach on a first-time (register) sign-in
  * @param {string} [redirectTo] path to navigate to after a successful sign-in
  */
-export default function GoogleButton({ referral, redirectTo = "/home" }) {
+export default function GoogleButton({ referral, redirectTo = "/" }) {
   const nav = useNavigate();
   const { t } = useTranslation();
   const googleLogin = useAuth((s) => s.googleLogin);

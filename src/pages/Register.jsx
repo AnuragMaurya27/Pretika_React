@@ -84,7 +84,7 @@ export default function Register() {
       });
       await login(f.email.trim(), f.password);
       toast.success(t("toast.welcome"));
-      nav("/home", { replace: true });
+      nav("/", { replace: true });
     } catch (e2) {
       toast.error(errMsg(e2, t("auth.registerFailed")));
     } finally {
